@@ -3,14 +3,14 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_jar")
 load(":lang.bzl", "C", "CPP", "GO", "JAVA", "OBJC", "PYTHON", "PYTHON2", "PYTHON3", supportedLanguages = "supported")
 
-v4 = [4, "4.7.1", "4.7.2", "4.8"]
+v4 = [4, "4.7.1", "4.7.2", "4.8", "4.13.0"]
 v4_opt = [4, "4.7.1", "4.7.2", "4.7.3", "4.7.4"]
 v3 = [3, "3.5.2"]
 v2 = [2, "2.7.7"]
 
 PACKAGES = {
     "antlr": {
-        "4.13": {
+        "4.13.0": {
             "url": "https://github.com/antlr/antlr4/archive/4.13.0.zip",
             "prefix": "antlr4-4.13.0",
             "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
@@ -43,8 +43,8 @@ PACKAGES = {
         },
     },
     "antlr4_runtime": {
-        "4.13": {
-            "path": "org/antlr/antlr4-runtime/4.13/antlr4-runtime-4.13.jar",
+        "4.13.0": {
+            "path": "org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar",
             "sha256": "bd7f7b5d07bc0b047f10915b32ca4bb1de9e57d8049098882e4453c88c076a5d",
         },
         "4.8": {
@@ -77,8 +77,8 @@ PACKAGES = {
         },
     },
     "antlr4_tool": {
-        "4.13": {
-            "path": "org/antlr/antlr4/4.13/antlr4-4.13-complete.jar",
+        "4.13.0": {
+            "path": "org/antlr/antlr4/4.13.0/antlr4-4.13.0.jar",
             "sha256": "bc6f4abc0d225a27570126c51402569f000a8deda3487b70e7642840e570e4a6",
         },
         "4.8": {
@@ -192,7 +192,7 @@ def rules_antlr_dependencies(*versionsAndLanguages):
             languages = [JAVA]
 
         for version in sorted(versions, key = _toString):
-            if version == 4 or version == "4.13":
+            if version == 4 or version == "4.13.0":
                 _antlr4_13_0_dependencies(languages)
             if version == "4.8":
                 _antlr48_dependencies(languages)
