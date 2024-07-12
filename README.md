@@ -2,6 +2,13 @@
 [![Java 8+](https://img.shields.io/badge/java-8+-4c7e9f.svg)](https://java.oracle.com)
 [![License](https://img.shields.io/badge/license-Apache2-blue.svg)](https://github.com/marcohu/rules_antlr/blob/master/LICENSE)
 
+# Forked Version 
+Original repo is no longer maintained. This fork is to keep the rules up to date with the latest versions of ANTLR.
+* Supports all versions of ANTLR 4.
+* Not up to date with ANTLR 4 Optimized
+* Not working with stardoc generation.
+* Integration tests are broken on the original repo and here.
+* Integration tests require Java11 or higher.
 
 # ANTLR Rules for Bazel
 

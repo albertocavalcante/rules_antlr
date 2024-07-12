@@ -39,9 +39,3 @@ git_repository(
 load("@io_bazel_stardoc//:setup.bzl", "stardoc_repositories")
 
 stardoc_repositories()
-
-git_repository(
-    name = "stardoc_templates",
-    remote = "https://github.com/marcohu/stardoc_templates.git",
-    tag = "0.1.0",
-)

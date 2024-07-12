@@ -1,1 +1,6 @@
-build --javacopt="--release 8"
+build --javacopt="--release 11"
+
+build --java_language_version=11
+build --java_runtime_version=11
+build --tool_java_language_version=11
+build --tool_java_runtime_version=11
