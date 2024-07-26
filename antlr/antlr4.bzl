@@ -109,7 +109,7 @@ you need to use a different version, you can specify the dependencies here.
         "visitor": attr.bool(default = False, doc = "Generate parse tree visitor."),
         "_tool": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             default = Label("@rules_antlr//src/main/java/org/antlr/bazel"),
         ),
     },
