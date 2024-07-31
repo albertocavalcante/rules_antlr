@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/marcohu/rules_antlr.png?branch=master)](https://travis-ci.org/marcohu/rules_antlr)
 [![Java 8+](https://img.shields.io/badge/java-8+-4c7e9f.svg)](https://java.oracle.com)
 [![License](https://img.shields.io/badge/license-Apache2-blue.svg)](https://github.com/marcohu/rules_antlr/blob/master/LICENSE)
 
