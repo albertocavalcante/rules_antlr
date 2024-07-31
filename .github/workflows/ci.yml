@@ -37,7 +37,7 @@ jobs:
 
       - name: Run tests
         run: |
-          bazelisk test --jobs 2 --test_output=errors //...
+          bazelisk test --jobs 2 --toolchain_resolution_debug='@bazel_tools//tools/jdk:runtime_toolchain_type' --test_output=errors //...
 
       - name: Shutdown Bazel
         run: bazelisk shutdown
