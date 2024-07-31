@@ -37,7 +37,7 @@ jobs:
 
       - name: Run tests
         run: |
-          bazelisk test --noenable_bzlmod --jobs 2 --test_output=errors //...
+          bazelisk test --config=debug --jobs 2 --test_output=errors //...
 
       - name: Shutdown Bazel
         run: bazelisk shutdown
