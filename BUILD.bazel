@@ -1,5 +1,5 @@
 filegroup(
     name = "srcs",
-    srcs = ["WORKSPACE"],
+    srcs = ["WORKSPACE.bazel"],
     visibility = ["//visibility:public"],
 )
