@@ -1,5 +1,5 @@
-load("@rules_cc//cc:defs.bzl", "cc_library")
 load("@rules_antlr//antlr:antlr4.bzl", "antlr")
+load("@rules_cc//cc:defs.bzl", "cc_library")
 
 antlr(
     name = "generated",
