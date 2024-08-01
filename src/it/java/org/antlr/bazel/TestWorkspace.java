@@ -49,7 +49,7 @@ class TestWorkspace
 
         root = examples;
 
-        Path workspace = examples.resolve("WORKSPACE");
+        Path workspace = examples.resolve("WORKSPACE.bazel");
 
         if (!empty && Files.notExists(workspace))
         {
