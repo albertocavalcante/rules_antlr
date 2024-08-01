@@ -28,16 +28,16 @@ jobs:
       - name: Build examples
         run: |
           cd examples
-          bazelisk build --jobs 2 //antlr2/Cpp/... //antlr2/Calc/... //antlr2/Python/... //antlr3/Cpp/... //antlr3/Java/... //antlr3/Python2/... //antlr3/Python3/... //antlr4/Cpp/... //antlr4/Go/... //antlr4/Java/... //antlr4/Python2/... //antlr4/Python3/...
+          bazelisk --strict build --jobs 2 //antlr2/Cpp/... //antlr2/Calc/... //antlr2/Python/... //antlr3/Cpp/... //antlr3/Java/... //antlr3/Python2/... //antlr3/Python3/... //antlr4/Cpp/... //antlr4/Go/... //antlr4/Java/... //antlr4/Python2/... //antlr4/Python3/...
 
       - name: Build antlr4-opt
         run: |
           cd examples/antlr4-opt
-          bazelisk build --jobs 2 //...
+          bazelisk --strict build --jobs 2 //...
 
       - name: Run tests
         run: |
-          bazelisk test --jobs 2 --test_output=errors //...
+          bazelisk --strict test --jobs 2 --test_output=errors //...
 
       - name: Shutdown Bazel
         run: bazelisk shutdown
