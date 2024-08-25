@@ -24,10 +24,10 @@ class Namespace
      *                 file.
      */
     private Namespace(String id, boolean header)
-    {
-        this.id = Objects.requireNonNull(id);
-        this.header = header;
-    }
+            {
+                this.id = Objects.requireNonNull(id);
+                this.header = header;
+            }
 
     /**
      * Returns the namespace for the given identifier.
@@ -37,9 +37,9 @@ class Namespace
      * @return  the namespace.
      */
     public static Namespace of(String id)
-    {
-        return of(id, false);
-    }
+            {
+                return of(id, false);
+            }
 
 
     /**
@@ -52,9 +52,9 @@ class Namespace
      * @return  the namespace.
      */
     public static Namespace of(String id, boolean header)
-    {
-        return new Namespace(id, header);
-    }
+            {
+                return new Namespace(id, header);
+            }
 
 
     /**
@@ -66,40 +66,40 @@ class Namespace
      * @return  the namespace.
      */
     public static Namespace of(Path path, Language language)
-    {
-        return of(language.toId(path));
-    }
+            {
+                return of(language.toId(path));
+            }
 
 
     @Override
     public boolean equals(Object obj)
-    {
-        if (this == obj)
-        {
-            return true;
-        }
+            {
+                if (this == obj)
+                    {
+                        return true;
+                    }
 
-        if (obj == null)
-        {
-            return false;
-        }
+                if (obj == null)
+                    {
+                        return false;
+                    }
 
-        if (getClass() != obj.getClass())
-        {
-            return false;
-        }
+                if (getClass() != obj.getClass())
+                    {
+                        return false;
+                    }
 
-        Namespace other = (Namespace) obj;
+                Namespace other = (Namespace) obj;
 
-        return id.equals(other.id);
-    }
+                return id.equals(other.id);
+            }
 
 
     @Override
     public int hashCode()
-    {
-        return 31 + id.hashCode();
-    }
+            {
+                return 31 + id.hashCode();
+            }
 
 
     /**
@@ -108,9 +108,9 @@ class Namespace
      * @return  {@code true} if this namespace is empty.
      */
     public boolean isEmpty()
-    {
-        return id.isEmpty();
-    }
+            {
+                return id.isEmpty();
+            }
 
 
     /**
@@ -119,9 +119,9 @@ class Namespace
      * @return  {@code true} if this namespace has been defined in a grammar.
      */
     public boolean isHeader()
-    {
-        return header;
-    }
+            {
+                return header;
+            }
 
 
     /**
@@ -132,14 +132,14 @@ class Namespace
      * @return  the corresponding file path.
      */
     public String toPath(Language language)
-    {
-        return language.toPath(id);
-    }
+            {
+                return language.toPath(id);
+            }
 
 
     @Override
     public String toString()
-    {
-        return id;
-    }
+            {
+                return id;
+            }
 }

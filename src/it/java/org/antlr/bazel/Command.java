@@ -28,10 +28,10 @@ class Command
      * @param  target     the build target.
      */
     public Command(Path directory, String target)
-    {
-        this.target = target;
-        this.directory = directory;
-    }
+            {
+                this.target = target;
+                this.directory = directory;
+            }
 
     /**
      * Returns the process exit value.
@@ -39,9 +39,9 @@ class Command
      * @return  the exit value.
      */
     public int exitValue()
-    {
-        return exitValue;
-    }
+            {
+                return exitValue;
+            }
 
     /**
      * Returns the build output.
@@ -49,35 +49,35 @@ class Command
      * @return  the build output.
      */
     public String output()
-    {
-        return output;
-    }
+            {
+                return output;
+            }
 
     /**
      * Builds the specified target.
      */
     public Command build() throws Exception
-    {
-        Path repositoryCache = Paths
-            .get(System.getProperty("user.home"))
-            .resolve(".cache/bazel/_bazel_" + System.getProperty("user.name") + "/cache/repos/v1");
+            {
+                Path repositoryCache = Paths
+                        .get(System.getProperty("user.home"))
+                        .resolve(".cache/bazel/_bazel_" + System.getProperty("user.name") + "/cache/repos/v1");
 
-        // TODO by default, Bazel 2.0 does not seem to share the repository cache for
-        // tests which causes the dependencies to be downloaded each time, we therefore
-        // try to share it manually
-        Process p = new ProcessBuilder()
-            .command(
-                "bazel", "build", "--jobs", "2", "--repository_cache", repositoryCache.toString(), target)
-            .directory(directory.toFile())
-            .redirectErrorStream(true)
-            .start();
+                // TODO by default, Bazel 2.0 does not seem to share the repository cache for
+                // tests which causes the dependencies to be downloaded each time, we therefore
+                // try to share it manually
+                Process p = new ProcessBuilder()
+                        .command(
+                                "bazel", "build", "--jobs", "2", "--repository_cache", repositoryCache.toString(), target)
+                        .directory(directory.toFile())
+                        .redirectErrorStream(true)
+                        .start();
 
-        output = new String(p.getInputStream().readAllBytes());
+                output = new String(p.getInputStream().readAllBytes());
 
-        p.waitFor();
+                p.waitFor();
 
-        exitValue = p.exitValue();
+                exitValue = p.exitValue();
 
-        return this;
-    }
+                return this;
+            }
 }

@@ -23,19 +23,19 @@ class ContextClassLoader extends URLClassLoader
      * @param  parent  the parent class loader for delegation. Might be {@code null}.
      */
     public ContextClassLoader(Collection<URL> urls, ClassLoader parent)
-    {
-        super(urls.toArray(new URL[urls.size()]), parent);
+            {
+                super(urls.toArray(new URL[urls.size()]), parent);
 
-        this.thread = Thread.currentThread();
-        this.loader = thread.getContextClassLoader();
-        this.thread.setContextClassLoader(this);
-    }
+                this.thread = Thread.currentThread();
+                this.loader = thread.getContextClassLoader();
+                this.thread.setContextClassLoader(this);
+            }
 
 
     @Override
     public void close() throws IOException
-    {
-        super.close();
-        thread.setContextClassLoader(loader);
-    }
+            {
+                super.close();
+                thread.setContextClassLoader(loader);
+            }
 }

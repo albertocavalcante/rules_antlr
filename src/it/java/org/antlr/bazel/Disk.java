@@ -18,13 +18,13 @@ import java.nio.file.attribute.BasicFileAttributes;
 class Disk
 {
     private static final CopyOption[] ATTRIBUTES =
-        { StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING };
+            {StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING};
 
     /** Creates a new Disk object. */
     private Disk()
-    {
-        super();
-    }
+            {
+                super();
+            }
 
     /**
      * Copies the given file or directory to the given destination.
@@ -36,42 +36,42 @@ class Disk
      * @throws  IOException  if an I/O error occurred.
      */
     public static void copy(Path path, Path target, CopyOption... options)
-        throws IOException
-    {
-        CopyOption[] opt = (options.length == 0) ? ATTRIBUTES : options;
+            throws IOException
+            {
+                CopyOption[] opt = (options.length == 0) ? ATTRIBUTES : options;
 
-        if (Files.isDirectory(path))
-        {
-            Files.walkFileTree(path, new SimpleFileVisitor<Path>()
-                {
-                    @Override
-                    public FileVisitResult preVisitDirectory(Path dir,
+                if (Files.isDirectory(path))
+                    {
+                        Files.walkFileTree(path, new SimpleFileVisitor<Path>()
+                                {
+                                    @Override
+                                    public FileVisitResult preVisitDirectory(Path dir,
                         BasicFileAttributes attrs) throws IOException
-                    {
-                        Files.createDirectories(
-                            target.resolve(path.relativize(dir).toString()));
+                                            {
+                                                Files.createDirectories(
+                                                        target.resolve(path.relativize(dir).toString()));
 
-                        return FileVisitResult.CONTINUE;
+                                                return FileVisitResult.CONTINUE;
+                                            }
+
+
+                                    @Override
+                                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                                            throws IOException
+                                            {
+                                                Files.copy(file,
+                                                        target.resolve(path.relativize(file).toString()),
+                                                        opt);
+
+                                                return FileVisitResult.CONTINUE;
+                                            }
+                                });
                     }
-
-
-                    @Override
-                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                        throws IOException
+                else
                     {
-                        Files.copy(file,
-                            target.resolve(path.relativize(file).toString()),
-                            opt);
-
-                        return FileVisitResult.CONTINUE;
+                        Files.copy(path, target, opt);
                     }
-                });
-        }
-        else
-        {
-            Files.copy(path, target, opt);
-        }
-    }
+            }
 
 
     /**
@@ -82,16 +82,16 @@ class Disk
      * @throws  IOException  if an I/O error occurred.
      */
     public static void delete(Path path) throws IOException
-    {
-        if (Files.isDirectory(path))
-        {
-            Files.walkFileTree(path, DeleteVisitor.INSTANCE);
-        }
-        else if (Files.exists(path))
-        {
-            Files.delete(path);
-        }
-    }
+            {
+                if (Files.isDirectory(path))
+                    {
+                        Files.walkFileTree(path, DeleteVisitor.INSTANCE);
+                    }
+                else if (Files.exists(path))
+                    {
+                        Files.delete(path);
+                    }
+            }
 
     private static class DeleteVisitor extends SimpleFileVisitor<Path>
     {
@@ -99,21 +99,21 @@ class Disk
 
         @Override
         public FileVisitResult postVisitDirectory(Path dir, IOException cause)
-            throws IOException
-        {
-            Files.delete(dir);
+                throws IOException
+                {
+                    Files.delete(dir);
 
-            return FileVisitResult.CONTINUE;
-        }
+                    return FileVisitResult.CONTINUE;
+                }
 
 
         @Override
         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-            throws IOException
-        {
-            Files.delete(file);
+                throws IOException
+                {
+                    Files.delete(file);
 
-            return FileVisitResult.CONTINUE;
-        }
+                    return FileVisitResult.CONTINUE;
+                }
     }
 }
