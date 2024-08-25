@@ -12,19 +12,19 @@ class LengthComparator implements Comparator<String>
 {
     @Override
     public int compare(String first, String second)
-    {
-        int length1 = first.length();
-        int length2 = second.length();
+            {
+                int length1 = first.length();
+                int length2 = second.length();
 
-        if (length1 < length2)
-        {
-            return 1;
-        }
-        else if (length1 > length2)
-        {
-            return -1;
-        }
+                if (length1 < length2)
+                    {
+                        return 1;
+                    }
+                else if (length1 > length2)
+                    {
+                        return -1;
+                    }
 
-        return first.compareToIgnoreCase(second);
-    }
+                return first.compareToIgnoreCase(second);
+            }
 }

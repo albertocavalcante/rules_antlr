@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 class DirectoryLayout
 {
     static final Pattern PATH = Pattern.compile(
-        ".*[\\\\/]src[\\\\/]antlr[234]?[\\\\/](.*)");
+            ".*[\\\\/]src[\\\\/]antlr[234]?[\\\\/](.*)");
 
     private boolean flat;
 
@@ -21,9 +21,9 @@ class DirectoryLayout
 
     /** Creates a new DirectoryLayout object. */
     public DirectoryLayout()
-    {
-        pattern = null;
-    }
+            {
+                pattern = null;
+            }
 
 
     /**
@@ -32,19 +32,19 @@ class DirectoryLayout
      * @param  path  the directory path.
      */
     public DirectoryLayout(String path)
-    {
-        this(
-            "flat".equalsIgnoreCase(path)
-            ? null
-            : Pattern.compile(
-                ".*"
-                + ((!path.startsWith("/") && !path.startsWith("\\")) ? "[\\\\/]" : "")
-                + path.replaceAll("[\\\\/]", "[\\\\\\\\/]")
-                + ((!path.endsWith("/") && !path.endsWith("\\")) ? "[\\\\/]" : "")
-                + "(.*)"));
+            {
+                this(
+                        "flat".equalsIgnoreCase(path)
+                                ? null
+                                : Pattern.compile(
+                                ".*"
+                                        + ((!path.startsWith("/") && !path.startsWith("\\")) ? "[\\\\/]" : "")
+                                        + path.replaceAll("[\\\\/]", "[\\\\\\\\/]")
+                                        + ((!path.endsWith("/") && !path.endsWith("\\")) ? "[\\\\/]" : "")
+                                        + "(.*)"));
 
-        flat = "flat".equalsIgnoreCase(path);
-    }
+                flat = "flat".equalsIgnoreCase(path);
+            }
 
 
     /**
@@ -53,9 +53,9 @@ class DirectoryLayout
      * @param  pattern  the directory pattern.
      */
     DirectoryLayout(Pattern pattern)
-    {
-        this.pattern = pattern;
-    }
+            {
+                this.pattern = pattern;
+            }
 
     /**
      * Returns the path of the given grammar file relative to the common directory if the
@@ -66,24 +66,24 @@ class DirectoryLayout
      * @return  the relative path.
      */
     public Path getRelativePath(Path file)
-    {
-        if (pattern != null)
-        {
-            Matcher matcher = pattern.matcher(file.toString());
-
-            if (matcher.find())
             {
-                Path parent = file.getFileSystem().getPath(matcher.group(1)).getParent();
+                if (pattern != null)
+                    {
+                        Matcher matcher = pattern.matcher(file.toString());
 
-                if (parent != null)
-                {
-                    return parent;
-                }
+                        if (matcher.find())
+                            {
+                                Path parent = file.getFileSystem().getPath(matcher.group(1)).getParent();
+
+                                if (parent != null)
+                                    {
+                                        return parent;
+                                    }
+                            }
+                    }
+
+                return file.getFileSystem().getPath("");
             }
-        }
-
-        return file.getFileSystem().getPath("");
-    }
 
 
     /**
@@ -92,14 +92,14 @@ class DirectoryLayout
      * @return  {@code true} if a flat layout is dictated.
      */
     public boolean isFlat()
-    {
-        return flat;
-    }
+            {
+                return flat;
+            }
 
 
     @Override
     public String toString()
-    {
-        return (pattern != null) ? pattern.pattern() : "";
-    }
+            {
+                return (pattern != null) ? pattern.pattern() : "";
+            }
 }

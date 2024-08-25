@@ -58,58 +58,58 @@ class Grammar implements Comparable<Grammar>
         Namespace namespace,
         Charset encoding,
         String layout) throws IOException
-    {
-        String text = new String(Files.readAllBytes(path), encoding);
-        this.path = path;
-        this.encoding = encoding;
-        this.language = (language != null) ? language : Language.detect(text);
-        this.layout = (layout != null) ? new DirectoryLayout(layout)
-                                       : this.language.getLayout();
-        this.namespace = namespace(namespace, text);
-        this.names = detectNames(version, text);
-        this.imports = detectImports(text);
-    }
+            {
+                String text = new String(Files.readAllBytes(path), encoding);
+                this.path = path;
+                this.encoding = encoding;
+                this.language = (language != null) ? language : Language.detect(text);
+                this.layout = (layout != null) ? new DirectoryLayout(layout)
+                        : this.language.getLayout();
+                this.namespace = namespace(namespace, text);
+                this.names = detectNames(version, text);
+                this.imports = detectImports(text);
+            }
 
     @Override
     public int compareTo(Grammar other)
-    {
-        if (imports.isEmpty())
-        {
-            if (!other.imports.isEmpty())
             {
-                return 1;
-            }
-        }
-        else if (other.imports.isEmpty())
-        {
-            return -1;
-        }
-        else if (imports.contains(Strings.stripFileExtension(other.toString())))
-        {
-            return -1;
-        }
+                if (imports.isEmpty())
+                    {
+                        if (!other.imports.isEmpty())
+                            {
+                                return 1;
+                            }
+                    }
+                else if (other.imports.isEmpty())
+                    {
+                        return -1;
+                    }
+                else if (imports.contains(Strings.stripFileExtension(other.toString())))
+                    {
+                        return -1;
+                    }
 
-        return 0;
-    }
+                return 0;
+            }
 
 
     @Override
     public boolean equals(Object other)
-    {
-        if (this == other)
-        {
-            return true;
-        }
+            {
+                if (this == other)
+                    {
+                        return true;
+                    }
 
-        if ((other == null) || (getClass() != other.getClass()))
-        {
-            return false;
-        }
+                if ((other == null) || (getClass() != other.getClass()))
+                    {
+                        return false;
+                    }
 
-        Grammar that = (Grammar) other;
+                Grammar that = (Grammar) other;
 
-        return path.equals(that.path);
-    }
+                return path.equals(that.path);
+            }
 
 
     /**
@@ -118,129 +118,129 @@ class Grammar implements Comparable<Grammar>
      * @return  the corresponding namespace path.
      */
     public Path getNamespacePath()
-    {
-        // flat layout might be forced for namespace
-        return path.getFileSystem()
-            .getPath(layout.isFlat() ? "" : namespace.toPath(language));
-    }
+            {
+                // flat layout might be forced for namespace
+                return path.getFileSystem()
+                        .getPath(layout.isFlat() ? "" : namespace.toPath(language));
+            }
 
 
     @Override
     public int hashCode()
-    {
-        return 31 + path.hashCode();
-    }
+            {
+                return 31 + path.hashCode();
+            }
 
 
     @Override
     public String toString()
-    {
-        return path.getFileName().toString();
-    }
+            {
+                return path.getFileName().toString();
+            }
 
 
     private Collection<String> detectImports(String text)
-    {
-        Collection<String> imports = new ArrayList<>();
-
-        // strip blocks to avoid matching language specific import
-        Pattern p = Pattern.compile("import\\s+(.*?);");
-        Matcher matcher = p.matcher(text.replaceAll("(?s)\\{.*?\\}", ""));
-
-        if (matcher.find())
-        {
-            for (String type : matcher.group(1).split(","))
             {
-                imports.add(type.trim());
-            }
-        }
+                Collection<String> imports = new ArrayList<>();
 
-        return Collections.unmodifiableCollection(imports);
-    }
+                // strip blocks to avoid matching language specific import
+                Pattern p = Pattern.compile("import\\s+(.*?);");
+                Matcher matcher = p.matcher(text.replaceAll("(?s)\\{.*?\\}", ""));
+
+                if (matcher.find())
+                    {
+                        for (String type : matcher.group(1).split(","))
+                            {
+                                imports.add(type.trim());
+                            }
+                    }
+
+                return Collections.unmodifiableCollection(imports);
+            }
 
 
     private Set<String> detectNames(Version version, String text)
-    {
-        Set<String> names = new LinkedHashSet<>(5);
-
-        if (version == Version.V2)
-        {
-            Pattern[] patterns =
-                {
-                    Pattern.compile("^\\s*class\\s+(\\S*?)\\s+extends\\s+\\S*?Parser",
-                        Pattern.DOTALL | Pattern.MULTILINE),
-                    Pattern.compile("^\\s*class\\s+(\\S*?)\\s+extends\\s+\\S*?Lexer",
-                        Pattern.DOTALL | Pattern.MULTILINE),
-                    Pattern.compile("^\\s*class\\s+(\\S*?)\\s+extends\\s+\\S*?TreeParser",
-                        Pattern.DOTALL | Pattern.MULTILINE)
-                };
-
-            for (Pattern pattern : patterns)
             {
-                String name = findName(pattern, text);
+                Set<String> names = new LinkedHashSet<>(5);
 
-                if (name != null)
-                {
-                    names.add(name);
-                }
+                if (version == Version.V2)
+                    {
+                        Pattern[] patterns =
+                                {
+                                        Pattern.compile("^\\s*class\\s+(\\S*?)\\s+extends\\s+\\S*?Parser",
+                                                Pattern.DOTALL | Pattern.MULTILINE),
+                                        Pattern.compile("^\\s*class\\s+(\\S*?)\\s+extends\\s+\\S*?Lexer",
+                                                Pattern.DOTALL | Pattern.MULTILINE),
+                                        Pattern.compile("^\\s*class\\s+(\\S*?)\\s+extends\\s+\\S*?TreeParser",
+                                                Pattern.DOTALL | Pattern.MULTILINE)
+                                };
+
+                        for (Pattern pattern : patterns)
+                            {
+                                String name = findName(pattern, text);
+
+                                if (name != null)
+                                    {
+                                        names.add(name);
+                                    }
+                            }
+                    }
+                else
+                    {
+                        Pattern pattern = Pattern.compile(
+                                "^\\s*(?:(?:parser|lexer|tree|combined)\\s+)?grammar\\s+(\\S*?)\\s*;",
+                                Pattern.DOTALL | Pattern.MULTILINE);
+                        Matcher matcher = pattern.matcher(text);
+
+                        while (matcher.find())
+                            {
+                                names.add(matcher.group(1));
+                            }
+                    }
+
+                names.add(Strings.stripFileExtension(path.getFileName().toString()));
+
+                return Collections.unmodifiableSet(names);
             }
-        }
-        else
-        {
-            Pattern pattern = Pattern.compile(
-                "^\\s*(?:(?:parser|lexer|tree|combined)\\s+)?grammar\\s+(\\S*?)\\s*;",
-                Pattern.DOTALL | Pattern.MULTILINE);
-            Matcher matcher = pattern.matcher(text);
-
-            while (matcher.find())
-            {
-                names.add(matcher.group(1));
-            }
-        }
-
-        names.add(Strings.stripFileExtension(path.getFileName().toString()));
-
-        return Collections.unmodifiableSet(names);
-    }
 
 
     private String findName(Pattern pattern, String text)
-    {
-        Matcher matcher = pattern.matcher(text);
+            {
+                Matcher matcher = pattern.matcher(text);
 
-        return matcher.find() ? matcher.group(1) : null;
-    }
+                return matcher.find() ? matcher.group(1) : null;
+            }
 
 
     private Namespace namespace(Namespace namespace, String text)
-    {
-        Namespace result = namespace;
+            {
+                Namespace result = namespace;
 
-        // always detect the grammar namespace to be able to report conflicts
-        Namespace ns = language.detectNamespace(text);
+                // always detect the grammar namespace to be able to report conflicts
+                Namespace ns = language.detectNamespace(text);
 
-        if (result == null)
-        {
-            result = ns;
-        }
-        else if (ns != null && !ns.equals(namespace))
-        {
-            throw new IllegalStateException(
-                String.format(
-                    "Specified package attribute '%s' %s namespace '%s' in grammar %s",
-                    namespace,
-                    "conflicting with",
-                    ns,
-                    path.getFileName()));
-        }
+                if (result == null)
+                    {
+                        result = ns;
+                    }
+                else if (ns != null && !ns.equals(namespace))
+                    {
+                        throw new IllegalStateException(
+                                String.format(
+                                        "Specified package attribute '%s' %s namespace '%s' in grammar %s",
+                                        namespace,
+                                        "conflicting with",
+                                        ns,
+                                        path.getFileName()));
+                    }
 
-        if (result == null)
-        {
-            // if the grammar does not contain a namespace, we resort to the
-            // directory layout convention
-            result = Namespace.of(layout.getRelativePath(path), language);
-        }
+                if (result == null)
+                    {
+                        // if the grammar does not contain a namespace, we resort to the
+                        // directory layout convention
+                        result = Namespace.of(layout.getRelativePath(path), language);
+                    }
 
-        return result;
-    }
+                return result;
+            }
 }
