@@ -17,7 +17,7 @@ java_library(
 java_library(
     name = "antlr2_tests",
     testonly = True,
-    srcs = glob(["Antlr2Test.java"]),
+    srcs = ["Antlr2Test.java"],
     data = [
         "//:srcs",
         "//antlr:srcs",
@@ -47,7 +47,7 @@ java_tests(
 java_library(
     name = "antlr3_tests",
     testonly = True,
-    srcs = glob(["Antlr3Test.java"]),
+    srcs = ["Antlr3Test.java"],
     data = [
         "//:srcs",
         "//antlr:srcs",
@@ -78,7 +78,7 @@ java_tests(
 java_library(
     name = "antlr4_tests",
     testonly = True,
-    srcs = glob(["Antlr4Test.java"]),
+    srcs = ["Antlr4Test.java"],
     data = [
         "//:srcs",
         "//antlr:srcs",
@@ -111,7 +111,7 @@ java_tests(
 java_library(
     name = "repository_tests",
     testonly = True,
-    srcs = glob(["RepositoriesTest.java"]),
+    srcs = ["RepositoriesTest.java"],
     data = [
         "//:srcs",
         "//antlr:srcs",
