@@ -1,2 +1,6 @@
 grammar G2;
-r : C;
+
+r
+   : C
+   ;
+

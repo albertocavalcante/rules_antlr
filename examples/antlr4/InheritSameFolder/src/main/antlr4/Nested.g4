@@ -1,3 +1,7 @@
 grammar Nested;
-import G1, G2;
-s : X ;
+
+import G1 , G2;
+s
+   : X
+   ;
+

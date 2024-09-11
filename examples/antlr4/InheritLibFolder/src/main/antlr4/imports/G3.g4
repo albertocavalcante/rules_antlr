@@ -1,2 +1,6 @@
 grammar G3;
-r : B;
+
+r
+   : B
+   ;
+
