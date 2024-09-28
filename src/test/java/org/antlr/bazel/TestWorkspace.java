@@ -1,0 +1,105 @@
+package org.antlr.bazel;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.stream.Stream;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+
+/**
+ * Our workspace for testing.
+ *
+ * @author  Marco Hunsicker
+ */
+class TestWorkspace
+{
+    /** The workspace root. */
+    public final Path root;
+
+    /**
+     * Creates a new TestWorkspace object.
+     *
+     * @throws  IOException  if an I/O error occurred.
+     */
+    public TestWorkspace() throws IOException
+            {
+                this(false);
+            }
+
+    /**
+     * Creates a new TestWorkspace object.
+     *
+     * @param  empty  {@code true} to indicate that no default WORKSPACE file should be
+     *                created.
+     *
+     * @throws  IOException  if an I/O error occurred.
+     */
+    public TestWorkspace(boolean empty) throws IOException
+            {
+                Path examples = Projects.path("examples");
+
+                assertTrue(Files.exists(examples));
+
+                root = examples;
+
+                Path workspace = examples.resolve("WORKSPACE.bazel");
+
+                if (!empty && Files.notExists(workspace))
+                    {
+                        // we can't use the workspace file when running under Bazel as the linked
+                        // folder structure is slightly different and the path to the local
+                        // repository would be wrong
+                        String contents = readResourceFile("test_workspace.bazel");
+
+                        Files.write(workspace, contents.getBytes(StandardCharsets.UTF_8));
+                    }
+            }
+
+    public Path file(String path, String contents) throws IOException
+            {
+                Path file = root.resolve(path);
+                Files.write(file, contents.getBytes(StandardCharsets.UTF_8));
+                return file;
+            }
+
+    /**
+     * Returns the absolute path of the given info key.
+     *
+     * @param   key  the info key.
+     *
+     * @return  the path.
+     *
+     * @throws  Exception  if an error occurred.
+     */
+    public Path path(String key) throws Exception
+            {
+                Process p = new ProcessBuilder().command("bazel", "info", key)
+                        .redirectErrorStream(true)
+                        .directory(root.toFile())
+                        .start();
+
+                try (Stream<String> lines = new BufferedReader(
+                        new InputStreamReader(p.getInputStream())).lines())
+                        {
+                            String line = lines.reduce((first, second) -> second).orElse(null);
+
+                            Path path = Paths.get(line);
+
+                            assertTrue(Files.exists(path));
+
+                            return path;
+                        }
+                finally
+                        {
+                            p.waitFor();
+                            assertEquals(0, p.exitValue());
+                        }
+            }
+}
