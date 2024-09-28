@@ -1,3 +1,5 @@
+"""Language constants for the ANTLR rules."""
+
 C = "C"
 CPP = "Cpp"
 CSHARP = "CSharp"
