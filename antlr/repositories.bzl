@@ -516,10 +516,7 @@ def _dependencies(dependencies):
 def _download(name, path, sha256):
     http_jar(
         name = name,
-        urls = [
-            path if path.startswith("https") else "https://jcenter.bintray.com/" + path,
-            path if path.startswith("https") else "https://repo1.maven.org/maven2/" + path,
-        ],
+        url = path if path.startswith("https") else "https://repo1.maven.org/maven2/" + path,
         sha256 = sha256,
     )
 
