@@ -522,7 +522,6 @@ def _download(name, path, sha256):
     )
 
 def _validateVersions(versions):
-    bundled = v4 + v3 + v2
     store = {}
     for version in versions:
         v = str(version)[0]
