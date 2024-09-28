@@ -6,7 +6,7 @@ common:ci --announce_rc
 build:ci --jobs 2
 test:ci --jobs 2
 
-test:ci --test_output=errors
+test:ci --test_output=streamed
 
 build:ci --verbose_failures
 test:ci --verbose_failures
