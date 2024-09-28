@@ -155,14 +155,14 @@ def rules_antlr_dependencies(*versions_and_languages):
     if versions_and_languages:
         versions = []
         languages = []
-        supportedVersions = v4 + v3 + v2
+        SUPPORTED_VERSIONS = v4 + v3 + v2
 
         for version_or_language in versions_and_languages:
-            if not version_or_language in supportedVersions:
+            if not version_or_language in SUPPORTED_VERSIONS:
                 if type(version_or_language) == "int" or str(version_or_language).isdigit():
                     fail('Integer version \'{}\' no longer valid. Use semantic version "{}" instead.'.format(version_or_language, ".".join(str(version_or_language).elems())), attr = "versions_and_languages")
                 elif str(version_or_language).replace(".", "").isdigit():
-                    fail('Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(version_or_language, supportedVersions), attr = "versions_and_languages")
+                    fail('Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(version_or_language, SUPPORTED_VERSIONS), attr = "versions_and_languages")
                 elif not version_or_language in supportedLanguages():
                     fail('Invalid language provided: "{0}". Currently supported are: {1}'.format(version_or_language, supportedLanguages()), attr = "versions_and_languages")
                 languages.append(version_or_language)
