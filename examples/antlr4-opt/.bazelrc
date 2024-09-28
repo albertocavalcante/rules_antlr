@@ -1,1 +1,8 @@
 common --noenable_bzlmod
+
+# CI
+common:ci --announce_rc
+
+build:ci --jobs 2
+
+build:ci --verbose_failures
