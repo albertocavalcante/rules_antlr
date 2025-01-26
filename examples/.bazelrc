@@ -1,4 +1,5 @@
-build --incompatible_use_platforms_repo_for_constraints
+common --noenable_workspace
+common --noincompatible_disallow_empty_glob
 
 # CI
 common:ci --announce_rc

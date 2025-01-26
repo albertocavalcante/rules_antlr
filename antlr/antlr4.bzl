@@ -83,9 +83,9 @@ Runs [ANTLR 4](https://www.antlr.org//) on a set of grammars.
         "atn": attr.bool(default = False, doc = "Generate rule augmented transition network diagrams."),
         "depend": attr.bool(default = False, doc = "Generate a list of file dependencies instead of parser and/or lexer."),
         "deps": attr.label_list(default = [
-            Label("@antlr4_tool//jar"),
-            Label("@antlr4_runtime//jar"),
-            Label("@antlr3_runtime//jar"),
+            Label("@@antlr4_tool//jar"),
+            Label("@@antlr4_runtime//jar"),
+            Label("@@antlr3_runtime//jar"),
             Label("@stringtemplate4//jar"),
             Label("@javax_json//jar"),
         ], doc = """

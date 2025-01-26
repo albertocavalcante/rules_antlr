@@ -121,8 +121,8 @@ antlr = rule(
         "debug": attr.bool(default = False, doc = "Generate a parser that emits debugging events."),
         "depend": attr.bool(default = False, doc = "Generate file dependencies; don't actually run antlr."),
         "deps": attr.label_list(default = [
-            Label("@antlr3_runtime//jar"),
-            Label("@antlr3_tool//jar"),
+            Label("@@antlr3_runtime//jar"),
+            Label("@@antlr3_tool//jar"),
             Label("@stringtemplate4//jar"),
         ], doc = """
 The dependencies to use. Defaults to the most recent ANTLR 3 release,
