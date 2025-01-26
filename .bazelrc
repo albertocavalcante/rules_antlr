@@ -1,4 +1,5 @@
 build --javacopt="--release 8"
+common --noenable_workspace
 
 # CI
 common:ci --announce_rc

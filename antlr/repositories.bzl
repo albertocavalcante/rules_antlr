@@ -178,17 +178,28 @@ def rules_antlr_dependencies(*versionsAndLanguages):
         if not languages:
             languages = [JAVA]
 
+        # Collect up deps, then download them once. This avoids an 
+        # error where bazel reports that the dependency has already
+        # been downloaded.
+        all_deps = {}
         for version in sorted(versions, key = _toString):
             if version == 4 or version == "4.8":
-                _antlr48_dependencies(languages)
+                deps = _antlr48_dependencies(languages)
+                all_deps.update(deps)
             elif version == "4.7.2":
-                _antlr472_dependencies(languages)
+                deps = _antlr472_dependencies(languages)
+                all_deps.update(deps)
             elif version == "4.7.1":
-                _antlr471_dependencies(languages)
+                deps = _antlr471_dependencies(languages)
+                all_deps.update(deps)
             elif version == 3 or version == "3.5.2":
-                _antlr352_dependencies(languages)
+                deps = _antlr352_dependencies(languages)
+                all_deps.update(deps)
             elif version == 2 or version == "2.7.7":
-                _antlr277_dependencies(languages)
+                deps = _antlr277_dependencies(languages)
+                all_deps.update(deps)
+        print(all_deps)
+        _dependencies(all_deps)
     else:
         fail("Missing ANTLR version", attr = "versionsAndLanguages")
 
@@ -218,88 +229,85 @@ def rules_antlr_optimized_dependencies(version):
         fail('Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(version, v4_opt), attr = "version")
 
 def _antlr48_dependencies(languages):
-    _antlr4_dependencies(
+    _antlr4_runtime(
         "4.8",
-        languages,
-        {
+        languages)
+
+    return {
             "antlr4_runtime": "4.8",
             "antlr4_tool": "4.8",
             "antlr3_runtime": "3.5.2",
             "stringtemplate4": "4.3",
             "javax_json": "1.0.4",
-        },
-    )
+        }
 
 def _antlr472_dependencies(languages):
-    _antlr4_dependencies(
+    _antlr4_runtime(
         "4.7.2",
-        languages,
-        {
+        languages)
+    return {
             "antlr4_runtime": "4.7.2",
             "antlr4_tool": "4.7.2",
             "antlr3_runtime": "3.5.2",
             "stringtemplate4": "4.0.8",
             "javax_json": "1.0.4",
-        },
-    )
+        }
 
 def _antlr471_dependencies(languages):
-    _antlr4_dependencies(
+    _antlr4_runtime(
         "4.7.1",
-        languages,
-        {
+        languages)
+    return {
             "antlr4_runtime": "4.7.1",
             "antlr4_tool": "4.7.1",
             "antlr3_runtime": "3.5.2",
             "stringtemplate4": "4.0.8",
             "javax_json": "1.0.4",
-        },
-    )
+        }
 
 def _antlr474_optimized_dependencies():
-    _dependencies({
+    return {
         "antlr4_runtime": "4.7.4-opt",
         "antlr4_tool": "4.7.4-opt",
         "antlr3_runtime": "3.5.2",
         "stringtemplate4": "4.0.8",
         "javax_json": "1.0.4",
-    })
+    }
 
 def _antlr473_optimized_dependencies():
-    _dependencies({
+    return {
         "antlr4_runtime": "4.7.3-opt",
         "antlr4_tool": "4.7.3-opt",
         "antlr3_runtime": "3.5.2",
         "stringtemplate4": "4.0.8",
         "javax_json": "1.0.4",
-    })
+    }
 
 def _antlr472_optimized_dependencies():
-    _dependencies({
+    return {
         "antlr4_runtime": "4.7.2-opt",
         "antlr4_tool": "4.7.2-opt",
         "antlr3_runtime": "3.5.2",
         "stringtemplate4": "4.0.8",
         "javax_json": "1.0.4",
-    })
+    }
 
 def _antlr471_optimized_dependencies():
-    _dependencies({
+    return {
         "antlr4_runtime": "4.7.1-opt",
         "antlr4_tool": "4.7.1-opt",
         "antlr3_runtime": "3.5.2",
         "stringtemplate4": "4.0.8",
         "javax_json": "1.0.4",
-    })
+    }
 
-def _antlr4_dependencies(version, languages, dependencies):
-    _dependencies(dependencies)
+def _antlr4_runtime(version, languages):
     archive = PACKAGES["antlr"][version]
     build_script, workspace = _antlr4_build_script(languages)
 
     if build_script:
         http_archive(
-            name = "antlr4_runtimes",
+            name = "antlr4_runtime",
             sha256 = archive["sha256"],
             strip_prefix = archive["prefix"],
             url = archive["url"],
@@ -392,24 +400,22 @@ def _load_rules_python_defs(script):
     return "" if script.find('load("@rules_python//python:defs.bzl"') > -1 else 'load("@rules_python//python:defs.bzl", "py_library")'
 
 def _antlr352_dependencies(languages):
-    _antlr3_dependencies(
+    _antlr3_runtime(
         "3.5.2",
-        languages,
-        {
+        languages)
+    return {
             "antlr3_runtime": "3.5.2",
             "antlr3_tool": "3.5.2",
             "stringtemplate4": "4.0.8",
-        },
-    )
+        }
 
-def _antlr3_dependencies(version, languages, dependencies):
-    _dependencies(dependencies)
+def _antlr3_runtime(version, languages):
     archive = PACKAGES["antlr"][version]
     build_script = _antlr3_build_script(languages)
 
     if build_script:
         http_archive(
-            name = "antlr3_runtimes",
+            name = "antlr3_runtime",
             sha256 = archive["sha256"],
             strip_prefix = archive["prefix"],
             url = archive["url"],
@@ -452,22 +458,20 @@ py_library(
     return script
 
 def _antlr277_dependencies(languages):
-    _antlr2_dependencies(
+    _antlr2_runtime(
         "2.7.7",
-        languages,
-        {
+        languages)
+    return {
             "antlr2": "2.7.7",
-        },
-    )
+        }
 
-def _antlr2_dependencies(version, languages, dependencies):
-    _dependencies(dependencies)
+def _antlr2_runtime(version, languages):
     archive = PACKAGES["antlr"][version]
     build_script = _antlr2_build_script(languages)
 
     if build_script:
         http_archive(
-            name = "antlr2_runtimes",
+            name = "antlr2_runtime",
             sha256 = archive["sha256"],
             strip_prefix = "antlr-2.7.7",
             url = archive["url"],
@@ -507,13 +511,15 @@ py_library(
 def _dependencies(dependencies):
     for key in dependencies:
         version = dependencies[key]
-        _download(
-            name = key,
-            path = PACKAGES[key][version]["path"],
-            sha256 = PACKAGES[key][version]["sha256"],
-        )
+        if not key.endswith("_runtime"):
+            _download(
+                name = key,
+                path = PACKAGES[key][version]["path"],
+                sha256 = PACKAGES[key][version]["sha256"],
+            )
 
 def _download(name, path, sha256):
+    print(name, path, sha256)
     http_jar(
         name = name,
         url = path if path.startswith("https") else "https://repo1.maven.org/maven2/" + path,

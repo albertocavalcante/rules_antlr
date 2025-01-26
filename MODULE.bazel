@@ -1,0 +1,50 @@
+module(
+    name = "rules_antlr",
+    version = "0.0.0",
+    compatibility_level = 1,
+)
+
+bazel_dep(name = "rules_java", version = "5.4.1")
+bazel_dep(name = "stardoc", version = "0.5.0", repo_name = "io_bazel_stardoc")
+
+http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
+http_jar(
+    name = "junit",
+    sha256 = "59721f0805e223d84b90677887d9ff567dc534d7c502ca903c0c2b17f05c116a",
+    url = "https://repo1.maven.org/maven2/junit/junit/4.12/junit-4.12.jar",
+)
+
+http_jar(
+    name = "jimfs",
+    sha256 = "c4828e28d7c0a930af9387510b3bada7daa5c04d7c25a75c7b8b081f1c257ddd",
+    url = "https://repo1.maven.org/maven2/com/google/jimfs/jimfs/1.1/jimfs-1.1.jar",
+)
+
+http_jar(
+    name = "guava",
+    sha256 = "4a5aa70cc968a4d137e599ad37553e5cfeed2265e8c193476d7119036c536fe7",
+    url = "https://repo1.maven.org/maven2/com/google/guava/guava/27.1-jre/guava-27.1-jre.jar",
+)
+
+http_jar(
+    name = "javax_json",
+    sha256 = "0e1dec40a1ede965941251eda968aeee052cc4f50378bc316cc48e8159bdbeb4",
+    url = "https://repo1.maven.org/maven2/org/glassfish/javax.json/1.0.4/javax.json-1.0.4.jar",
+)
+
+http_jar(
+    name = "stringtemplate4",
+    sha256 = "28547dba48cfceb77b6efbfe069aebe9ed3324ae60dbd52093d13a1d636ed069",
+    url = "https://repo1.maven.org/maven2/org/antlr/ST4/4.3/ST4-4.3.jar",
+)
+
+antlr_extension = use_extension("@rules_antlr//antlr:extensions.bzl", "antlr_extension", dev_dependency = True)
+antlr_extension.toolchain(
+    languages = [
+    ],
+    versions = [
+        "2.7.7",
+        "3.5.2",
+        "4.8",
+    ],
+)

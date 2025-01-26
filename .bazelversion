@@ -1,1 +1,2 @@
-5.4.1
+# TODO: Revert to older version of bazel to ensure backward compatibility
+8.0.0

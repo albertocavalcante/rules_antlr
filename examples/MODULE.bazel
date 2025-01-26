@@ -1,0 +1,43 @@
+module(
+    name = "examples",
+    version = "0.0.0",
+    compatibility_level = 1,
+)
+
+## Use rules_antlr from parent folder
+bazel_dep(name = "rules_antlr", version = "0.0.0")
+local_path_override(
+    module_name = "rules_antlr",
+    path = "..",
+)
+
+antlr_extension = use_extension("@rules_antlr//antlr:extensions.bzl", "antlr_extension")
+antlr_extension.toolchain(
+    languages = [
+        "C",
+        "Cpp",
+        "Go",
+        "ObjC",
+        "Python",
+        "Python2",
+    ],
+    versions = [
+        "2.7.7",
+        "3.5.2",
+        "4.8",
+    ],
+)
+use_repo(antlr_extension, "antlr2", "antlr2_runtime", "antlr3_runtime", "antlr3_tool", "antlr4_runtime", "antlr4_tool")
+
+## Third party dependencies
+bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "rules_go", version = "0.48.0", repo_name = "io_bazel_rules_go")
+
+go_sdk = use_extension("@io_bazel_rules_go//go:extensions.bzl", "go_sdk")
+go_sdk.download(
+    version = "1.22.3",
+)
+
+bazel_dep(name = "rules_python", version = "0.40.0")
+bazel_dep(name = "rules_cc", version = "0.0.16")
+bazel_dep(name = "rules_java", version = "8.6.1")

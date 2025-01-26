@@ -56,7 +56,7 @@ downloaded and unzipped the debugger over the top of the standard ANTLR
 distribution, the code emanating from ANTLR with this option will not
 compile.
 """),
-        "deps": attr.label_list(default = [Label("@antlr2//jar")], doc = "The dependencies to use. Defaults to the final ANTLR 2 release, but if you need to use a different version, you can specify the dependencies here."),
+        "deps": attr.label_list(default = [Label("@@antlr2//jar")], doc = "The dependencies to use. Defaults to the final ANTLR 2 release, but if you need to use a different version, you can specify the dependencies here."),
         "diagnostic": attr.bool(default = False, doc = "Generate a text file from your grammar with a lot of debugging info."),
         "docbook": attr.bool(default = False, doc = "Generate a docbook SGML file from your grammar without actions and so on. It only works for parsers, not lexers or tree parsers."),
         "html": attr.bool(default = False, doc = "Generate a HTML file from your grammar without actions and so on. It only works for parsers, not lexers or tree parsers."),
