@@ -115,7 +115,7 @@ jobs:
           fi
 
       - name: Upload Bisect Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: bisect-logs
           path: logs/
