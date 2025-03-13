@@ -1,3 +1,11 @@
+# Specify Java source language version
+build --java_language_version=11
+# Use remote JDK for hermetic builds
+build --java_runtime_version=remotejdk_11
+# Configure build tools (used during the build process)
+build --tool_java_language_version=11
+build --tool_java_runtime_version=remotejdk_11
+# Use existing Java 8 release flag (can keep this for compatibility)
 build --javacopt="--release 8"
 
 # CI
