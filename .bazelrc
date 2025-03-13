@@ -1,3 +1,4 @@
+common --noenable_bzlmod
 build --javacopt="--release 8"
 
 # CI
