@@ -1,0 +1,122 @@
+name: Bazel Bisect
+
+on:
+  workflow_dispatch:
+    inputs:
+      failing_target:
+        description: "Target that is failing"
+        required: true
+        default: "//..."
+        type: string
+      bisect_range:
+        description: "Bisect range (e.g. 6.5.0..7.0.0)"
+        required: true
+        default: "6.5.0..7.0.0"
+        type: string
+      working_directory:
+        description: "Directory to run the command from"
+        required: false
+        default: "."
+        type: string
+      command:
+        description: "Command to run (build, test, etc.)"
+        required: true
+        default: "build"
+        type: choice
+        options:
+          - build
+          - test
+          - run
+          - query
+      extra_args:
+        description: "Extra arguments to pass to bazel"
+        required: false
+        default: "--config=ci"
+        type: string
+
+jobs:
+  bisect:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "11"
+
+      - name: Mount Bazel Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/bazel
+            ~/.cache/bazel-repo
+            ~/.cache/bazelisk
+          key: ${{ runner.os }}-bazel-bisect-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-bazel-bisect-
+            ${{ runner.os }}-bazel-
+
+      - name: Run Bazel Bisect
+        id: bisect
+        run: |
+          echo "Running bisect with range: ${{ inputs.bisect_range }}"
+          echo "For target: ${{ inputs.failing_target }}"
+          echo "Using command: ${{ inputs.command }}"
+          echo "With extra args: ${{ inputs.extra_args }}"
+
+          echo "::group::Bisect Output"
+          # Create a log directory
+          mkdir -p logs
+
+          # Change to working directory if specified
+          cd ${{ inputs.working_directory }}
+
+          # Run the bisect command
+          set +e  # Don't exit on error since we expect failures during bisect
+          bazelisk --bisect=${{ inputs.bisect_range }} ${{ inputs.command }} ${{ inputs.extra_args }} ${{ inputs.failing_target }} 2>&1 | tee ../logs/bisect.log
+          BISECT_EXIT_CODE=$?
+          cd -
+          echo "::endgroup::"
+
+          # Extract and highlight the commit that introduced the failure
+          echo "::group::Bisect Result"
+          if grep -q "first bad version" logs/bisect.log; then
+            echo "✅ Found the commit that introduced the failure:"
+            grep -A 5 "first bad version" logs/bisect.log
+            # Save the bad commit for artifacts/summary
+            grep -A 5 "first bad version" logs/bisect.log > logs/bisect_result.txt
+          else
+            echo "⚠️ Bisect did not complete successfully. Check the full log."
+            echo "Bisect did not identify the problematic commit." > logs/bisect_result.txt
+            echo "Exit code: $BISECT_EXIT_CODE"
+          fi
+          echo "::endgroup::"
+
+          # Create a markdown summary
+          echo "## Bazel Bisect Result" > $GITHUB_STEP_SUMMARY
+          echo "Target: \`${{ inputs.failing_target }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "Range: \`${{ inputs.bisect_range }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "Command: \`${{ inputs.command }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if grep -q "first bad version" logs/bisect.log; then
+            echo "### ✅ Found problematic commit" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            grep -A 5 "first bad version" logs/bisect.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ⚠️ Bisect inconclusive" >> $GITHUB_STEP_SUMMARY
+            echo "The bisect process did not identify a specific commit." >> $GITHUB_STEP_SUMMARY
+            echo "Check the logs for more details." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload Bisect Results
+        uses: actions/upload-artifact@v3
+        with:
+          name: bisect-logs
+          path: logs/
+          retention-days: 14
