@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       failing_target:
-        description: "Target that is failing"
+        description: "Target that is failing (for bisect)"
         required: true
         default: "//..."
         type: string
@@ -13,39 +13,24 @@ on:
         required: true
         default: "6.5.0..7.0.0"
         type: string
-      working_directory:
-        description: "Directory to run the command from"
-        required: false
-        default: "."
-        type: string
-      command:
-        description: "Command to run (build, test, etc.)"
-        required: true
-        default: "build"
-        type: choice
-        options:
-          - build
-          - test
-          - run
-          - query
       extra_args:
-        description: "Extra arguments to pass to bazel"
+        description: "Extra arguments for the bisect command"
         required: false
         default: "--config=ci"
         type: string
 
 jobs:
   bisect:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v2
         with:
-          distribution: "zulu"
+          distribution: zulu
           java-version: "11"
 
       - name: Mount Bazel Cache
@@ -60,26 +45,37 @@ jobs:
             ${{ runner.os }}-bazel-bisect-
             ${{ runner.os }}-bazel-
 
+      - name: Verify Bazel installation
+        run: bazelisk version
+
+      # First, build examples (using normal bazelisk, not with bisect)
+      - name: Build examples as prerequisites
+        run: |
+          cd examples
+          bazelisk build --config ci //antlr2/Cpp/... //antlr2/Calc/... //antlr2/Python/... //antlr3/Cpp/... //antlr3/Java/... //antlr3/Python2/... //antlr3/Python3/... //antlr4/Cpp/... //antlr4/Go/... //antlr4/Java/... //antlr4/Python2/... //antlr4/Python3/...
+          cd ..
+
+      # Then, build antlr4-opt (using normal bazelisk, not with bisect)
+      - name: Build antlr4-opt as prerequisite
+        run: |
+          cd examples/antlr4-opt
+          bazelisk build --config ci //...
+          cd ../..
+
+      # Run the actual bisect on the failing target
       - name: Run Bazel Bisect
         id: bisect
         run: |
-          echo "Running bisect with range: ${{ inputs.bisect_range }}"
-          echo "For target: ${{ inputs.failing_target }}"
-          echo "Using command: ${{ inputs.command }}"
-          echo "With extra args: ${{ inputs.extra_args }}"
+          echo "Running bisect with range: ${{ inputs.bisect_range }} for target: ${{ inputs.failing_target }}"
 
-          echo "::group::Bisect Output"
-          # Create a log directory
+          # Create log directory
           mkdir -p logs
 
-          # Change to working directory if specified
-          cd ${{ inputs.working_directory }}
-
-          # Run the bisect command
-          set +e  # Don't exit on error since we expect failures during bisect
-          bazelisk --bisect=${{ inputs.bisect_range }} ${{ inputs.command }} ${{ inputs.extra_args }} ${{ inputs.failing_target }} 2>&1 | tee ../logs/bisect.log
+          # Run the bisect command (after prerequisites have been built)
+          echo "::group::Bisect Output"
+          set +e  # Don't exit on error since we expect failures
+          bazelisk --bisect=${{ inputs.bisect_range }} test ${{ inputs.extra_args }} ${{ inputs.failing_target }} 2>&1 | tee logs/bisect.log
           BISECT_EXIT_CODE=$?
-          cd -
           echo "::endgroup::"
 
           # Extract and highlight the commit that introduced the failure
@@ -100,7 +96,6 @@ jobs:
           echo "## Bazel Bisect Result" > $GITHUB_STEP_SUMMARY
           echo "Target: \`${{ inputs.failing_target }}\`" >> $GITHUB_STEP_SUMMARY
           echo "Range: \`${{ inputs.bisect_range }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "Command: \`${{ inputs.command }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
           if grep -q "first bad version" logs/bisect.log; then
@@ -115,8 +110,12 @@ jobs:
           fi
 
       - name: Upload Bisect Results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: bisect-logs
           path: logs/
           retention-days: 14
+          include-hidden-files: true
+
+      - name: Shutdown Bazel
+        run: bazelisk shutdown
