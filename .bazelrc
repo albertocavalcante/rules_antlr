@@ -1,3 +1,4 @@
+common --noenable_bzlmod
 build --javacopt="--release 8"
 
 # CI
@@ -10,3 +11,5 @@ test:ci --test_output=streamed
 
 build:ci --verbose_failures
 test:ci --verbose_failures
+
+test:ci --flaky_test_attempts=3 
