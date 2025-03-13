@@ -52,14 +52,9 @@ class Command {
      * Builds the specified target.
      */
     public Command build() throws Exception {
-        String repositoryCachePath = getRepositoryCachePath();
-
-        // TODO by default, Bazel 2.0 does not seem to share the repository cache for
-        // tests which causes the dependencies to be downloaded each time, we therefore
-        // try to share it manually
         Process p = new ProcessBuilder()
                 .command(
-                        "bazel", "build", "--jobs", "2", "--repository_cache=" + repositoryCachePath, target)
+                        "bazel", "build", "--jobs", "2", target)
                 .directory(directory.toFile())
                 .redirectErrorStream(true)
                 .start();
@@ -71,31 +66,5 @@ class Command {
         exitValue = p.exitValue();
 
         return this;
-    }
-
-    /**
-     * Gets the repository cache path from Bazel itself.
-     * 
-     * @return The repository cache path
-     * @throws IOException          If an I/O error occurs
-     * @throws InterruptedException If the process is interrupted
-     * @throws RuntimeException     If Bazel returns a non-zero exit code
-     */
-    private String getRepositoryCachePath() throws IOException, InterruptedException {
-        Process infoProcess = new ProcessBuilder()
-                .command("bazel", "info", "repository_cache")
-                .directory(directory.toFile())
-                .redirectErrorStream(true)
-                .start();
-
-        String path = new String(infoProcess.getInputStream().readAllBytes()).trim();
-        int exitCode = infoProcess.waitFor();
-
-        if (exitCode != 0) {
-            throw new RuntimeException(
-                    "Failed to get repository cache path from Bazel: exit code " + exitCode);
-        }
-
-        return path;
     }
 }
