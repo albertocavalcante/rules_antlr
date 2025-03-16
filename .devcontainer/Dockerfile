@@ -5,6 +5,7 @@ FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
 
 ARG BAZELISK_VERSION
 ARG STARPLS_VERSION
+ARG BUILDTOOLS_VERSION
 ARG TARGET_USER=default
 
 USER root
@@ -22,22 +23,28 @@ RUN set -ex \
     && if [ "${ARCH}" = "x86_64" ]; then \
          BAZELISK_ARCH="amd64"; \
          STARPLS_ARCH="amd64"; \
+         BUILDTOOLS_ARCH="amd64"; \
        elif [ "${ARCH}" = "aarch64" ]; then \
          BAZELISK_ARCH="arm64"; \
          STARPLS_ARCH="aarch64"; \
+         BUILDTOOLS_ARCH="arm64"; \
        else \
          echo "Unsupported architecture: ${ARCH}"; \
          exit 1; \
        fi \
-    # Download and setup Bazelisk
-    && curl -fsSL -o /usr/local/bin/bazelisk https://github.com/bazelbuild/bazelisk/releases/download/v${BAZELISK_VERSION}/bazelisk-linux-${BAZELISK_ARCH} \
-    # Download and setup Starpls
-    && curl -fsSL -o /usr/local/bin/starpls https://github.com/withered-magic/starpls/releases/download/v${STARPLS_VERSION}/starpls-linux-${STARPLS_ARCH} \
-    # Set up permissions and create symlinks
-    && chown $(id -u ${TARGET_USER}):$(id -g ${TARGET_USER}) /usr/local/bin/bazelisk \
-    && chown $(id -u ${TARGET_USER}):$(id -g ${TARGET_USER}) /usr/local/bin/starpls \
-    && chmod u+x /usr/local/bin/bazelisk \
-    && chmod u+x /usr/local/bin/starpls \
+    # Define function for installing tools
+    && install_tool() { \
+         local tool=$1 repo=$2 version=$3 arch=$4; \
+         curl -fsSL -o "/usr/local/bin/${tool}" "https://github.com/${repo}/releases/download/v${version}/${tool}-linux-${arch}"; \
+         chown $(id -u ${TARGET_USER}):$(id -g ${TARGET_USER}) "/usr/local/bin/${tool}"; \
+         chmod u+x "/usr/local/bin/${tool}"; \
+       } \
+    # Download and setup tools
+    && install_tool bazelisk bazelbuild/bazelisk ${BAZELISK_VERSION} ${BAZELISK_ARCH} \
+    && install_tool starpls withered-magic/starpls ${STARPLS_VERSION} ${STARPLS_ARCH} \
+    && install_tool buildifier bazelbuild/buildtools ${BUILDTOOLS_VERSION} ${BUILDTOOLS_ARCH} \
+    && install_tool buildozer bazelbuild/buildtools ${BUILDTOOLS_VERSION} ${BUILDTOOLS_ARCH} \
+    # Create symlinks
     && ln -s /usr/local/bin/bazelisk /usr/local/bin/bazel \
     && chown -h $(id -u ${TARGET_USER}):$(id -g ${TARGET_USER}) /usr/local/bin/bazel
 
