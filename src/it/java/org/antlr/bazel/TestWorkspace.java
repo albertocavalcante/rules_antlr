@@ -76,8 +76,9 @@ class TestWorkspace
                     + "go_register_toolchains(version = \"1.24.1\")\n"
                                 + "http_archive(\n"
                                 + "    name = \"rules_python\",\n"
-                                + "    sha256 = \"aa96a691d3a8177f3215b14b0edc9641787abaaa30363a080165d06ab65e1161\",\n"
-                                + "    url = \"https://github.com/bazelbuild/rules_python/releases/download/0.0.1/rules_python-0.0.1.tar.gz\",\n"
+                                + "    sha256 = \"2ef40fdcd797e07f0b6abda446d1d84e2d9570d234fddf8fcd2aa262da852d1c\",\n"
+                                + "    strip_prefix = \"rules_python-1.2.0\",\n"
+                                + "    url = \"https://github.com/bazelbuild/rules_python/releases/download/1.2.0/rules_python-1.2.0.tar.gz\",\n"
                                 + ")\n"
                                 + "load(\"@rules_python//python:repositories.bzl\", \"py_repositories\")\n"
                                 + "py_repositories()\n";
