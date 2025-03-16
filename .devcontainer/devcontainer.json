@@ -1,0 +1,29 @@
+{
+    "name": "Rules ANTLR",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            "BASE_IMAGE": "registry.access.redhat.com/ubi9/openjdk-17-runtime",
+            "BASE_IMAGE_TAG": "1.21-1.1741781260",
+            "BAZELISK_VERSION": "1.25.0",
+            "STARPLS_VERSION": "0.1.21",
+            "TARGET_USER": "default"
+        }
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/git:1": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "github.vscode-github-actions",
+                "bazelbuild.vscode-bazel",
+                "redhat.vscode-yaml",
+                "ms-vscode.makefile-tools",
+                "vscjava.vscode-java-pack",
+                "ms-azuretools.vscode-docker",
+                "ms-vscode.cpptools-extension-pack"
+            ]
+        }
+    }
+}
