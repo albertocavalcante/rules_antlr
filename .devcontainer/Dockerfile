@@ -1,12 +1,13 @@
-ARG BASE_IMAGE=registry.access.redhat.com/ubi9/openjdk-17-runtime
-ARG BASE_IMAGE_TAG=1.21-1.1741781260
+ARG BASE_IMAGE=registry.access.redhat.com/ubi9/ubi-minimal
+ARG BASE_IMAGE_TAG=9.5-1741850109
 
 FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
 
 ARG BAZELISK_VERSION
 ARG STARPLS_VERSION
 ARG BUILDTOOLS_VERSION
-ARG TARGET_USER=default
+ARG CONTAINER_USER=default
+ARG CONTAINER_USER_ID=999
 
 USER root
 
@@ -16,8 +17,25 @@ RUN set -ex \
     # Clean up package manager cache
     && microdnf clean all \
     && rm -rf /var/cache/yum \
+    # Ensure target user exists with specified UID/GID
+    && if ! getent passwd ${CONTAINER_USER} > /dev/null; then \
+         # Check if GID already used
+         if getent group ${CONTAINER_USER_ID} > /dev/null; then \
+           echo "GID ${CONTAINER_USER_ID} already exists, using a different GID"; \
+           groupadd ${CONTAINER_USER}; \
+         else \
+           groupadd -g ${CONTAINER_USER_ID} ${CONTAINER_USER}; \
+         fi; \
+         # Check if UID already used
+         if getent passwd ${CONTAINER_USER_ID} > /dev/null; then \
+           echo "UID ${CONTAINER_USER_ID} already exists, using a different UID"; \
+           useradd -g ${CONTAINER_USER} -m -s /bin/bash ${CONTAINER_USER}; \
+         else \
+           useradd -u ${CONTAINER_USER_ID} -g ${CONTAINER_USER} -m -s /bin/bash ${CONTAINER_USER}; \
+         fi; \
+       fi \
     # Set proper shell for the user
-    && usermod -s /bin/bash ${TARGET_USER} \
+    && usermod -s /bin/bash ${CONTAINER_USER} \
     # Detect architecture and set appropriate binary architectures
     && ARCH=$(uname -m) \
     && if [ "${ARCH}" = "x86_64" ]; then \
@@ -36,7 +54,7 @@ RUN set -ex \
     && install_tool() { \
          local tool=$1 repo=$2 version=$3 arch=$4; \
          curl -fsSL -o "/usr/local/bin/${tool}" "https://github.com/${repo}/releases/download/v${version}/${tool}-linux-${arch}"; \
-         chown $(id -u ${TARGET_USER}):$(id -g ${TARGET_USER}) "/usr/local/bin/${tool}"; \
+         chown $(id -u ${CONTAINER_USER}):$(id -g ${CONTAINER_USER}) "/usr/local/bin/${tool}"; \
          chmod u+x "/usr/local/bin/${tool}"; \
        } \
     # Download and setup tools
@@ -46,8 +64,8 @@ RUN set -ex \
     && install_tool buildozer bazelbuild/buildtools ${BUILDTOOLS_VERSION} ${BUILDTOOLS_ARCH} \
     # Create symlinks
     && ln -s /usr/local/bin/bazelisk /usr/local/bin/bazel \
-    && chown -h $(id -u ${TARGET_USER}):$(id -g ${TARGET_USER}) /usr/local/bin/bazel
+    && chown -h $(id -u ${CONTAINER_USER}):$(id -g ${CONTAINER_USER}) /usr/local/bin/bazel
 
-USER ${TARGET_USER}
+USER ${CONTAINER_USER}
 
 ENTRYPOINT ["/bin/bash"]

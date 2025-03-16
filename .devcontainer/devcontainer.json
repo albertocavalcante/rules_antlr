@@ -3,12 +3,13 @@
     "build": {
         "dockerfile": "Dockerfile",
         "args": {
-            "BASE_IMAGE": "registry.access.redhat.com/ubi9/openjdk-17-runtime",
-            "BASE_IMAGE_TAG": "1.21-1.1741781260",
+            "BASE_IMAGE": "registry.access.redhat.com/ubi9/ubi-minimal",
+            "BASE_IMAGE_TAG": "9.5-1741850109",
             "BAZELISK_VERSION": "1.25.0",
             "STARPLS_VERSION": "0.1.21",
             "BUILDTOOLS_VERSION": "8.0.3",
-            "TARGET_USER": "default"
+            "CONTAINER_USER": "default",
+            "CONTAINER_USER_ID": "999"
         }
     },
     "features": {
