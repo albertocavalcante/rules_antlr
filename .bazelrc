@@ -11,11 +11,9 @@ build --javacopt="--release 11"
 common:ci --announce_rc
 
 build:ci --jobs 2
-test:ci --jobs 2
 
 test:ci --test_output=errors
 
 build:ci --verbose_failures
-test:ci --verbose_failures
 
 test:ci --flaky_test_attempts=3 
