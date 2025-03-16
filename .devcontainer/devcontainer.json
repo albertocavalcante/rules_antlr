@@ -8,6 +8,7 @@
             "BAZELISK_VERSION": "1.25.0",
             "STARPLS_VERSION": "0.1.21",
             "BUILDTOOLS_VERSION": "8.0.3",
+            "BAZEL_LSP_VERSION": "0.6.4",
             "CONTAINER_USER": "default",
             "CONTAINER_USER_ID": "999"
         }

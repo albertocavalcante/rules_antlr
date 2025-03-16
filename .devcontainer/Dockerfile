@@ -6,6 +6,7 @@ FROM ${BASE_IMAGE}:${BASE_IMAGE_TAG}
 ARG BAZELISK_VERSION
 ARG STARPLS_VERSION
 ARG BUILDTOOLS_VERSION
+ARG BAZEL_LSP_VERSION
 ARG CONTAINER_USER=default
 ARG CONTAINER_USER_ID=999
 
@@ -42,10 +43,12 @@ RUN set -ex \
          BAZELISK_ARCH="amd64"; \
          STARPLS_ARCH="amd64"; \
          BUILDTOOLS_ARCH="amd64"; \
+         BAZEL_LSP_ARCH="amd64"; \
        elif [ "${ARCH}" = "aarch64" ]; then \
          BAZELISK_ARCH="arm64"; \
          STARPLS_ARCH="aarch64"; \
          BUILDTOOLS_ARCH="arm64"; \
+         BAZEL_LSP_ARCH="arm64"; \
        else \
          echo "Unsupported architecture: ${ARCH}"; \
          exit 1; \
@@ -62,6 +65,10 @@ RUN set -ex \
     && install_tool starpls withered-magic/starpls ${STARPLS_VERSION} ${STARPLS_ARCH} \
     && install_tool buildifier bazelbuild/buildtools ${BUILDTOOLS_VERSION} ${BUILDTOOLS_ARCH} \
     && install_tool buildozer bazelbuild/buildtools ${BUILDTOOLS_VERSION} ${BUILDTOOLS_ARCH} \
+    # Handle bazel-lsp separately
+    && curl -fsSL -o /usr/local/bin/bazel-lsp "https://github.com/cameron-martin/bazel-lsp/releases/download/v${BAZEL_LSP_VERSION}/bazel-lsp-${BAZEL_LSP_VERSION}-linux-${BAZEL_LSP_ARCH}" \
+    && chown $(id -u ${CONTAINER_USER}):$(id -g ${CONTAINER_USER}) /usr/local/bin/bazel-lsp \
+    && chmod u+x /usr/local/bin/bazel-lsp \
     # Create symlinks
     && ln -s /usr/local/bin/bazelisk /usr/local/bin/bazel \
     && chown -h $(id -u ${CONTAINER_USER}):$(id -g ${CONTAINER_USER}) /usr/local/bin/bazel
