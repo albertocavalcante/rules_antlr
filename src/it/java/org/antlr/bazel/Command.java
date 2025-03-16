@@ -7,6 +7,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Bazel command for integration testing.
@@ -50,11 +53,38 @@ class Command {
 
     /**
      * Builds the specified target.
+     * 
+     * @return this Command instance.
+     * @throws Exception if an error occurs.
      */
     public Command build() throws Exception {
+        return build(new String[0]);
+    }
+
+    /**
+     * Builds the specified target with additional flags.
+     * 
+     * @param flags Additional flags to pass to the bazel build command.
+     * @return this Command instance.
+     * @throws Exception if an error occurs.
+     */
+    public Command build(String... flags) throws Exception {
+        List<String> command = new ArrayList<>();
+        command.add("bazel");
+        command.add("build");
+        command.add("--jobs");
+        command.add("2");
+        
+        // Add any additional flags
+        if (flags != null && flags.length > 0) {
+            command.addAll(Arrays.asList(flags));
+        }
+        
+        // Add the target at the end
+        command.add(target);
+
         Process p = new ProcessBuilder()
-                .command(
-                        "bazel", "build", "--jobs", "2", target)
+                .command(command)
                 .directory(directory.toFile())
                 .redirectErrorStream(true)
                 .start();

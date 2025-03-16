@@ -185,7 +185,7 @@ public class RepositoriesTest
 
                 TestWorkspace workspace = new TestWorkspace(true);
                 workspace.file("WORKSPACE.bazel", contents);
-                Command c = new Command(workspace.root, "//antlr2/Cpp/...").build();
+                Command c = new Command(workspace.root, "//antlr2/Cpp/...").build("--java_runtime_version=remotejdk_11");
                 assertEquals(c.output(), 0, c.exitValue());
             }
 }
