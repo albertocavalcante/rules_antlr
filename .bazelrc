@@ -8,7 +8,7 @@ build --tool_java_language_version=11
 build --tool_java_runtime_version=remotejdk_11
 build --javacopt="--release 11"
 build --action_env=HOME
-build --action_env=USE_BAZEL_VERSION=7.0.1
+build --action_env=USE_BAZEL_VERSION=7.5.0
 
 # CI
 common:ci --announce_rc
