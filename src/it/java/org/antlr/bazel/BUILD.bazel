@@ -1,5 +1,5 @@
 load("@rules_java//java:defs.bzl", "java_library")
-load("//tools:gen_test_rules.bzl", "java_tests", "java_test_methods")
+load("//tools:gen_test_rules.bzl", "java_test_methods", "java_tests")
 
 java_library(
     name = "support",
@@ -133,6 +133,7 @@ java_library(
 
 java_test_methods(
     name = "repository_test",
+    size = "small",
     test_file = "RepositoriesTest",
     test_methods = [
         "missingVersion",
@@ -144,13 +145,13 @@ java_test_methods(
         "missingLanguage",
     ],
     deps = [":repository_tests"],
-    size = "small",
 )
 
 java_test(
     name = "repository_test_alwaysLoadJavaDependencies",
-    runtime_deps = [":repository_tests"],
     size = "medium",
-    test_class = "org.antlr.bazel.RepositoriesTest",
     args = ["--test_filter=org.antlr.bazel.RepositoriesTest#alwaysLoadJavaDependencies"],
+    tags = ["requires-network"],
+    test_class = "org.antlr.bazel.RepositoriesTest",
+    runtime_deps = [":repository_tests"],
 )

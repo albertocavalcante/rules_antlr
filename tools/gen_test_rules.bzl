@@ -161,7 +161,7 @@ def java_test_methods(
     java_class = _package_from_path(
         native.package_name() + "/" + test_file,
     )
-    
+
     for method in test_methods:
         java_test(
             name = name + "_" + method,
