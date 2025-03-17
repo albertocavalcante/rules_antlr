@@ -1,0 +1,111 @@
+name-template: '$RESOLVED_VERSION'
+tag-template: '$RESOLVED_VERSION'
+categories:
+  - title: '❗ Breaking Changes'
+    labels:
+      - '❗ BreakingChange'
+  - title: '🚀 New Features'
+    labels:
+      - '✏️ Feature'
+      - '📝 Proposal'
+  - title: '🧹 Updates'
+    labels:
+      - '🧹 Updates'
+      - '⚡️ Performance'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - '☢️ Bug'
+  - title: '🛠️ Maintenance'
+    labels:
+      - '🤖 Dependencies'
+  - title: '📚 Documentation'
+    labels:
+      - '📒 Documentation'
+  - title: 'Other Changes'
+    labels:
+      - '*'
+change-template: '* $TITLE @$AUTHOR (#$NUMBER)'
+change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
+version-resolver:
+  major:
+    labels:
+      - '❗ BreakingChange'
+  minor:
+    labels:
+      - '✏️ Feature'
+      - '📝 Proposal'
+  patch:
+    labels:
+      - '☢️ Bug'
+      - '🧹 Updates'
+      - '⚡️ Performance'
+      - '🤖 Dependencies'
+      - '📒 Documentation'
+  default: patch
+autolabeler:
+  - label: '📒 Documentation'
+    files:
+      - '**/*.md'
+      - 'docs/**/*'
+  - label: '🤖 Dependencies'
+    files:
+      - '**/deps.bzl'
+      - '**/repositories.bzl'
+      - 'WORKSPACE'
+      - 'WORKSPACE.bazel'
+      - 'MODULE.bazel'
+  - label: '☢️ Bug'
+    title:
+      - '/fix/i'
+      - '/bug/i'
+  - label: '✏️ Feature'
+    title:
+      - '/feat/i'
+      - '/feature/i'
+  - label: '❗ BreakingChange'
+    title:
+      - '/breaking/i'
+    body:
+      - '/BREAKING CHANGE:/i'
+template: |
+  # $RESOLVED_VERSION
+
+  ## Installation Instructions
+
+  ### WORKSPACE (Deprecated)
+  ```starlark
+  load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+  http_archive(
+      name = "rules_antlr",
+      sha256 = "", # Will be calculated and added during release publishing
+      strip_prefix = "rules_antlr-$RESOLVED_VERSION",
+      urls = ["https://github.com/$OWNER/$REPOSITORY/releases/download/$RESOLVED_VERSION/rules_antlr-$RESOLVED_VERSION.tar.gz"],
+  )
+
+  load("@rules_antlr//antlr:repositories.bzl", "rules_antlr_dependencies")
+
+  # Load ANTLR dependencies with the version(s) you need
+  rules_antlr_dependencies("4.8")
+  ```
+
+  ### Bzlmod (Recommended)
+  ```starlark
+  bazel_dep(name = "rules_antlr", version = "$RESOLVED_VERSION")
+
+  # Load ANTLR dependencies with the version(s) you need
+  # Configure in your MODULE.bazel extension section
+  antlr = use_extension("@rules_antlr//antlr:extensions.bzl", "antlr")
+  antlr.version("4.8")
+  ```
+
+  See [setup documentation](https://github.com/$OWNER/$REPOSITORY/blob/main/docs/setup.md) for more details.
+
+  ## What's Changed
+
+  $CHANGES
+
+  ## New Contributors
+  $CONTRIBUTORS
+
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...$RESOLVED_VERSION
