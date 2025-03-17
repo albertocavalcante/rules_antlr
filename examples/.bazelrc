@@ -1,3 +1,5 @@
+import ../tools/rc/correctness.bazelrc
+
 common --noenable_bzlmod
 
 build --java_language_version=11
