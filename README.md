@@ -1,12 +1,13 @@
 [![Java 11+](https://img.shields.io/badge/java-11+-4c7e9f.svg)](https://java.oracle.com)
 [![License](https://img.shields.io/badge/license-Apache2-blue.svg)](https://github.com/albertocavalcante/rules_antlr/blob/main/LICENSE)
 [![Actions Status](https://github.com/albertocavalcante/rules_antlr/actions/workflows/ci.yml/badge.svg)](https://github.com/albertocavalcante/actions) 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/albertocavalcante/rules_antlr)
 
 # ANTLR Rules for Bazel
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/albertocavalcante/rules_antlr)
+
 These build rules are used for processing [ANTLR](https://www.antlr.org)
-grammars with [Bazel](https://bazel.build/).
+grammars with [Bazel](https://bazel.build).
 
   * [Support Matrix](#matrix)
   * [Workspace Setup](#setup)
@@ -34,7 +35,7 @@ Runtime: Runtime Library bundled
 <a name="setup"></a>
 ## Setup
 
-Add the following to your [`WORKSPACE`](https://docs.bazel.build/versions/master/build-ref.html#workspace)
+Add the following to your [`WORKSPACE.bazel`](https://bazel.build/concepts/build-ref#workspace)
 file to include the external repository and load the necessary Java dependencies for the
 [`antlr`](docs/antlr4.md#antlr) rule:
 
@@ -43,9 +44,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "rules_antlr",
-    sha256 = "26e6a83c665cf6c1093b628b3a749071322f0f70305d12ede30909695ed85591",
-    strip_prefix = "rules_antlr-0.5.0",
-    urls = ["https://github.com/marcohu/rules_antlr/archive/0.5.0.tar.gz"],
+    sha256 = "67d9938ac2f811bf6357c35f8ee43f2b229ef93d6756dabf6d2986ceaf757598",
+    strip_prefix = "rules_antlr-0.6.0",
+    urls = ["https://github.com/albertocavalcante/rules_antlr/releases/download/0.6.0/rules_antlr-0.6.0.tar.gz"],
 )
 
 load("@rules_antlr//antlr:repositories.bzl", "rules_antlr_dependencies")
@@ -56,7 +57,7 @@ More detailed instructions can be found in the [Setup](docs/setup.md#setup) docu
 
 ### Build Rules
 
-To add ANTLR code generation to your [BUILD](https://docs.bazel.build/versions/master/build-ref.html#BUILD_files) files, you first have to load the extension for the desired ANTLR release.
+To add ANTLR code generation to your [BUILD.bazel](https://bazel.build/concepts/build-ref#BUILD_files) files, you first have to load the extension for the desired ANTLR release.
 
 For ANTLR 4:
 
@@ -163,8 +164,8 @@ INFO: Build completed successfully, 12 total actions
 ```
 
 To compile the generated files, add the generating target as input for the 
-[`java_library`](https://docs.bazel.build/versions/master/be/java.html#java_library) or
-[`java_binary`](https://docs.bazel.build/versions/master/be/java.html#java_binary) rules
+[`java_library`](https://bazel.build/reference/be/java#java_library) or
+[`java_binary`](https://bazel.build/reference/be/java#java_binary) rules
 and reference the required ANTLR dependency:
 
 ```starlark
@@ -184,7 +185,7 @@ Refer to the [examples](examples) directory for further samples.
 
 ANTLR rules will store all generated source files in a `target-name.srcjar` zip archive
 below your workspace
-[`bazel-bin`](https://docs.bazel.build/versions/master/output_directories.html#documentation-of-the-current-bazel-output-directory-layout)
+[`bazel-bin`](https://bazel.build/remote/output-directories#documentation-of-the-current-bazel-output-directory-layout)
 folder. Depending on the ANTLR version, there are three ways to control namespacing and
 directory structure for generated code, all with their pros and cons.
 
