@@ -78,7 +78,7 @@ template: |
 
   http_archive(
       name = "rules_antlr",
-      sha256 = "", # Will be calculated and added during release publishing
+      sha256 = "",
       strip_prefix = "rules_antlr-$RESOLVED_VERSION",
       urls = ["https://github.com/$OWNER/$REPOSITORY/releases/download/$RESOLVED_VERSION/rules_antlr-$RESOLVED_VERSION.tar.gz"],
   )
