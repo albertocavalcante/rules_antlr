@@ -340,7 +340,7 @@ go_register_toolchains(version = "1.24.1")
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go",
-    srcs = glob(["runtime/Go/antlr/*.go"]),
+    srcs = glob(["runtime/Go/antlr/*.go"], allow_empty = True),
     importpath = "github.com/antlr/antlr4/runtime/Go/antlr",
     visibility = ["//visibility:public"],
 )
@@ -351,7 +351,7 @@ go_library(
         script += _load_rules_python_defs(script) + """
 py_library(
     name = "python2",
-    srcs = glob(["runtime/Python3/src/*.py"]),
+    srcs = glob(["runtime/Python3/src/*.py"], allow_empty = True),
     imports = ["runtime/Python3/src"],
     visibility = ["//visibility:public"],
 )
@@ -362,7 +362,7 @@ py_library(
         script += _load_rules_python_defs(script) + """
 py_library(
     name = "python",
-    srcs = glob(["runtime/Python3/src/*.py"]),
+    srcs = glob(["runtime/Python3/src/*.py"], allow_empty = True),
     imports = ["runtime/Python3/src"],
     visibility = ["//visibility:public"],
 )
