@@ -141,7 +141,7 @@ def rules_antlr_dependencies(*versionsAndLanguages):
     You have to provide at least the version number of the ANTLR release you want to use. To
     load the dependencies for languages besides Java, you have to indicate the languages as well.
 
-    ```python
+    ```starlark
     load("@rules_antlr//antlr:lang.bzl", "CPP", "PYTHON")
     load("@rules_antlr//antlr:repositories.bzl", "rules_antlr_dependencies")
 
@@ -195,7 +195,7 @@ def rules_antlr_dependencies(*versionsAndLanguages):
 def rules_antlr_optimized_dependencies(version):
     """Loads the dependencies for the "optimized" fork of ANTLR 4 maintained by Sam Harwell.
 
-    ```python
+    ```starlark
     load("@rules_antlr//antlr:repositories.bzl", "rules_antlr_optimized_dependencies")
 
     rules_antlr_optimized_dependencies("4.7.2")

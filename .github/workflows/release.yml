@@ -1,0 +1,122 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g., 0.0.0)"
+        required: true
+        default: "0.6.0"
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set version
+        id: version
+        run: echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+
+      - name: Create Release Archive
+        run: |
+          git archive --format=tar.gz --prefix=rules_antlr-${{ env.VERSION }}/ -o rules_antlr-${{ env.VERSION }}.tar.gz HEAD
+          echo "ARCHIVE_PATH=rules_antlr-${{ env.VERSION }}.tar.gz" >> $GITHUB_ENV
+
+      - name: Calculate SHA256
+        id: sha
+        run: |
+          SHA=$(sha256sum ${{ env.ARCHIVE_PATH }} | awk '{print $1}')
+          echo "SHA256=$SHA" >> $GITHUB_ENV
+          echo "SHA256 hash: $SHA"
+
+      - name: Generate Release Notes
+        id: release_notes
+        run: |
+          # Get the previous tag to compare changes
+          PREV_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [[ -z "$PREV_TAG" ]]; then
+            RANGE=""
+          else
+            RANGE="${PREV_TAG}..HEAD"
+          fi
+          
+          # Generate changelog
+          echo "### What's Changed" > RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          
+          # Add commit messages as bullet points
+          git log $RANGE --pretty=format:"* %s by @%an in %h" --reverse | grep -v "Merge pull request" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          
+          # Add new contributors section
+          echo "### New Contributors" >> RELEASE_NOTES.md
+          echo "" >> RELEASE_NOTES.md
+          # Extract contributors from this release who weren't in previous releases
+          if [[ -n "$PREV_TAG" ]]; then
+            PREV_CONTRIBUTORS=$(git log --before=$(git show -s --format=%ci $PREV_TAG) --pretty=format:"%an" | sort -u)
+            CURR_CONTRIBUTORS=$(git log --pretty=format:"%an" | sort -u)
+            NEW_CONTRIBUTORS=$(comm -13 <(echo "$PREV_CONTRIBUTORS") <(echo "$CURR_CONTRIBUTORS"))
+            if [[ -n "$NEW_CONTRIBUTORS" ]]; then
+              echo "$NEW_CONTRIBUTORS" | while read contributor; do
+                FIRST_COMMIT=$(git log --author="$contributor" --pretty=format:"%h" --reverse | head -1)
+                echo "* @${contributor} made their first contribution in ${FIRST_COMMIT}" >> RELEASE_NOTES.md
+              done
+            else
+              echo "* No new contributors in this release" >> RELEASE_NOTES.md
+            fi
+          else
+            echo "* First release - thanks to all contributors!" >> RELEASE_NOTES.md
+          fi
+          
+          echo "" >> RELEASE_NOTES.md
+          echo "Full Changelog: ${PREV_TAG}...v${{ env.VERSION }}" >> RELEASE_NOTES.md
+          
+          cat RELEASE_NOTES.md
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: Release v${{ env.VERSION }}
+          draft: true
+          prerelease: false
+          files: ${{ env.ARCHIVE_PATH }}
+          body_path: RELEASE_NOTES.md
+          generate_release_notes: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Display Installation Instructions
+        run: |
+          echo "## Installation Instructions"
+          echo ""
+          echo "Add the following to your WORKSPACE file:"
+          echo ""
+          echo '```starlark'
+          echo 'load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")'
+          echo ''
+          echo 'http_archive('
+          echo '    name = "rules_antlr",'
+          echo '    sha256 = "${{ env.SHA256 }}",'
+          echo '    strip_prefix = "rules_antlr-${{ env.VERSION }}",'
+          echo '    urls = ["https://github.com/albertocavalcante/rules_antlr/releases/download/v${{ env.VERSION }}/rules_antlr-${{ env.VERSION }}.tar.gz"],'
+          echo ')'
+          echo ''
+          echo 'load("@rules_antlr//antlr:repositories.bzl", "rules_antlr_dependencies")'
+          echo ''
+          echo '# Load ANTLR dependencies with the version(s) you need'
+          echo '# You can specify multiple versions (from different release streams) and languages'
+          echo 'rules_antlr_dependencies("4.8")'
+          echo ''
+          echo '# For more advanced usage with multiple versions or languages:'
+          echo '# load("@rules_antlr//antlr:lang.bzl", "CPP", "GO", "PYTHON")'
+          echo '# rules_antlr_dependencies("2.7.7", "3.5.2", "4.8", CPP, GO, PYTHON)'
+          echo '```'
+          echo ""
+          echo "See [setup documentation](https://github.com/albertocavalcante/rules_antlr/blob/main/docs/setup.md) for more details."
