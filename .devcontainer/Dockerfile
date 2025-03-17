@@ -14,7 +14,7 @@ USER root
 
 RUN set -ex \
     # Install required packages
-    && microdnf install -y gzip tar gcc gcc-c++ make \
+    && microdnf install -y gzip tar findutils vim gcc gcc-c++ make \
     # Clean up package manager cache
     && microdnf clean all \
     && rm -rf /var/cache/yum \

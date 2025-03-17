@@ -1,6 +1,7 @@
-[![Java 8+](https://img.shields.io/badge/java-8+-4c7e9f.svg)](https://java.oracle.com)
-[![License](https://img.shields.io/badge/license-Apache2-blue.svg)](https://github.com/marcohu/rules_antlr/blob/master/LICENSE)
-
+[![Java 11+](https://img.shields.io/badge/java-11+-4c7e9f.svg)](https://java.oracle.com)
+[![License](https://img.shields.io/badge/license-Apache2-blue.svg)](https://github.com/albertocavalcante/rules_antlr/blob/main/LICENSE)
+[![Actions Status](https://github.com/albertocavalcante/rules_antlr/actions/workflows/ci.yml/badge.svg)](https://github.com/albertocavalcante/actions) 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/albertocavalcante/rules_antlr)
 
 # ANTLR Rules for Bazel
 
@@ -37,7 +38,7 @@ Add the following to your [`WORKSPACE`](https://docs.bazel.build/versions/master
 file to include the external repository and load the necessary Java dependencies for the
 [`antlr`](docs/antlr4.md#antlr) rule:
 
-```python
+```starlark
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
@@ -59,25 +60,25 @@ To add ANTLR code generation to your [BUILD](https://docs.bazel.build/versions/m
 
 For ANTLR 4:
 
-```python
+```starlark
 load("@rules_antlr//antlr:antlr4.bzl", "antlr")
 ```
 
 For ANTLR 3:
 
-```python
+```starlark
 load("@rules_antlr//antlr:antlr3.bzl", "antlr")
 ```
 
 For ANTLR 2:
 
-```python
+```starlark
 load("@rules_antlr//antlr:antlr2.bzl", "antlr")
 ```
 
 You can then invoke the rule:
 
-```python
+```starlark
 antlr(
     name = "parser",
     srcs = ["Hello.g4"],
@@ -87,7 +88,7 @@ antlr(
 
 It's also possible to use different ANTLR versions in the same file via aliasing:
 
-```python
+```starlark
 load("@rules_antlr//antlr:antlr4.bzl", antlr4 = "antlr")
 load("@rules_antlr//antlr:antlr3.bzl", antlr3 = "antlr")
 
@@ -116,7 +117,7 @@ Refer to the rule reference documentation for the available rules and attributes
 
 Suppose you have the following directory structure for a simple ANTLR project:
 
-```
+```sh
 HelloWorld/
 └── src
     └── main
@@ -128,7 +129,7 @@ WORKSPACE
 
 `HelloWorld/src/main/antlr4/Hello.g4`
 
-```
+```antlr
 grammar Hello;
 r  : 'hello' ID;
 ID : [a-z]+;
@@ -139,7 +140,7 @@ To add code generation to a BUILD file, you load the desired build rule and crea
 
 `HelloWorld/src/main/antlr4/BUILD`
 
-```python
+```starlark
 load("@rules_antlr//antlr:antlr4.bzl", "antlr")
 
 antlr(
@@ -152,7 +153,7 @@ antlr(
 
 Building the project generates the lexer/parser files:
 
-```
+```sh
 $ bazel build //HelloWorld/...
 INFO: Analyzed 2 targets (23 packages loaded, 400 targets configured).
 INFO: Found 2 targets...
@@ -166,7 +167,7 @@ To compile the generated files, add the generating target as input for the
 [`java_binary`](https://docs.bazel.build/versions/master/be/java.html#java_binary) rules
 and reference the required ANTLR dependency:
 
-```python
+```starlark
 load("@rules_java//java:defs.bzl", "java_library")
 
 java_library(

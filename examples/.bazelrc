@@ -1,16 +1,13 @@
-# Specify Java source language version
+import ../tools/rc/correctness.bazelrc
+
+common --noenable_bzlmod
+
 build --java_language_version=11
-# Use remote JDK for hermetic builds
 build --java_runtime_version=remotejdk_11
-# Configure build tools (used during the build process)
 build --tool_java_language_version=11
 build --tool_java_runtime_version=remotejdk_11
 
-build --incompatible_use_platforms_repo_for_constraints
-
 # CI
 common:ci --announce_rc
-
 build:ci --jobs 2
-
 build:ci --verbose_failures

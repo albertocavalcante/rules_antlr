@@ -27,7 +27,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: "~/.cache/bazel"
-          key: bazel
+          key: ${{ runner.os }}-bazel-${{ hashFiles('.bazelversion') }}
+          restore-keys: |
+            ${{ runner.os }}-bazel-
 
       - name: Verify Bazel installation
         run: bazelisk version

@@ -74,6 +74,8 @@ class Command {
         command.add("build");
         command.add("--jobs");
         command.add("2");
+        command.add("--verbose_failures");
+        command.add("--noenable_bzlmod");
         
         // Add any additional flags
         if (flags != null && flags.length > 0) {
