@@ -76,12 +76,12 @@ class Command {
         command.add("2");
         command.add("--verbose_failures");
         command.add("--noenable_bzlmod");
-        
+
         // Add any additional flags
         if (flags != null && flags.length > 0) {
             command.addAll(Arrays.asList(flags));
         }
-        
+
         // Add the target at the end
         command.add(target);
 

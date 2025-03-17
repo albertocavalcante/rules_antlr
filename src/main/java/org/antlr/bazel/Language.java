@@ -14,99 +14,99 @@ enum Language
 {
     /** The C target language. */
     C()
+    {
+        @Override
+        public String toPath(String namespace)
         {
-            @Override
-            public String toPath(String namespace)
-                    {
-                        return namespace;
-                    }
+            return namespace;
+        }
 
 
-            @Override
-            public String toId(Path path)
-                    {
-                        return path.toString();
-                    }
+        @Override
+        public String toId(Path path)
+        {
+            return path.toString();
+        }
 
 
-            @Override
-            public Namespace detectNamespace(String grammar)
-                    {
-                        return null;
-                    }
+        @Override
+        public Namespace detectNamespace(String grammar)
+        {
+            return null;
+        }
 
 
-            @Override
-            public DirectoryLayout getLayout()
-                    {
-                        return LAYOUT;
-                    }
-        },
+        @Override
+        public DirectoryLayout getLayout()
+        {
+            return LAYOUT;
+        }
+    },
 
     /** The C++ target language. */
     CPP()
-            {
-                @Override
-                public String toPath(String namespace)
-                        {
-                            return namespace.replaceAll("::", "/");
-                        }
+    {
+        @Override
+        public String toPath(String namespace)
+        {
+            return namespace.replaceAll("::", "/");
+        }
 
 
-                @Override
-                public String toId(Path path)
-                        {
-                            return path.toString().replaceAll("[/\\\\]", "::");
-                        }
+        @Override
+        public String toId(Path path)
+        {
+            return path.toString().replaceAll("[/\\\\]", "::");
+        }
 
 
-                @Override
-                public Namespace detectNamespace(String grammar)
-                        {
-                            Matcher matcher = NAMESPACE.matcher(grammar);
+        @Override
+        public Namespace detectNamespace(String grammar)
+        {
+            Matcher matcher = NAMESPACE.matcher(grammar);
 
-                            return matcher.find() ? namespace(matcher.group(1)) : null;
-                        }
+            return matcher.find() ? namespace(matcher.group(1)) : null;
+        }
 
 
-                @Override
-                public DirectoryLayout getLayout()
-                        {
-                            return LAYOUT;
-                        }
-            },
+        @Override
+        public DirectoryLayout getLayout()
+        {
+            return LAYOUT;
+        }
+    },
 
     /** The C# target language. */
     CSHARP
             {
                 @Override
                 public String toPath(String namespace)
-                        {
-                            return namespace.replace('.', '/');
-                        }
+                {
+                    return namespace.replace('.', '/');
+                }
 
 
                 @Override
                 public String toId(Path path)
-                        {
-                            return path.toString().replaceAll("[/\\\\]", ".");
-                        }
+                {
+                    return path.toString().replaceAll("[/\\\\]", ".");
+                }
 
 
                 @Override
                 public Namespace detectNamespace(String grammar)
-                        {
-                            Matcher matcher = NAMESPACE.matcher(grammar);
+                {
+                    Matcher matcher = NAMESPACE.matcher(grammar);
 
-                            return matcher.find() ? namespace(matcher.group(1)) : null;
-                        }
+                    return matcher.find() ? namespace(matcher.group(1)) : null;
+                }
 
 
                 @Override
                 public DirectoryLayout getLayout()
-                        {
-                            return LAYOUT;
-                        }
+                {
+                    return LAYOUT;
+                }
             },
 
     /** The Go target language. */
@@ -116,42 +116,42 @@ enum Language
 
                 @Override
                 public String toPath(String namespace)
-                        {
-                            return namespace;
-                        }
+                {
+                    return namespace;
+                }
 
 
                 @Override
                 public String toId(Path path)
-                        {
-                            return path.toString().replaceAll("[\\\\]", "/");
-                        }
+                {
+                    return path.toString().replaceAll("[\\\\]", "/");
+                }
 
 
                 @Override
                 public Namespace detectNamespace(String grammar)
+                {
+                    String header = header(grammar);
+
+                    if (header != null)
+                    {
+                        Matcher matcher = PACKAGE.matcher(header);
+
+                        if (matcher.find())
                         {
-                            String header = header(grammar);
-
-                            if (header != null)
-                                {
-                                    Matcher matcher = PACKAGE.matcher(header);
-
-                                    if (matcher.find())
-                                        {
-                                            return namespace(matcher.group(1));
-                                        }
-                                }
-
-                            return null;
+                            return namespace(matcher.group(1));
                         }
+                    }
+
+                    return null;
+                }
 
 
                 @Override
                 public DirectoryLayout getLayout()
-                        {
-                            return layout;
-                        }
+                {
+                    return layout;
+                }
             },
 
     /** The Java target language. */
@@ -162,39 +162,39 @@ enum Language
 
                 @Override
                 public String toPath(String namespace)
-                        {
-                            return namespace.replace('.', '/');
-                        }
+                {
+                    return namespace.replace('.', '/');
+                }
 
 
                 @Override
                 public String toId(Path path)
-                        {
-                            return path.toString().replaceAll("[/\\\\]", "\\.");
-                        }
+                {
+                    return path.toString().replaceAll("[/\\\\]", "\\.");
+                }
 
 
                 @Override
                 public Namespace detectNamespace(String grammar)
-                        {
-                            String header = header(grammar);
+                {
+                    String header = header(grammar);
 
-                            if (header != null)
-                                {
-                                    Matcher matcher = PACKAGE.matcher(header);
+                    if (header != null)
+                    {
+                        Matcher matcher = PACKAGE.matcher(header);
 
-                                    return matcher.find() ? namespace(matcher.group(1)) : null;
-                                }
+                        return matcher.find() ? namespace(matcher.group(1)) : null;
+                    }
 
-                            return null;
-                        }
+                    return null;
+                }
 
 
                 @Override
                 public DirectoryLayout getLayout()
-                        {
-                            return layout;
-                        }
+                {
+                    return layout;
+                }
             },
 
     /** The JavaScript target language. */
@@ -202,30 +202,30 @@ enum Language
             {
                 @Override
                 public String toPath(String namespace)
-                        {
-                            return namespace;
-                        }
+                {
+                    return namespace;
+                }
 
 
                 @Override
                 public String toId(Path path)
-                        {
-                            return path.toString().replaceAll("[\\\\]", "/");
-                        }
+                {
+                    return path.toString().replaceAll("[\\\\]", "/");
+                }
 
 
                 @Override
                 public Namespace detectNamespace(String grammar)
-                        {
-                            return null;
-                        }
+                {
+                    return null;
+                }
 
 
                 @Override
                 public DirectoryLayout getLayout()
-                        {
-                            return LAYOUT;
-                        }
+                {
+                    return LAYOUT;
+                }
             },
 
     /** The Objective-C target language. */
@@ -235,30 +235,30 @@ enum Language
 
                 @Override
                 public String toPath(String namespace)
-                        {
-                            return namespace;
-                        }
+                {
+                    return namespace;
+                }
 
 
                 @Override
                 public String toId(Path path)
-                        {
-                            return path.toString();
-                        }
+                {
+                    return path.toString();
+                }
 
 
                 @Override
                 public Namespace detectNamespace(String grammar)
-                        {
-                            return null;
-                        }
+                {
+                    return null;
+                }
 
 
                 @Override
                 public DirectoryLayout getLayout()
-                        {
-                            return layout;
-                        }
+                {
+                    return layout;
+                }
             },
 
     /** The Python target language. */
@@ -266,30 +266,30 @@ enum Language
             {
                 @Override
                 public String toPath(String namespace)
-                        {
-                            return namespace.replace('.', '/');
-                        }
+                {
+                    return namespace.replace('.', '/');
+                }
 
 
                 @Override
                 public String toId(Path path)
-                        {
-                            return path.toString().replaceAll("[\\\\]", "/");
-                        }
+                {
+                    return path.toString().replaceAll("[\\\\]", "/");
+                }
 
 
                 @Override
                 public Namespace detectNamespace(String grammar)
-                        {
-                            return null;
-                        }
+                {
+                    return null;
+                }
 
 
                 @Override
                 public DirectoryLayout getLayout()
-                        {
-                            return LAYOUT;
-                        }
+                {
+                    return LAYOUT;
+                }
             },
 
     /** The Ruby target language. */
@@ -300,42 +300,42 @@ enum Language
 
                 @Override
                 public String toPath(String namespace)
-                        {
-                            return namespace.replaceAll("::", "/");
-                        }
+                {
+                    return namespace.replaceAll("::", "/");
+                }
 
 
                 @Override
                 public String toId(Path path)
-                        {
-                            return path.toString().replaceAll("[/\\\\]", "::");
-                        }
+                {
+                    return path.toString().replaceAll("[/\\\\]", "::");
+                }
 
 
                 @Override
                 public Namespace detectNamespace(String grammar)
+                {
+                    String header = header(grammar);
+
+                    if (header != null)
+                    {
+                        Matcher matcher = module.matcher(header);
+
+                        if (matcher.find())
                         {
-                            String header = header(grammar);
-
-                            if (header != null)
-                                {
-                                    Matcher matcher = module.matcher(header);
-
-                                    if (matcher.find())
-                                        {
-                                            return namespace(matcher.group(1));
-                                        }
-                                }
-
-                            return null;
+                            return namespace(matcher.group(1));
                         }
+                    }
+
+                    return null;
+                }
 
 
                 @Override
                 public DirectoryLayout getLayout()
-                        {
-                            throw new UnsupportedOperationException("Not yet implemented");
-                        }
+                {
+                    throw new UnsupportedOperationException("Not yet implemented");
+                }
             },
 
     /** The Swift target language. */
@@ -345,31 +345,31 @@ enum Language
 
                 @Override
                 public String toPath(String namespace)
-                        {
-                            return namespace.replace('.', '/');
-                        }
+                {
+                    return namespace.replace('.', '/');
+                }
 
 
                 @Override
                 public String toId(Path path)
-                        {
-                            return path.toString().replaceAll("[/\\\\]", ".");
-                        }
+                {
+                    return path.toString().replaceAll("[/\\\\]", ".");
+                }
 
 
                 @Override
                 public Namespace detectNamespace(String grammar)
-                        {
-                            // Swift does not support namespaces within modules
-                            return null;
-                        }
+                {
+                    // Swift does not support namespaces within modules
+                    return null;
+                }
 
 
                 @Override
                 public DirectoryLayout getLayout()
-                        {
-                            return layout;
-                        }
+                {
+                    return layout;
+                }
             };
 
     private static final Pattern OPTIONS = Pattern.compile("options\\s*\\{.*?\\}",
@@ -441,22 +441,22 @@ enum Language
      *          be found.
      */
     public static Language detect(String grammar)
+    {
+        Matcher options = OPTIONS.matcher(grammar);
+
+        if (options.find())
+        {
+            Matcher language = LANGUAGE.matcher(options.group());
+
+            if (language.find())
             {
-                Matcher options = OPTIONS.matcher(grammar);
-
-                if (options.find())
-                    {
-                        Matcher language = LANGUAGE.matcher(options.group());
-
-                        if (language.find())
-                            {
-                                return Language.of(language.group(1));
-                            }
-                    }
-
-                // return the default if no language is provided
-                return Language.JAVA;
+                return Language.of(language.group(1));
             }
+        }
+
+        // return the default if no language is provided
+        return Language.JAVA;
+    }
 
 
     /**
@@ -467,69 +467,69 @@ enum Language
      * @return  the language.
      */
     public static Language of(String name)
+    {
+        switch (name)
+        {
+            case "C" :
             {
-                switch (name)
-                        {
-                            case "C" :
-                                {
-                                    return C;
-                                }
-
-                            case "Cpp" :
-                                {
-                                    return CPP;
-                                }
-
-                            case "CSharp" :
-                            case "CSharp2" :
-                            case "CSharp3" :
-                                {
-                                    return CSHARP;
-                                }
-
-                            case "Go" :
-                                {
-                                    return GO;
-                                }
-
-                            case "Java" :
-                                {
-                                    return JAVA;
-                                }
-
-                            case "JavaScript" :
-                                {
-                                    return JAVASCRIPT;
-                                }
-
-                            case "ObjC" :
-                                {
-                                    return OBJC;
-                                }
-
-                            case "Python" :
-                            case "Python2" :
-                            case "Python3" :
-                                {
-                                    return PYTHON;
-                                }
-
-                            case "Ruby" :
-                                {
-                                    return RUBY;
-                                }
-
-                            case "Swift" :
-                                {
-                                    return SWIFT;
-                                }
-
-                            default :
-                                {
-                                    throw new IllegalArgumentException("Unsupported language: " + name);
-                                }
-                        }
+                return C;
             }
+
+            case "Cpp" :
+            {
+                return CPP;
+            }
+
+            case "CSharp" :
+            case "CSharp2" :
+            case "CSharp3" :
+            {
+                return CSHARP;
+            }
+
+            case "Go" :
+            {
+                return GO;
+            }
+
+            case "Java" :
+            {
+                return JAVA;
+            }
+
+            case "JavaScript" :
+            {
+                return JAVASCRIPT;
+            }
+
+            case "ObjC" :
+            {
+                return OBJC;
+            }
+
+            case "Python" :
+            case "Python2" :
+            case "Python3" :
+            {
+                return PYTHON;
+            }
+
+            case "Ruby" :
+            {
+                return RUBY;
+            }
+
+            case "Swift" :
+            {
+                return SWIFT;
+            }
+
+            default :
+            {
+                throw new IllegalArgumentException("Unsupported language: " + name);
+            }
+        }
+    }
 
 
     /**
@@ -540,16 +540,16 @@ enum Language
      * @return  the header section. Returns {@¢ode null} if no header section is present.
      */
     private static String header(String grammar)
-            {
-                // remove comments to avoid erroneous matches
-                Matcher header = HEADER.matcher(grammar.replaceAll("(?m://.*$)|(?s:/\\*.*?\\*/)", ""));
+    {
+        // remove comments to avoid erroneous matches
+        Matcher header = HEADER.matcher(grammar.replaceAll("(?m://.*$)|(?s:/\\*.*?\\*/)", ""));
 
-                return header.find() ? header.group(1) : null;
-            }
+        return header.find() ? header.group(1) : null;
+    }
 
 
     private static Namespace namespace(String namespace)
-            {
-                return Namespace.of(namespace, true);
-            }
+    {
+        return Namespace.of(namespace, true);
+    }
 }
