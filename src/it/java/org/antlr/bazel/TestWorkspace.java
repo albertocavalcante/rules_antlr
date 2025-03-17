@@ -55,29 +55,29 @@ class TestWorkspace
         // Locate the examples directory, which may differ between local and CI environments
         Path examples = Projects.path("examples");
         assertTrue(Files.exists(examples));
-        
+
         // Create a fresh, isolated temporary directory to serve as our workspace root
         // This provides a clean environment for each test run
         root = Files.createTempDirectory("antlr_test_workspace");
-        
+
         if (!empty) {
             // If a full workspace is requested, copy all files from examples to workspace
             // We only copy files (not directories) and recreate the directory structure
             // This avoids symlink issues that can occur in some environments
             Files.walk(examples)
-                .filter(path -> !Files.isDirectory(path))
-                .forEach(source -> {
-                    try {
-                        // Calculate the target path relative to the examples directory
-                        Path target = root.resolve(examples.relativize(source));
-                        // Create parent directories as needed
-                        Files.createDirectories(target.getParent());
-                        // Copy the file to our workspace
-                        Files.copy(source, target);
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(e);
-                    }
-                });
+                    .filter(path -> !Files.isDirectory(path))
+                    .forEach(source -> {
+                        try {
+                            // Calculate the target path relative to the examples directory
+                            Path target = root.resolve(examples.relativize(source));
+                            // Create parent directories as needed
+                            Files.createDirectories(target.getParent());
+                            // Copy the file to our workspace
+                            Files.copy(source, target);
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    });
         }
 
         // Check if there's a WORKSPACE.bazel file in the examples directory
@@ -138,10 +138,10 @@ class TestWorkspace
         // Replace relative repository paths with absolute paths
         // This is critical for ensuring tests work across different environments
         String processedContents = contents.replace(
-            "path = \"../../../rules_antlr\"",
-            "path = \"" + rulesAntlrPath() + "\""
+                "path = \"../../../rules_antlr\"",
+                "path = \"" + rulesAntlrPath() + "\""
         );
-        
+
         Path file = root.resolve(path);
         Files.write(file, processedContents.getBytes(StandardCharsets.UTF_8));
         return file;
@@ -165,18 +165,18 @@ class TestWorkspace
 
         try (Stream<String> lines = new BufferedReader(
                 new InputStreamReader(p.getInputStream())).lines())
-                {
-                    // Get the last line of output
-                    String line = lines.reduce((first, second) -> second).orElse(null);
-                    Path path = Paths.get(line);
-                    assertTrue(Files.exists(path));
-                    return path;
-                }
+        {
+            // Get the last line of output
+            String line = lines.reduce((first, second) -> second).orElse(null);
+            Path path = Paths.get(line);
+            assertTrue(Files.exists(path));
+            return path;
+        }
         finally
-                {
-                    p.waitFor();
-                    assertEquals(0, p.exitValue());
-                }
+        {
+            p.waitFor();
+            assertEquals(0, p.exitValue());
+        }
     }
 
     /**

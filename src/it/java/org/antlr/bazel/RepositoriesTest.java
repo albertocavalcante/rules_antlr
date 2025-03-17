@@ -35,21 +35,21 @@ public class RepositoriesTest
      */
     @Test
     public void missingVersion() throws Exception
-            {
-                String contents = "workspace(name=\"examples\")\n"
-                        + "local_repository(\n"
-                        + "    name = \"rules_antlr\",\n"
-                        + "    path = \"../../../rules_antlr\",\n"
-                        + ")\n"
-                        + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_dependencies\")\n"
-                        + "rules_antlr_dependencies()";
+    {
+        String contents = "workspace(name=\"examples\")\n"
+                + "local_repository(\n"
+                + "    name = \"rules_antlr\",\n"
+                + "    path = \"../../../rules_antlr\",\n"
+                + ")\n"
+                + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_dependencies\")\n"
+                + "rules_antlr_dependencies()";
 
-                TestWorkspace workspace = new TestWorkspace(true);
-                workspace.file("WORKSPACE.bazel", contents);
-                Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
-                assertEquals(c.output(), 1, c.exitValue());
-                assertTrue(c.output().contains("attribute versionsAndLanguages: Missing ANTLR version"));
-            }
+        TestWorkspace workspace = new TestWorkspace(true);
+        workspace.file("WORKSPACE.bazel", contents);
+        Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
+        assertEquals(c.output(), 1, c.exitValue());
+        assertTrue(c.output().contains("attribute versionsAndLanguages: Missing ANTLR version"));
+    }
 
     /**
      * Tests that building fails when a language is specified but no ANTLR version.
@@ -59,21 +59,21 @@ public class RepositoriesTest
      */
     @Test
     public void languageAndMissingVersion() throws Exception
-            {
-                String contents = "workspace(name=\"examples\")\n"
-                        + "local_repository(\n"
-                        + "    name = \"rules_antlr\",\n"
-                        + "    path = \"../../../rules_antlr\",\n"
-                        + ")\n"
-                        + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_dependencies\")\n"
-                        + "rules_antlr_dependencies(\"Java\")";
+    {
+        String contents = "workspace(name=\"examples\")\n"
+                + "local_repository(\n"
+                + "    name = \"rules_antlr\",\n"
+                + "    path = \"../../../rules_antlr\",\n"
+                + ")\n"
+                + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_dependencies\")\n"
+                + "rules_antlr_dependencies(\"Java\")";
 
-                TestWorkspace workspace = new TestWorkspace(true);
-                workspace.file("WORKSPACE.bazel", contents);
-                Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
-                assertEquals(c.output(), 1, c.exitValue());
-                assertTrue(c.output().contains("attribute versionsAndLanguages: Missing ANTLR version"));
-            }
+        TestWorkspace workspace = new TestWorkspace(true);
+        workspace.file("WORKSPACE.bazel", contents);
+        Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
+        assertEquals(c.output(), 1, c.exitValue());
+        assertTrue(c.output().contains("attribute versionsAndLanguages: Missing ANTLR version"));
+    }
 
     /**
      * Tests the error handling when an unsupported ANTLR version is specified.
@@ -83,34 +83,34 @@ public class RepositoriesTest
      */
     @Test
     public void unsupportedVersion() throws Exception
-            {
-                String contents = "workspace(name=\"examples\")\n"
-                        + "local_repository(\n"
-                        + "    name = \"rules_antlr\",\n"
-                        + "    path = \"../../../rules_antlr\",\n"
-                        + ")\n"
-                        + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_dependencies\")\n"
-                        + "rules_antlr_dependencies(\"4.0\")";
+    {
+        String contents = "workspace(name=\"examples\")\n"
+                + "local_repository(\n"
+                + "    name = \"rules_antlr\",\n"
+                + "    path = \"../../../rules_antlr\",\n"
+                + ")\n"
+                + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_dependencies\")\n"
+                + "rules_antlr_dependencies(\"4.0\")";
 
-                TestWorkspace workspace = new TestWorkspace(true);
-                workspace.file("WORKSPACE.bazel", contents);
-                Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
-                assertEquals(c.output(), 1, c.exitValue());
-                assertTrue(c.output().contains("attribute versionsAndLanguages: Unsupported ANTLR version provided: \"4.0\"."));
+        TestWorkspace workspace = new TestWorkspace(true);
+        workspace.file("WORKSPACE.bazel", contents);
+        Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
+        assertEquals(c.output(), 1, c.exitValue());
+        assertTrue(c.output().contains("attribute versionsAndLanguages: Unsupported ANTLR version provided: \"4.0\"."));
 
-                contents = "workspace(name=\"examples\")\n"
-                        + "local_repository(\n"
-                        + "    name = \"rules_antlr\",\n"
-                        + "    path = \"../../../rules_antlr\",\n"
-                        + ")\n"
-                        + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_optimized_dependencies\")\n"
-                        + "rules_antlr_optimized_dependencies(\"4.0\")";
+        contents = "workspace(name=\"examples\")\n"
+                + "local_repository(\n"
+                + "    name = \"rules_antlr\",\n"
+                + "    path = \"../../../rules_antlr\",\n"
+                + ")\n"
+                + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_optimized_dependencies\")\n"
+                + "rules_antlr_optimized_dependencies(\"4.0\")";
 
-                workspace.file("WORKSPACE.bazel", contents);
-                c = new Command(workspace.root, "//antlr4/HelloWorld/...").build();
-                assertEquals(c.output(), 1, c.exitValue());
-                assertTrue(c.output().contains("attribute version: Unsupported ANTLR version provided: \"4.0\"."));
-            }
+        workspace.file("WORKSPACE.bazel", contents);
+        c = new Command(workspace.root, "//antlr4/HelloWorld/...").build();
+        assertEquals(c.output(), 1, c.exitValue());
+        assertTrue(c.output().contains("attribute version: Unsupported ANTLR version provided: \"4.0\"."));
+    }
 
     /**
      * Tests that providing versions in an invalid format produces appropriate errors.
@@ -120,34 +120,34 @@ public class RepositoriesTest
      */
     @Test
     public void invalidVersion() throws Exception
-            {
-                String contents = "workspace(name=\"examples\")\n"
-                        + "local_repository(\n"
-                        + "    name = \"rules_antlr\",\n"
-                        + "    path = \"../../../rules_antlr\",\n"
-                        + ")\n"
-                        + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_dependencies\")\n"
-                        + "rules_antlr_dependencies(471)";
+    {
+        String contents = "workspace(name=\"examples\")\n"
+                + "local_repository(\n"
+                + "    name = \"rules_antlr\",\n"
+                + "    path = \"../../../rules_antlr\",\n"
+                + ")\n"
+                + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_dependencies\")\n"
+                + "rules_antlr_dependencies(471)";
 
-                TestWorkspace workspace = new TestWorkspace(true);
-                workspace.file("WORKSPACE.bazel", contents);
-                Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
-                assertEquals(c.output(), 1, c.exitValue());
-                assertTrue(c.output().contains("attribute versionsAndLanguages: Integer version '471' no longer valid. Use semantic version \"4.7.1\" instead."));
+        TestWorkspace workspace = new TestWorkspace(true);
+        workspace.file("WORKSPACE.bazel", contents);
+        Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
+        assertEquals(c.output(), 1, c.exitValue());
+        assertTrue(c.output().contains("attribute versionsAndLanguages: Integer version '471' no longer valid. Use semantic version \"4.7.1\" instead."));
 
-                contents = "workspace(name=\"examples\")\n"
-                        + "local_repository(\n"
-                        + "    name = \"rules_antlr\",\n"
-                        + "    path = \"../../../rules_antlr\",\n"
-                        + ")\n"
-                        + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_optimized_dependencies\")\n"
-                        + "rules_antlr_optimized_dependencies(471)";
+        contents = "workspace(name=\"examples\")\n"
+                + "local_repository(\n"
+                + "    name = \"rules_antlr\",\n"
+                + "    path = \"../../../rules_antlr\",\n"
+                + ")\n"
+                + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_optimized_dependencies\")\n"
+                + "rules_antlr_optimized_dependencies(471)";
 
-                workspace.file("WORKSPACE.bazel", contents);
-                c = new Command(workspace.root, "//antlr4/HelloWorld/...").build();
-                assertEquals(c.output(), 1, c.exitValue());
-                assertTrue(c.output().contains("attribute version: Integer version '471' no longer valid. Use semantic version \"4.7.1\" instead."));
-            }
+        workspace.file("WORKSPACE.bazel", contents);
+        c = new Command(workspace.root, "//antlr4/HelloWorld/...").build();
+        assertEquals(c.output(), 1, c.exitValue());
+        assertTrue(c.output().contains("attribute version: Integer version '471' no longer valid. Use semantic version \"4.7.1\" instead."));
+    }
 
     /**
      * Tests error handling when an invalid language is specified.
@@ -157,21 +157,21 @@ public class RepositoriesTest
      */
     @Test
     public void invalidLanguage() throws Exception
-            {
-                String contents = "workspace(name=\"examples\")\n"
-                        + "local_repository(\n"
-                        + "    name = \"rules_antlr\",\n"
-                        + "    path = \"../../../rules_antlr\",\n"
-                        + ")\n"
-                        + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_dependencies\")\n"
-                        + "rules_antlr_dependencies(4, \"Haskell\")";
+    {
+        String contents = "workspace(name=\"examples\")\n"
+                + "local_repository(\n"
+                + "    name = \"rules_antlr\",\n"
+                + "    path = \"../../../rules_antlr\",\n"
+                + ")\n"
+                + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_dependencies\")\n"
+                + "rules_antlr_dependencies(4, \"Haskell\")";
 
-                TestWorkspace workspace = new TestWorkspace(true);
-                workspace.file("WORKSPACE.bazel", contents);
-                Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
-                assertEquals(c.output(), 1, c.exitValue());
-                assertTrue(c.output().contains("attribute versionsAndLanguages: Invalid language provided: \"Haskell\"."));
-            }
+        TestWorkspace workspace = new TestWorkspace(true);
+        workspace.file("WORKSPACE.bazel", contents);
+        Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
+        assertEquals(c.output(), 1, c.exitValue());
+        assertTrue(c.output().contains("attribute versionsAndLanguages: Invalid language provided: \"Haskell\"."));
+    }
 
     /**
      * Tests that specifying multiple versions from the same major version stream is an error.
@@ -181,21 +181,21 @@ public class RepositoriesTest
      */
     @Test
     public void severalVersions() throws Exception
-            {
-                String contents = "workspace(name=\"examples\")\n"
-                        + "local_repository(\n"
-                        + "    name = \"rules_antlr\",\n"
-                        + "    path = \"../../../rules_antlr\",\n"
-                        + ")\n"
-                        + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_dependencies\")\n"
-                        + "rules_antlr_dependencies(\"4.7.1\", \"4.7.2\")";
+    {
+        String contents = "workspace(name=\"examples\")\n"
+                + "local_repository(\n"
+                + "    name = \"rules_antlr\",\n"
+                + "    path = \"../../../rules_antlr\",\n"
+                + ")\n"
+                + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_dependencies\")\n"
+                + "rules_antlr_dependencies(\"4.7.1\", \"4.7.2\")";
 
-                TestWorkspace workspace = new TestWorkspace(true);
-                workspace.file("WORKSPACE.bazel", contents);
-                Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
-                assertEquals(c.output(), 1, c.exitValue());
-                assertTrue(c.output().contains("attribute versionsAndLanguages: You can only load one version from ANTLR 4. You specified both \"4.7.1\" and \"4.7.2\"."));
-            }
+        TestWorkspace workspace = new TestWorkspace(true);
+        workspace.file("WORKSPACE.bazel", contents);
+        Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
+        assertEquals(c.output(), 1, c.exitValue());
+        assertTrue(c.output().contains("attribute versionsAndLanguages: You can only load one version from ANTLR 4. You specified both \"4.7.1\" and \"4.7.2\"."));
+    }
 
     /**
      * Tests that build fails when a required language is not specified.
@@ -205,20 +205,20 @@ public class RepositoriesTest
      */
     @Test
     public void missingLanguage() throws Exception
-            {
-                String contents = "workspace(name=\"examples\")\n"
-                        + "local_repository(\n"
-                        + "    name = \"rules_antlr\",\n"
-                        + "    path = \"../../../rules_antlr\",\n"
-                        + ")\n"
-                        + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_dependencies\")\n"
-                        + "rules_antlr_dependencies(\"2.7.7\")";
+    {
+        String contents = "workspace(name=\"examples\")\n"
+                + "local_repository(\n"
+                + "    name = \"rules_antlr\",\n"
+                + "    path = \"../../../rules_antlr\",\n"
+                + ")\n"
+                + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_dependencies\")\n"
+                + "rules_antlr_dependencies(\"2.7.7\")";
 
-                TestWorkspace workspace = new TestWorkspace(true);
-                workspace.file("WORKSPACE.bazel", contents);
-                Command c = new Command(workspace.root, "//antlr2/Cpp/...").build();
-                assertEquals(c.output(), 1, c.exitValue());
-            }
+        TestWorkspace workspace = new TestWorkspace(true);
+        workspace.file("WORKSPACE.bazel", contents);
+        Command c = new Command(workspace.root, "//antlr2/Cpp/...").build();
+        assertEquals(c.output(), 1, c.exitValue());
+    }
 
     /**
      * Tests that Java dependencies are automatically loaded when other languages are specified.
@@ -239,28 +239,28 @@ public class RepositoriesTest
         // Using absolute paths is critical for CI environments where relative paths often fail
         String rulesAntlrPath = System.getProperty("user.dir");
         System.out.println("Rules ANTLR path: " + rulesAntlrPath);
-        
+
         // Create an empty workspace - we'll manually copy only what we need
         TestWorkspace workspace = new TestWorkspace(true);
         System.out.println("Workspace root: " + workspace.root);
-        
+
         // Find the examples directory which contains the example projects
         Path examplesPath = Projects.path("examples");
         System.out.println("Examples directory: " + examplesPath);
-        
+
         // Create the antlr2 directory structure in our workspace
         Files.createDirectories(workspace.root.resolve("antlr2"));
-        
+
         // Copy the entire antlr2/Cpp directory structure
         // This is necessary because we need all the BUILD files and source files
         copyDirectory(examplesPath.resolve("antlr2/Cpp"), workspace.root.resolve("antlr2/Cpp"));
-        
+
         // Log what files were copied for debugging purposes
         System.out.println("Files copied to workspace:");
         Files.walk(workspace.root.resolve("antlr2"))
-            .filter(Files::isRegularFile)
-            .forEach(p -> System.out.println("  " + p));
-        
+                .filter(Files::isRegularFile)
+                .forEach(p -> System.out.println("  " + p));
+
         // Create WORKSPACE.bazel file with:
         // 1. Absolute path to rules_antlr (critical for CI environments)
         // 2. Dependencies specification for ANTLR 2.7.7 with Cpp language
@@ -271,17 +271,17 @@ public class RepositoriesTest
                 + ")\n"
                 + "load(\"@rules_antlr//antlr:repositories.bzl\", \"rules_antlr_dependencies\")\n"
                 + "rules_antlr_dependencies(\"2.7.7\", \"Cpp\")";
-        
+
         workspace.file("WORKSPACE.bazel", contents);
         System.out.println("Created WORKSPACE.bazel file");
-        
+
         // Run bazel build with a specific JDK version to ensure consistency
         Command c = new Command(workspace.root, "//antlr2/Cpp/...")
-            .build("--java_runtime_version=remotejdk_11");
-        
+                .build("--java_runtime_version=remotejdk_11");
+
         // Log results for debugging
         System.out.println("Command exit value: " + c.exitValue());
-        
+
         // Verify build succeeds (exit code 0)
         // This shows that Java dependencies were automatically loaded even though
         // we only specified Cpp as the language
@@ -301,13 +301,13 @@ public class RepositoriesTest
     private void copyDirectory(Path source, Path target) throws IOException {
         // Ensure target directory exists
         Files.createDirectories(target);
-        
+
         // List all entries in the source directory
         try (var entries = Files.list(source)) {
             // Process each entry (file or directory)
             for (Path entry : entries.collect(Collectors.toList())) {
                 Path targetEntry = target.resolve(entry.getFileName());
-                
+
                 if (Files.isDirectory(entry)) {
                     // Recursively copy subdirectories
                     copyDirectory(entry, targetEntry);

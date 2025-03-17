@@ -16,19 +16,19 @@ public class StringsTest
 {
     @Test
     public void constructor() throws Exception
-            {
-                UtilityClassTestSupport.test(Strings.class);
-            }
+    {
+        UtilityClassTestSupport.test(Strings.class);
+    }
 
 
     @Test
     public void stripExtension()
-            {
-                assertEquals("", stripFileExtension(""));
-                assertEquals("filename", stripFileExtension("filename"));
-                assertEquals(".filename", stripFileExtension(".filename"));
-                assertEquals(".filename", stripFileExtension(".filename.txt"));
-                assertEquals("filename", stripFileExtension("filename.txt"));
-                assertEquals("file.name", stripFileExtension("file.name.txt"));
-            }
+    {
+        assertEquals("", stripFileExtension(""));
+        assertEquals("filename", stripFileExtension("filename"));
+        assertEquals(".filename", stripFileExtension(".filename"));
+        assertEquals(".filename", stripFileExtension(".filename.txt"));
+        assertEquals("filename", stripFileExtension("filename.txt"));
+        assertEquals("file.name", stripFileExtension("file.name.txt"));
+    }
 }
