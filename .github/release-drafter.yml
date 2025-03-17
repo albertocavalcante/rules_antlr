@@ -95,16 +95,6 @@ template: |
   rules_antlr_dependencies("4.8")
   ```
 
-  ### Bzlmod (Recommended)
-  ```starlark
-  bazel_dep(name = "rules_antlr", version = "$NEXT_MINOR_VERSION")
-
-  # Load ANTLR dependencies with the version(s) you need
-  # Configure in your MODULE.bazel extension section
-  antlr = use_extension("@rules_antlr//antlr:extensions.bzl", "antlr")
-  antlr.version("4.8")
-  ```
-
   See [setup documentation](https://github.com/$OWNER/$REPOSITORY/blob/main/docs/setup.md) for more details.
 
   ## What's Changed
