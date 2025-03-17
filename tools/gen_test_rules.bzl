@@ -132,3 +132,46 @@ def _index_of_end(str, part):
     if index >= 0:
         return index + len(part)
     return -1
+
+def java_test_methods(
+        name,
+        test_file,
+        test_methods,
+        deps,
+        size = "small",
+        resources = [],
+        tags = [],
+        jvm_flags = [],
+        visibility = None,
+        shard_count = 1):
+    """Create individual Java test targets for each test method in a test class.
+
+    Args:
+        name: base name for the test targets
+        test_file: the test file (without .java extension)
+        test_methods: list of test method names to create targets for
+        deps: the list of dependencies
+        size: test size
+        resources: the list of data files to include in the test jar
+        tags: the tags to add
+        jvm_flags: the list of flags for the JVM
+        visibility: the visibility of the created java_tests
+        shard_count: the number of parallel shards to use
+    """
+    java_class = _package_from_path(
+        native.package_name() + "/" + test_file,
+    )
+    
+    for method in test_methods:
+        java_test(
+            name = name + "_" + method,
+            runtime_deps = deps,
+            resources = resources,
+            size = size,
+            jvm_flags = jvm_flags,
+            tags = tags,
+            test_class = java_class,
+            args = ["--test_filter=" + java_class + "#" + method],
+            visibility = visibility,
+            shard_count = shard_count,
+        )
