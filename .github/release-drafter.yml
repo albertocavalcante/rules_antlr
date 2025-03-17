@@ -1,5 +1,7 @@
-name-template: '$RESOLVED_VERSION'
-tag-template: '$RESOLVED_VERSION'
+name-template: '$NEXT_MINOR_VERSION'
+tag-template: '$NEXT_MINOR_VERSION'
+tag-prefix: ''  # No 'v' prefix
+
 categories:
   - title: '❗ Breaking Changes'
     labels:
@@ -24,8 +26,10 @@ categories:
   - title: 'Other Changes'
     labels:
       - '*'
-change-template: '* $TITLE @$AUTHOR (#$NUMBER)'
-change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
+
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+change-title-escapes: '\<*_&'
+
 version-resolver:
   major:
     labels:
@@ -42,6 +46,7 @@ version-resolver:
       - '🤖 Dependencies'
       - '📒 Documentation'
   default: patch
+
 autolabeler:
   - label: '📒 Documentation'
     files:
@@ -67,8 +72,9 @@ autolabeler:
       - '/breaking/i'
     body:
       - '/BREAKING CHANGE:/i'
+
 template: |
-  # $RESOLVED_VERSION
+  # $NEXT_MINOR_VERSION
 
   ## Installation Instructions
 
@@ -79,8 +85,8 @@ template: |
   http_archive(
       name = "rules_antlr",
       sha256 = "",
-      strip_prefix = "rules_antlr-$RESOLVED_VERSION",
-      urls = ["https://github.com/$OWNER/$REPOSITORY/releases/download/$RESOLVED_VERSION/rules_antlr-$RESOLVED_VERSION.tar.gz"],
+      strip_prefix = "rules_antlr-$NEXT_MINOR_VERSION",
+      urls = ["https://github.com/$OWNER/$REPOSITORY/releases/download/$NEXT_MINOR_VERSION/rules_antlr-$NEXT_MINOR_VERSION.tar.gz"],
   )
 
   load("@rules_antlr//antlr:repositories.bzl", "rules_antlr_dependencies")
@@ -91,7 +97,7 @@ template: |
 
   ### Bzlmod (Recommended)
   ```starlark
-  bazel_dep(name = "rules_antlr", version = "$RESOLVED_VERSION")
+  bazel_dep(name = "rules_antlr", version = "$NEXT_MINOR_VERSION")
 
   # Load ANTLR dependencies with the version(s) you need
   # Configure in your MODULE.bazel extension section
@@ -108,4 +114,4 @@ template: |
   ## New Contributors
   $CONTRIBUTORS
 
-  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...$RESOLVED_VERSION
+  **Full Changelog**: https://github.com/$OWNER/$REPOSITORY/compare/$PREVIOUS_TAG...$NEXT_MINOR_VERSION
