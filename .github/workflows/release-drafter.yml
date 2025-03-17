@@ -1,20 +1,12 @@
 name: Release Drafter
 
 on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-  pull_request:
-    types: [opened, reopened, synchronize, labeled]
   workflow_dispatch:
     inputs:
       version:
         description: "Release version (e.g., 0.6.0)"
         required: true
-        default: "0.6.0"
+        default: ""
 
 permissions:
   contents: write
@@ -38,10 +30,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # Create release archive when explicitly triggered with a version
   create_release_archive:
     needs: update_release_draft
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.version != ''
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -52,11 +42,19 @@ jobs:
       - name: Set version
         id: version
         run: |
-          if [[ "${{ github.event.inputs.version }}" != "" ]]; then
-            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          echo "Using version: ${{ github.event.inputs.version }}"
+
+      - name: Create Tag
+        run: |
+          if ! git rev-parse ${{ env.VERSION }} >/dev/null 2>&1; then
+            git config user.name "GitHub Actions"
+            git config user.email "actions@github.com"
+            git tag ${{ env.VERSION }}
+            git push origin ${{ env.VERSION }}
+            echo "Created and pushed new tag: ${{ env.VERSION }}"
           else
-            # Default to the version from release-drafter
-            echo "VERSION=${{ needs.update_release_draft.outputs.version }}" >> $GITHUB_ENV
+            echo "Tag ${{ env.VERSION }} already exists"
           fi
 
       - name: Create Release Archive
@@ -163,6 +161,7 @@ jobs:
               });
               
               console.log('Updated release description with SHA256');
+              console.log(`View the draft release at: https://github.com/${context.repo.owner}/${context.repo.repo}/releases`);
             } catch (error) {
               console.error(`Error updating release description: ${error.message}`);
               throw error;
