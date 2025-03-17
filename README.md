@@ -1,6 +1,7 @@
-[![Java 8+](https://img.shields.io/badge/java-8+-4c7e9f.svg)](https://java.oracle.com)
-[![License](https://img.shields.io/badge/license-Apache2-blue.svg)](https://github.com/marcohu/rules_antlr/blob/master/LICENSE)
-
+[![Java 11+](https://img.shields.io/badge/java-11+-4c7e9f.svg)](https://java.oracle.com)
+[![License](https://img.shields.io/badge/license-Apache2-blue.svg)](https://github.com/albertocavalcante/rules_antlr/blob/main/LICENSE)
+[![Actions Status](https://github.com/albertocavalcante/rules_antlr/actions/workflows/ci.yml/badge.svg)](https://github.com/albertocavalcante/actions) 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/albertocavalcante/rules_antlr)
 
 # ANTLR Rules for Bazel
 
