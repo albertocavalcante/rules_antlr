@@ -163,17 +163,35 @@ def rules_antlr_dependencies(*versions_and_languages):
         for version_or_language in versions_and_languages:
             if not version_or_language in supported_versions:
                 if type(version_or_language) == "int" or str(version_or_language).isdigit():
-                    fail('Integer version \'{}\' no longer valid. Use semantic version "{}" instead.'.format(version_or_language, ".".join(str(version_or_language).elems())), attr = "versions_and_languages")
+                    _fail_with_attr(
+                        'Integer version \'{}\' no longer valid. Use semantic version "{}" instead.'.format(
+                            version_or_language,
+                            ".".join(str(version_or_language).elems()),
+                        ),
+                        "versions_and_languages",
+                    )
                 elif str(version_or_language).replace(".", "").isdigit():
-                    fail('Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(version_or_language, supported_versions), attr = "versions_and_languages")
+                    _fail_with_attr(
+                        'Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(
+                            version_or_language,
+                            supported_versions,
+                        ),
+                        "versions_and_languages",
+                    )
                 elif not version_or_language in supported_languages():
-                    fail('Invalid language provided: "{0}". Currently supported are: {1}'.format(version_or_language, supported_languages()), attr = "versions_and_languages")
+                    _fail_with_attr(
+                        'Invalid language provided: "{0}". Currently supported are: {1}'.format(
+                            version_or_language,
+                            supported_languages(),
+                        ),
+                        "versions_and_languages",
+                    )
                 languages.append(version_or_language)
             else:
                 versions.append(version_or_language)
 
         if not versions:
-            fail("Missing ANTLR version", attr = "versions_and_languages")
+            _fail_with_attr("Missing ANTLR version", "versions_and_languages")
 
         # only one version allowed per ANTLR release stream
         _validate_versions(versions)
@@ -194,7 +212,7 @@ def rules_antlr_dependencies(*versions_and_languages):
             elif version == 2 or version == "2.7.7":
                 _antlr277_dependencies(languages)
     else:
-        fail("Missing ANTLR version", attr = "versions_and_languages")
+        _fail_with_attr("Missing ANTLR version", "versions_and_languages")
 
 def rules_antlr_optimized_dependencies(version):
     """Loads the dependencies for the "optimized" fork of ANTLR 4 maintained by Sam Harwell.
@@ -217,9 +235,21 @@ def rules_antlr_optimized_dependencies(version):
     elif version == "4.7.1":
         _antlr471_optimized_dependencies()
     elif type(version) == "int" or str(version).isdigit():
-        fail('Integer version \'{}\' no longer valid. Use semantic version "{}" instead.'.format(version, ".".join(str(version).elems())), attr = "version")
+        _fail_with_attr(
+            'Integer version \'{}\' no longer valid. Use semantic version "{}" instead.'.format(
+                version,
+                ".".join(str(version).elems()),
+            ),
+            "version",
+        )
     else:
-        fail('Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(version, v4_opt), attr = "version")
+        _fail_with_attr(
+            'Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(
+                version,
+                v4_opt,
+            ),
+            "version",
+        )
 
 def _antlr48_dependencies(languages):
     _antlr4_dependencies(
@@ -532,9 +562,13 @@ def _validate_versions(versions):
         v = str(version)[0]
         p = store.get(v)
         if p:
-            fail(
-                'You can only load one version from ANTLR {0}. You specified both "{1}" and "{2}".'.format(v, p, version),
-                attr = "versions_and_languages",
+            _fail_with_attr(
+                'You can only load one version from ANTLR {0}. You specified both "{1}" and "{2}".'.format(
+                    v,
+                    p,
+                    version,
+                ),
+                "versions_and_languages",
             )
         store[v] = version
 
