@@ -48,7 +48,7 @@ public class RepositoriesTest
         workspace.file("WORKSPACE.bazel", contents);
         Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
         assertEquals(c.output(), 1, c.exitValue());
-        assertTrue(c.output().contains("attribute versionsAndLanguages: Missing ANTLR version"));
+        assertTrue(c.output().contains("attribute versions_and_languages: Missing ANTLR version"));
     }
 
     /**
@@ -72,7 +72,7 @@ public class RepositoriesTest
         workspace.file("WORKSPACE.bazel", contents);
         Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
         assertEquals(c.output(), 1, c.exitValue());
-        assertTrue(c.output().contains("attribute versionsAndLanguages: Missing ANTLR version"));
+        assertTrue(c.output().contains("attribute versions_and_languages: Missing ANTLR version"));
     }
 
     /**
@@ -96,7 +96,7 @@ public class RepositoriesTest
         workspace.file("WORKSPACE.bazel", contents);
         Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
         assertEquals(c.output(), 1, c.exitValue());
-        assertTrue(c.output().contains("attribute versionsAndLanguages: Unsupported ANTLR version provided: \"4.0\"."));
+        assertTrue(c.output().contains("attribute versions_and_languages: Unsupported ANTLR version provided: \"4.0\"."));
 
         contents = "workspace(name=\"examples\")\n"
                 + "local_repository(\n"
@@ -133,7 +133,7 @@ public class RepositoriesTest
         workspace.file("WORKSPACE.bazel", contents);
         Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
         assertEquals(c.output(), 1, c.exitValue());
-        assertTrue(c.output().contains("attribute versionsAndLanguages: Integer version '471' no longer valid. Use semantic version \"4.7.1\" instead."));
+        assertTrue(c.output().contains("attribute versions_and_languages: Integer version '471' no longer valid. Use semantic version \"4.7.1\" instead."));
 
         contents = "workspace(name=\"examples\")\n"
                 + "local_repository(\n"
@@ -170,7 +170,7 @@ public class RepositoriesTest
         workspace.file("WORKSPACE.bazel", contents);
         Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
         assertEquals(c.output(), 1, c.exitValue());
-        assertTrue(c.output().contains("attribute versionsAndLanguages: Invalid language provided: \"Haskell\"."));
+        assertTrue(c.output().contains("attribute versions_and_languages: Invalid language provided: \"Haskell\"."));
     }
 
     /**
@@ -194,7 +194,7 @@ public class RepositoriesTest
         workspace.file("WORKSPACE.bazel", contents);
         Command c = new Command(workspace.root, "//antlr2/Calc/...").build();
         assertEquals(c.output(), 1, c.exitValue());
-        assertTrue(c.output().contains("attribute versionsAndLanguages: You can only load one version from ANTLR 4. You specified both \"4.7.1\" and \"4.7.2\"."));
+        assertTrue(c.output().contains("attribute versions_and_languages: You can only load one version from ANTLR 4. You specified both \"4.7.1\" and \"4.7.2\"."));
     }
 
     /**

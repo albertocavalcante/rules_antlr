@@ -2,6 +2,9 @@
 bazel-*
 user.bazelrc
 
+# IntelliJ
+.bazelbsp
+
 # Java
 .classpath
 
