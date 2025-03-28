@@ -49,18 +49,22 @@ jobs:
         run: bazelisk version
 
       - name: Build examples
+        shell: bash
         run: |
           cd examples
           bazelisk build --config ci //antlr2/Cpp/... //antlr2/Calc/... //antlr2/Python/... //antlr3/Cpp/... //antlr3/Java/... //antlr3/Python2/... //antlr3/Python3/... //antlr4/Cpp/... //antlr4/Go/... //antlr4/Java/... //antlr4/Python2/... //antlr4/Python3/...
 
       - name: Build antlr4-opt
+        shell: bash
         run: |
           cd examples/antlr4-opt
           bazelisk build --config ci //...
 
       - name: Run tests
+        shell: bash
         run: |
           bazelisk test --config ci //...
 
       - name: Shutdown Bazel
+        shell: bash
         run: bazelisk shutdown
