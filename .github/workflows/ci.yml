@@ -55,6 +55,7 @@ jobs:
           bazelisk build \
             --config ci \
             --config remote-cache \
+            --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }} \
             //antlr2/Cpp/... \
             //antlr2/Calc/... \
             //antlr2/Python/... \
@@ -75,6 +76,7 @@ jobs:
           bazelisk build \
             --config ci \
             --config remote-cache \
+            --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }} \
             //...
 
       - name: Run tests
@@ -83,6 +85,7 @@ jobs:
           bazelisk test \
             --config ci \
             --config remote-cache \
+            --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }} \
             //...
 
       - name: Shutdown Bazel
