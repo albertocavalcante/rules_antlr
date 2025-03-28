@@ -1,7 +1,7 @@
 build:remote-cache --bes_results_url=https://app.buildbuddy.io/invocation/
 build:remote-cache --bes_backend=grpcs://remote.buildbuddy.io
 build:remote-cache --remote_cache=grpcs://remote.buildbuddy.io
-build:remote-cache --remote_download_toplevel
+build:remote-cache --remote_upload_local_results=true
 build:remote-cache --remote_timeout=3600
 build:remote-cache --noslim_profile
 build:remote-cache --nolegacy_important_outputs
