@@ -4,6 +4,8 @@ import %workspace%/.remote-cache.bazelrc
 import %workspace%/.rbe.bazelrc
 import %workspace%/.ci.bazelrc
 
+startup --digest_function=blake3
+
 common --noenable_bzlmod
 common --enable_platform_specific_config
 
