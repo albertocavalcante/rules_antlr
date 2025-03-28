@@ -54,6 +54,7 @@ jobs:
           cd examples
           bazelisk build \
             --config ci \
+            --config remote-cache \
             //antlr2/Cpp/... \
             //antlr2/Calc/... \
             //antlr2/Python/... \
@@ -73,6 +74,7 @@ jobs:
           cd examples/antlr4-opt
           bazelisk build \
             --config ci \
+            --config remote-cache \
             //...
 
       - name: Run tests
@@ -80,6 +82,7 @@ jobs:
         run: |
           bazelisk test \
             --config ci \
+            --config remote-cache \
             //...
 
       - name: Shutdown Bazel
