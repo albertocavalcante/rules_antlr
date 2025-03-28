@@ -4,7 +4,6 @@ common:ci --announce_rc
 build:ci --build_metadata=ROLE=CI
 build:ci --build_metadata=VISIBILITY=PUBLIC
 
-build:ci --jobs=2
 build:ci --verbose_failures
 
 test:ci --test_output=errors
