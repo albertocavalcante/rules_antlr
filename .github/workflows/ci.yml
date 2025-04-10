@@ -77,7 +77,14 @@ jobs:
   build:
     needs: check_authorization
     runs-on: ubuntu-20.04
-
+    permissions:
+      contents: read
+    
+    environment: ${{ needs.check_authorization.outputs.is_authorized == 'true' && 'production' || 'no-secrets' }}
+    
+    env:
+      BUILDBUDDY_API_KEY: ${{ needs.check_authorization.outputs.is_authorized == 'true' && secrets.BUILDBUDDY_API_KEY || 'dummy-value-for-unauthorized-builds' }}
+      
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
