@@ -75,6 +75,7 @@ jobs:
           fi
 
   build:
+    needs: check_authorization
     runs-on: ubuntu-20.04
 
     steps:
