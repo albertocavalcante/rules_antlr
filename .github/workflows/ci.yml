@@ -9,7 +9,7 @@ on:
       - "docs/**"
       - "LICENSE"
       - ".github/*.md"
-  pull_request:
+  pull_request_target:
     branches:
       - main
     paths-ignore:
