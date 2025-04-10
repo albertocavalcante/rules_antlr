@@ -85,6 +85,9 @@ jobs:
             if [[ "${{ github.event_name }}" == "pull_request_target" ]]; then
               echo -e "\033[0;36mℹ️ External contributors need the 'authorized-secrets' label to access secrets\033[0m"
             fi
+            # Fail the job if not authorized
+            echo -e "\033[1;31m❌ CI TERMINATED: Cannot proceed without authorization\033[0m"
+            exit 1
           fi
   
   build:
@@ -94,17 +97,14 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: read
-    
-    # Use environment to control secrets access
-    environment: ${{ needs.authorize.outputs.is_authorized == 'true' && 'secrets-enabled' || 'no-secrets' }}
-    
+
+    environment: secrets-enabled
+
     env:
-      # Enable colors in logs
       TERM: xterm-256color
       FORCE_COLOR: "true"
-      # API key access based on authorization
-      BUILDBUDDY_API_KEY: ${{ needs.authorize.outputs.is_authorized == 'true' && secrets.BUILDBUDDY_API_KEY || 'dummy-value-for-unauthorized-prs' }}
-      
+      BUILDBUDDY_API_KEY: ${{ secrets.BUILDBUDDY_API_KEY }}
+
     steps:
       - name: Log security context
         shell: bash
