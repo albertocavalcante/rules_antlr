@@ -9,7 +9,7 @@ on:
       - "docs/**"
       - "LICENSE"
       - ".github/*.md"
-  pull_request:
+  pull_request_target:
     branches:
       - main
     paths-ignore:
@@ -24,13 +24,134 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  authorize:
+    name: "Authorization Check"
     runs-on: ubuntu-20.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read  # Only needed to check PR labels
 
+    outputs:
+      is_authorized: ${{ steps.check.outputs.is_authorized }}
+      
     steps:
+      - name: Check authorization
+        id: check
+        shell: bash
+        run: |
+          # Enable terminal colors
+          export TERM=xterm-256color
+          
+          # Initialize as unauthorized
+          AUTHORIZED="false"
+          REASON=""
+          
+          # Determine authorization based on event type and conditions
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            AUTHORIZED="true"
+            REASON="Push to main branch"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            AUTHORIZED="true"
+            REASON="Manual workflow trigger"
+          elif [[ "${{ github.event_name }}" == "pull_request_target" ]]; then
+            # Check owner
+            if [[ "${{ github.event.pull_request.head.repo.owner.login }}" == "${{ github.repository_owner }}" ]]; then
+              AUTHORIZED="true"
+              REASON="PR from repository owner"
+            # Check association
+            elif [[ "${{ github.event.pull_request.author_association }}" == "OWNER" || 
+                    "${{ github.event.pull_request.author_association }}" == "MEMBER" || 
+                    "${{ github.event.pull_request.author_association }}" == "COLLABORATOR" ]]; then
+              AUTHORIZED="true"
+              REASON="PR from repository member/collaborator"
+            # Check for authorization label
+            elif [[ "${{ contains(github.event.pull_request.labels.*.name, 'authorized-secrets') }}" == "true" ]]; then
+              AUTHORIZED="true"
+              REASON="PR marked with authorized-secrets label"
+            else
+              REASON="PR from external contributor without authorization"
+            fi
+          fi
+          
+          # Set output
+          echo "is_authorized=$AUTHORIZED" >> $GITHUB_OUTPUT
+          
+          # Log with colors
+          if [[ "$AUTHORIZED" == "true" ]]; then
+            echo -e "\033[1;32m✅ AUTHORIZED: $REASON\033[0m"
+          else
+            echo -e "\033[1;33m⚠️ NOT AUTHORIZED: $REASON\033[0m"
+            if [[ "${{ github.event_name }}" == "pull_request_target" ]]; then
+              echo -e "\033[0;36mℹ️ External contributors need the 'authorized-secrets' label to access secrets\033[0m"
+            fi
+          fi
+  
+  build:
+    name: "Build and Test"
+    needs: authorize
+    runs-on: ubuntu-20.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    
+    # Use environment to control secrets access
+    environment: ${{ needs.authorize.outputs.is_authorized == 'true' && 'secrets-enabled' || 'no-secrets' }}
+    
+    env:
+      # Enable colors in logs
+      TERM: xterm-256color
+      FORCE_COLOR: "true"
+      # API key access based on authorization
+      BUILDBUDDY_API_KEY: ${{ needs.authorize.outputs.is_authorized == 'true' && secrets.BUILDBUDDY_API_KEY || 'dummy-value-for-unauthorized-prs' }}
+      
+    steps:
+      - name: Log security context
+        shell: bash
+        run: |
+          echo -e "\033[1;34m🔍 WORKFLOW CONTEXT\033[0m"
+          echo -e "  Event type: \033[1m${{ github.event_name }}\033[0m"
+          if [[ "${{ github.event_name }}" == "pull_request_target" ]]; then
+            echo -e "  PR #: \033[1m${{ github.event.pull_request.number }}\033[0m"
+            echo -e "  PR Author: \033[1m${{ github.event.pull_request.user.login }}\033[0m"
+            echo -e "  Author association: \033[1m${{ github.event.pull_request.author_association }}\033[0m"
+          fi
+          
+          echo ""
+          echo -e "\033[1;34m🔐 SECURITY STATUS\033[0m"
+          if [[ "${{ needs.authorize.outputs.is_authorized }}" == "true" ]]; then
+            echo -e "  \033[1;32m✅ AUTHORIZED: Using real API key\033[0m"
+          else
+            echo -e "  \033[1;33m⚠️ UNAUTHORIZED: Using dummy API key (limited functionality)\033[0m"
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          # For pull_request_target events, we need to check out the PR code
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.sha || '' }}
+          persist-credentials: false
 
+      # Security check for workflow file modifications in PRs
+      - name: Validate PR content
+        if: github.event_name == 'pull_request_target'
+        shell: bash
+        run: |
+          # Check for workflow file modifications
+          MODIFIED_WORKFLOWS=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep -E "\.github/workflows/.*\.yml$" || true)
+          
+          if [[ -n "$MODIFIED_WORKFLOWS" ]]; then
+            echo -e "\033[1;33m⚠️ PR modifies workflow files:\033[0m"
+            echo -e "\033[0;36m$MODIFIED_WORKFLOWS\033[0m"
+            
+            # Fail if unauthorized PR modifies workflow files
+            if [[ "${{ needs.authorize.outputs.is_authorized }}" != "true" ]]; then
+              echo -e "\033[1;31m❌ ERROR: Unauthorized PR cannot modify workflow files\033[0m"
+              echo -e "\033[0;36mℹ️ Contributors must be repository members or have the 'authorized-secrets' label\033[0m"
+              exit 1
+            fi
+          fi
+      
       - name: Set up JDK 11
         uses: actions/setup-java@3a4f6e1af504cf6a31855fa899c6aa5355ba6c12 # v4.7.0
         with:
@@ -44,10 +165,11 @@ jobs:
         shell: bash
         run: |
           cd examples
+          echo -e "\033[1;34m🔨 Building examples...\033[0m"
           bazelisk build \
             --config ci \
             --config remote-cache \
-            --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }} \
+            --remote_header=x-buildbuddy-api-key=${{ env.BUILDBUDDY_API_KEY }} \
             //antlr2/Cpp/... \
             //antlr2/Calc/... \
             //antlr2/Python/... \
@@ -65,19 +187,21 @@ jobs:
         shell: bash
         run: |
           cd examples/antlr4-opt
+          echo -e "\033[1;34m🔨 Building antlr4-opt...\033[0m"
           bazelisk build \
             --config ci \
             --config remote-cache \
-            --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }} \
+            --remote_header=x-buildbuddy-api-key=${{ env.BUILDBUDDY_API_KEY }} \
             //...
 
       - name: Run tests
         shell: bash
         run: |
+          echo -e "\033[1;34m🧪 Running tests...\033[0m"
           bazelisk test \
             --config ci \
             --config remote-cache \
-            --remote_header=x-buildbuddy-api-key=${{ secrets.BUILDBUDDY_API_KEY }} \
+            --remote_header=x-buildbuddy-api-key=${{ env.BUILDBUDDY_API_KEY }} \
             //...
 
       - name: Shutdown Bazel
