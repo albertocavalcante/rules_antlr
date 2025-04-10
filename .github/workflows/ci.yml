@@ -75,7 +75,7 @@ jobs:
             echo "is_authorized=false" >> $GITHUB_OUTPUT
             echo "Not authorized: PR from external contributor without proper authorization"
           fi
-
+  
   build:
     name: "Build and Test"
     needs: authorize
@@ -83,9 +83,10 @@ jobs:
     timeout-minutes: 60
     permissions:
       contents: read
-
-    environment: ${{ needs.check_authorization.outputs.is_authorized == 'true' && 'production' || 'no-secrets' }}
-
+    
+    # Use environment to control secrets access
+    environment: ${{ needs.authorize.outputs.is_authorized == 'true' && 'secrets-enabled' || 'no-secrets' }}
+    
     env:
       BUILDBUDDY_API_KEY: ${{ needs.check_authorization.outputs.is_authorized == 'true' && secrets.BUILDBUDDY_API_KEY || 'dummy-value-for-unauthorized-builds' }}
 
