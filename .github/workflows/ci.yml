@@ -77,6 +77,7 @@ jobs:
   build:
     needs: check_authorization
     runs-on: ubuntu-20.04
+    timeout-minutes: 60
     permissions:
       contents: read
 
