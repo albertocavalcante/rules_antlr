@@ -26,6 +26,7 @@ concurrency:
 jobs:
   check_authorization:
     runs-on: ubuntu-20.04
+    timeout-minutes: 5
     permissions:
       contents: read
       pull-requests: read # Needed to check PR labels
