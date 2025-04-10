@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-20.04
     permissions:
       contents: read
-      pull-requests: read  # Needed to check PR labels
+      pull-requests: read # Needed to check PR labels
 
     outputs:
       is_authorized: ${{ steps.check.outputs.is_authorized }}
@@ -43,7 +43,7 @@ jobs:
             echo "Authorized: push or workflow_dispatch event"
             exit 0
           fi
-          
+
           # For PRs, check various authorization criteria
           if [[ "${{ github.event_name }}" == "pull_request_target" ]]; then
             # Auto-authorize if PR is from the repository owner
@@ -79,12 +79,12 @@ jobs:
     runs-on: ubuntu-20.04
     permissions:
       contents: read
-    
+
     environment: ${{ needs.check_authorization.outputs.is_authorized == 'true' && 'production' || 'no-secrets' }}
-    
+
     env:
       BUILDBUDDY_API_KEY: ${{ needs.check_authorization.outputs.is_authorized == 'true' && secrets.BUILDBUDDY_API_KEY || 'dummy-value-for-unauthorized-builds' }}
-      
+
     steps:
       - name: Log security context
         run: |
