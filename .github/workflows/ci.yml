@@ -24,6 +24,56 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  check_authorization:
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: read
+      pull-requests: read  # Needed to check PR labels
+
+    outputs:
+      is_authorized: ${{ steps.check.outputs.is_authorized }}
+
+    steps:
+      - name: Check authorization
+        id: check
+        run: |
+          # For push to main or workflow_dispatch, always authorize
+          if [[ "${{ github.event_name }}" == "push" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "is_authorized=true" >> $GITHUB_OUTPUT
+            echo "Authorized: push or workflow_dispatch event"
+            exit 0
+          fi
+          
+          # For PRs, check various authorization criteria
+          if [[ "${{ github.event_name }}" == "pull_request_target" ]]; then
+            # Auto-authorize if PR is from the repository owner
+            if [[ "${{ github.event.pull_request.head.repo.owner.login }}" == "${{ github.repository_owner }}" ]]; then
+              echo "is_authorized=true" >> $GITHUB_OUTPUT
+              echo "Authorized: PR from repository owner"
+              exit 0
+            fi
+            
+            # Auto-authorize if PR is from a repository member/collaborator
+            if [[ "${{ github.event.pull_request.author_association }}" == "OWNER" || 
+                  "${{ github.event.pull_request.author_association }}" == "MEMBER" || 
+                  "${{ github.event.pull_request.author_association }}" == "COLLABORATOR" ]]; then
+              echo "is_authorized=true" >> $GITHUB_OUTPUT
+              echo "Authorized: PR from repository member/collaborator"
+              exit 0
+            fi
+            
+            # Check for the authorized-secrets label for external contributors
+            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'authorized-secrets') }}" == "true" ]]; then
+              echo "is_authorized=true" >> $GITHUB_OUTPUT
+              echo "Authorized: PR with authorized-secrets label"
+              exit 0
+            fi
+            
+            # Not authorized
+            echo "is_authorized=false" >> $GITHUB_OUTPUT
+            echo "Not authorized: PR from external contributor without proper authorization"
+          fi
+
   build:
     runs-on: ubuntu-20.04
 
