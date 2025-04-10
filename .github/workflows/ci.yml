@@ -24,7 +24,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check_authorization:
+  authorize:
+    name: "Authorization Check"
     runs-on: ubuntu-20.04
     timeout-minutes: 5
     permissions:
@@ -76,7 +77,8 @@ jobs:
           fi
 
   build:
-    needs: check_authorization
+    name: "Build and Test"
+    needs: authorize
     runs-on: ubuntu-20.04
     timeout-minutes: 60
     permissions:
