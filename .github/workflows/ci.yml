@@ -30,50 +30,61 @@ jobs:
     timeout-minutes: 5
     permissions:
       contents: read
-      pull-requests: read # Needed to check PR labels
+      pull-requests: read  # Only needed to check PR labels
 
     outputs:
       is_authorized: ${{ steps.check.outputs.is_authorized }}
-
+      
     steps:
       - name: Check authorization
         id: check
+        shell: bash
         run: |
-          # For push to main or workflow_dispatch, always authorize
-          if [[ "${{ github.event_name }}" == "push" || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "is_authorized=true" >> $GITHUB_OUTPUT
-            echo "Authorized: push or workflow_dispatch event"
-            exit 0
-          fi
-
-          # For PRs, check various authorization criteria
-          if [[ "${{ github.event_name }}" == "pull_request_target" ]]; then
-            # Auto-authorize if PR is from the repository owner
+          # Enable terminal colors
+          export TERM=xterm-256color
+          
+          # Initialize as unauthorized
+          AUTHORIZED="false"
+          REASON=""
+          
+          # Determine authorization based on event type and conditions
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            AUTHORIZED="true"
+            REASON="Push to main branch"
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            AUTHORIZED="true"
+            REASON="Manual workflow trigger"
+          elif [[ "${{ github.event_name }}" == "pull_request_target" ]]; then
+            # Check owner
             if [[ "${{ github.event.pull_request.head.repo.owner.login }}" == "${{ github.repository_owner }}" ]]; then
-              echo "is_authorized=true" >> $GITHUB_OUTPUT
-              echo "Authorized: PR from repository owner"
-              exit 0
+              AUTHORIZED="true"
+              REASON="PR from repository owner"
+            # Check association
+            elif [[ "${{ github.event.pull_request.author_association }}" == "OWNER" || 
+                    "${{ github.event.pull_request.author_association }}" == "MEMBER" || 
+                    "${{ github.event.pull_request.author_association }}" == "COLLABORATOR" ]]; then
+              AUTHORIZED="true"
+              REASON="PR from repository member/collaborator"
+            # Check for authorization label
+            elif [[ "${{ contains(github.event.pull_request.labels.*.name, 'authorized-secrets') }}" == "true" ]]; then
+              AUTHORIZED="true"
+              REASON="PR marked with authorized-secrets label"
+            else
+              REASON="PR from external contributor without authorization"
             fi
-            
-            # Auto-authorize if PR is from a repository member/collaborator
-            if [[ "${{ github.event.pull_request.author_association }}" == "OWNER" || 
-                  "${{ github.event.pull_request.author_association }}" == "MEMBER" || 
-                  "${{ github.event.pull_request.author_association }}" == "COLLABORATOR" ]]; then
-              echo "is_authorized=true" >> $GITHUB_OUTPUT
-              echo "Authorized: PR from repository member/collaborator"
-              exit 0
+          fi
+          
+          # Set output
+          echo "is_authorized=$AUTHORIZED" >> $GITHUB_OUTPUT
+          
+          # Log with colors
+          if [[ "$AUTHORIZED" == "true" ]]; then
+            echo -e "\033[1;32m✅ AUTHORIZED: $REASON\033[0m"
+          else
+            echo -e "\033[1;33m⚠️ NOT AUTHORIZED: $REASON\033[0m"
+            if [[ "${{ github.event_name }}" == "pull_request_target" ]]; then
+              echo -e "\033[0;36mℹ️ External contributors need the 'authorized-secrets' label to access secrets\033[0m"
             fi
-            
-            # Check for the authorized-secrets label for external contributors
-            if [[ "${{ contains(github.event.pull_request.labels.*.name, 'authorized-secrets') }}" == "true" ]]; then
-              echo "is_authorized=true" >> $GITHUB_OUTPUT
-              echo "Authorized: PR with authorized-secrets label"
-              exit 0
-            fi
-            
-            # Not authorized
-            echo "is_authorized=false" >> $GITHUB_OUTPUT
-            echo "Not authorized: PR from external contributor without proper authorization"
           fi
   
   build:
@@ -88,17 +99,30 @@ jobs:
     environment: ${{ needs.authorize.outputs.is_authorized == 'true' && 'secrets-enabled' || 'no-secrets' }}
     
     env:
-      BUILDBUDDY_API_KEY: ${{ needs.check_authorization.outputs.is_authorized == 'true' && secrets.BUILDBUDDY_API_KEY || 'dummy-value-for-unauthorized-builds' }}
-
+      # Enable colors in logs
+      TERM: xterm-256color
+      FORCE_COLOR: "true"
+      # API key access based on authorization
+      BUILDBUDDY_API_KEY: ${{ needs.authorize.outputs.is_authorized == 'true' && secrets.BUILDBUDDY_API_KEY || 'dummy-value-for-unauthorized-prs' }}
+      
     steps:
       - name: Log security context
+        shell: bash
         run: |
-          echo "Event type: ${{ github.event_name }}"
-          echo "Is authorized: ${{ needs.check_authorization.outputs.is_authorized }}"
-          if [ "${{ env.BUILDBUDDY_API_KEY }}" == "dummy-value-for-unauthorized-builds" ]; then
-            echo "Using dummy API key (secrets not available)"
+          echo -e "\033[1;34m🔍 WORKFLOW CONTEXT\033[0m"
+          echo -e "  Event type: \033[1m${{ github.event_name }}\033[0m"
+          if [[ "${{ github.event_name }}" == "pull_request_target" ]]; then
+            echo -e "  PR #: \033[1m${{ github.event.pull_request.number }}\033[0m"
+            echo -e "  PR Author: \033[1m${{ github.event.pull_request.user.login }}\033[0m"
+            echo -e "  Author association: \033[1m${{ github.event.pull_request.author_association }}\033[0m"
+          fi
+          
+          echo ""
+          echo -e "\033[1;34m🔐 SECURITY STATUS\033[0m"
+          if [[ "${{ needs.authorize.outputs.is_authorized }}" == "true" ]]; then
+            echo -e "  \033[1;32m✅ AUTHORIZED: Using real API key\033[0m"
           else
-            echo "Using real API key (secrets available)"
+            echo -e "  \033[1;33m⚠️ UNAUTHORIZED: Using dummy API key (limited functionality)\033[0m"
           fi
 
       - name: Checkout repository
