@@ -117,6 +117,8 @@ def _args(ctx, output_dir):
 antlr = rule(
     implementation = _generate,
     doc = "Runs [ANTLR 3](https://www.antlr3.org//) on a set of grammars.",
+
+    # @unsorted-dict-items
     attrs = {
         "debug": attr.bool(default = False, doc = "Generate a parser that emits debugging events."),
         "depend": attr.bool(default = False, doc = "Generate file dependencies; don't actually run antlr."),
@@ -153,8 +155,8 @@ dependencies here.
         "Xmultithreaded": attr.bool(default = False, doc = "Run the analysis in 2 threads."),
         "Xnfastates": attr.bool(default = False, doc = "For nondeterminisms, list NFA states for each path."),
         "Xnocollapse": attr.bool(default = False, doc = "Collapse incident edges into DFA states."),
-        "Xnoprune": attr.bool(default = False, doc = "Do not test EBNF block exit branches."),
         "Xnomergestopstates": attr.bool(default = False, doc = "Max DFA states before table used rather than inlining."),
+        "Xnoprune": attr.bool(default = False, doc = "Do not test EBNF block exit branches."),
         "XsaveLexer": attr.bool(default = False, doc = "For nondeterminisms, list NFA states for each path."),
         "Xwatchconversion": attr.bool(default = False, doc = "Don't delete temporary lexers generated from combined grammars."),
         "_tool": attr.label(

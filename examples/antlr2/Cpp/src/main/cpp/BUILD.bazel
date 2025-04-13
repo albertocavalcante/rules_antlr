@@ -1,5 +1,3 @@
-load("@rules_antlr//antlr:antlr2.bzl", "antlr")
-
 cc_library(
     name = "lib",
     srcs = ["//antlr2/Cpp/src/main/antlr2:generated"],
