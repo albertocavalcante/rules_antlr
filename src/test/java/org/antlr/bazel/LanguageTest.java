@@ -4,6 +4,7 @@ import static org.antlr.bazel.Language.*;
 import static org.junit.Assert.assertEquals;
 
 import org.antlr.bazel.Language;
+import org.antlr.bazel.Namespace;
 import org.junit.Test;
 
 
@@ -90,42 +91,42 @@ public class LanguageTest
     {
         assertEquals(null, C.detectNamespace("struct foo { int a; };"));
         assertEquals(null, CPP.detectNamespace("grammar test;"));
-        assertEquals("A", CPP.detectNamespace("@namespace{A}").toString());
-        assertEquals("A", CPP.detectNamespace("@lexer::namespace {\n A\n }").toString());
-        assertEquals("A", CPP.detectNamespace("@parser::namespace { A }").toString());
+        assertEquals(Namespace.of("A"), CPP.detectNamespace("@namespace{A}"));
+        assertEquals(Namespace.of("A"), CPP.detectNamespace("@lexer::namespace {\n A\n }"));
+        assertEquals(Namespace.of("A"), CPP.detectNamespace("@parser::namespace { A }"));
 
         assertEquals(null, CSHARP.detectNamespace("grammar test;"));
-        assertEquals("A", CSHARP.detectNamespace("@namespace{A}").toString());
-        assertEquals("A",
-                CSHARP.detectNamespace("@lexer::namespace {\n A\n }").toString());
-        assertEquals("A", CSHARP.detectNamespace("@parser::namespace { A }").toString());
+        assertEquals(Namespace.of("A"), CSHARP.detectNamespace("@namespace{A}"));
+        assertEquals(Namespace.of("A"),
+                CSHARP.detectNamespace("@lexer::namespace {\n A\n }"));
+        assertEquals(Namespace.of("A"), CSHARP.detectNamespace("@parser::namespace { A }"));
 
         assertEquals(null, GO.detectNamespace("header {}"));
         assertEquals(null, GO.detectNamespace(""));
-        assertEquals("foo", GO.detectNamespace("@header {\npackage foo\n}").toString());
-        assertEquals("foo", GO.detectNamespace("@header { package foo }").toString());
-        assertEquals("foo",
-                GO.detectNamespace("@lexer::header {package foo}").toString());
-        assertEquals("foo",
-                GO.detectNamespace("@parser::header {package\nfoo}").toString());
+        assertEquals(Namespace.of("foo"), GO.detectNamespace("@header {\npackage foo\n}"));
+        assertEquals(Namespace.of("foo"), GO.detectNamespace("@header { package foo }"));
+        assertEquals(Namespace.of("foo"),
+                GO.detectNamespace("@lexer::header {package foo}"));
+        assertEquals(Namespace.of("foo"),
+                GO.detectNamespace("@parser::header {package\nfoo}"));
 
         assertEquals(null, JAVA.detectNamespace(" "));
         assertEquals(null, JAVA.detectNamespace("header {}"));
-        assertEquals("foo", JAVA.detectNamespace("header { package foo ; }").toString());
-        assertEquals("foo.bar",
-                JAVA.detectNamespace("header {package foo.bar;}").toString());
-        assertEquals("foo.bar",
-                JAVA.detectNamespace("header {package\nfoo.bar;}").toString());
-        assertEquals("org.antlr.v4.parse", JAVA.detectNamespace("// @header test { comment }\n@lexer::header {\npackage org.antlr.v4.parse;\n}").toString());
-        assertEquals("org.antlr.v4.parse", JAVA.detectNamespace("/* @header test { comment } */\n@lexer::header {\npackage org.antlr.v4.parse;\n}").toString());
-        assertEquals("org.antlr.v4.parse", JAVA.detectNamespace("/*\n * @header test { comment }\n */\n@lexer::header {\npackage org.antlr.v4.parse;\n}").toString());
+        assertEquals(Namespace.of("foo"), JAVA.detectNamespace("header { package foo ; }"));
+        assertEquals(Namespace.of("foo.bar"),
+                JAVA.detectNamespace("header {package foo.bar;}"));
+        assertEquals(Namespace.of("foo.bar"),
+                JAVA.detectNamespace("header {package\nfoo.bar;}"));
+        assertEquals(Namespace.of("org.antlr.v4.parse"), JAVA.detectNamespace("// @header test { comment }\n@lexer::header {\npackage org.antlr.v4.parse;\n}"));
+        assertEquals(Namespace.of("org.antlr.v4.parse"), JAVA.detectNamespace("/* @header test { comment } */\n@lexer::header {\npackage org.antlr.v4.parse;\n}"));
+        assertEquals(Namespace.of("org.antlr.v4.parse"), JAVA.detectNamespace("/*\n * @header test { comment }\n */\n@lexer::header {\npackage org.antlr.v4.parse;\n}"));
 
         assertEquals(null, OBJC.detectNamespace(""));
 
         assertEquals(null, PYTHON.detectNamespace("header \"Lexer.__main__\" {}"));
         assertEquals(null, RUBY.detectNamespace(""));
         assertEquals(null, RUBY.detectNamespace("header {}"));
-        assertEquals("Foo", RUBY.detectNamespace("header {module Foo}").toString());
+        assertEquals(Namespace.of("Foo"), RUBY.detectNamespace("header {module Foo}"));
         assertEquals(null, SWIFT.detectNamespace(""));
     }
 }
