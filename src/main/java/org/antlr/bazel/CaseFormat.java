@@ -19,9 +19,9 @@ class CaseFormat
 
     /** Creates a new CaseFormat object. */
     private CaseFormat()
-            {
-                super();
-            }
+    {
+        super();
+    }
 
     /**
      * Converts the given string to lower underscore casing.
@@ -31,9 +31,9 @@ class CaseFormat
      * @return  the converted string.
      */
     public static String toLowerUnderscore(String s)
-            {
-                return LOWER_UNDERSCORE.matcher(s).replaceAll("$1_$2").toLowerCase();
-            }
+    {
+        return LOWER_UNDERSCORE.matcher(s).replaceAll("$1_$2").toLowerCase();
+    }
 
 
     /**
@@ -44,26 +44,25 @@ class CaseFormat
      * @return  the converted string.
      */
     public static String toUpperCamelCase(String s)
+    {
+        Matcher matcher = UPPER_CAMEL.matcher(s);
+
+        StringBuffer buf = new StringBuffer(s.length());
+
+        while (matcher.find())
+        {
+            if (matcher.start() == 0)
             {
-                Matcher matcher = UPPER_CAMEL.matcher(s);
-
-                StringBuffer buf = new StringBuffer(s.length());
-
-                while (matcher.find())
-                    {
-                        if (matcher.start() == 0)
-                            {
-                                matcher.appendReplacement(buf, matcher.group(1).toUpperCase());
-                            }
-                        else
-                            {
-                                matcher.appendReplacement(buf,
-                                        matcher.group(1).substring(1).toUpperCase());
-                            }
-                    }
-
-                matcher.appendTail(buf);
-
-                return buf.toString();
+                matcher.appendReplacement(buf, matcher.group(1).toUpperCase());
+            }else
+            {
+                matcher.appendReplacement(buf,
+                        matcher.group(1).substring(1).toUpperCase());
             }
+        }
+
+        matcher.appendTail(buf);
+
+        return buf.toString();
+    }
 }

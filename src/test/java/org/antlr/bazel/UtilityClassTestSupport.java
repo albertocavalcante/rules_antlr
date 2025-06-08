@@ -14,9 +14,9 @@ class UtilityClassTestSupport
 {
     /** Creates a new UtilityClassTestSupport object. */
     private UtilityClassTestSupport()
-            {
-                super();
-            }
+    {
+        super();
+    }
 
     /**
      * Invokes the private constructur of the given class.
@@ -26,16 +26,16 @@ class UtilityClassTestSupport
      * @throws  ReflectiveOperationException  if an error occurred.
      */
     public static void test(Class<?> cl) throws ReflectiveOperationException
-            {
-                Constructor<?> c = cl.getDeclaredConstructor();
+    {
+        Constructor<?> c = cl.getDeclaredConstructor();
 
-                if (!Modifier.isPrivate(c.getModifiers()))
-                    {
-                        throw new AssertionError(
-                                MessageFormat.format("Constructor {0} is not private", c));
-                    }
+        if (!Modifier.isPrivate(c.getModifiers()))
+        {
+            throw new AssertionError(
+                    MessageFormat.format("Constructor {0} is not private", c));
+        }
 
-                c.setAccessible(true);
-                c.newInstance();
-            }
+        c.setAccessible(true);
+        c.newInstance();
+    }
 }

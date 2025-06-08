@@ -47,29 +47,28 @@ class TestProject implements Closeable
      * @throws  IOException  if an I/O error occurred.
      */
     private TestProject(String project, boolean copy) throws IOException
+    {
+        this.root = Files.createTempDirectory("antlr-bazel-test-");
+        this.name = root.getFileName().toString();
+
+        if (copy)
+        {
+            Disk.copy(Projects.path(project), root);
+        }else
+        {
+            try (DirectoryStream<Path> entries = Files.newDirectoryStream(Projects.path(project)))
             {
-                this.root = Files.createTempDirectory("antlr-bazel-test-");
-                this.name = root.getFileName().toString();
-
-                if (copy)
-                    {
-                        Disk.copy(Projects.path(project), root);
-                    }
-                else
-                    {
-                        try (DirectoryStream<Path> entries = Files.newDirectoryStream(Projects.path(project)))
-                                {
-                                    for (Path target : entries)
-                                        {
-                                            Path link = root.resolve(target.getFileName());
-                                            Files.createSymbolicLink(link, target);
-                                        }
-                                }
-                    }
-
-                outputDirectory = Files.createDirectories(root.resolve("target"));
-                Files.createDirectories(root.resolve("lib"));
+                for (Path target : entries)
+                {
+                    Path link = root.resolve(target.getFileName());
+                    Files.createSymbolicLink(link, target);
+                }
             }
+        }
+
+        outputDirectory = Files.createDirectories(root.resolve("target"));
+        Files.createDirectories(root.resolve("lib"));
+    }
 
     /**
      * Creates a new test project.
@@ -81,9 +80,9 @@ class TestProject implements Closeable
      * @throws  IOException  if an I/O error occurred.
      */
     public static TestProject create(String project) throws IOException
-            {
-                return create(project, false);
-            }
+    {
+        return create(project, false);
+    }
 
 
     /**
@@ -98,94 +97,94 @@ class TestProject implements Closeable
      * @throws  IOException  if an I/O error occurred.
      */
     public static TestProject create(String project, boolean copy) throws IOException
-            {
-                System.setProperty("ANTLR_DO_NOT_EXIT", "true");
+    {
+        System.setProperty("ANTLR_DO_NOT_EXIT", "true");
 
-                return new TestProject(project, copy);
-            }
+        return new TestProject(project, copy);
+    }
 
 
     @Override
     public void close() throws IOException
-            {
-                if (Files.exists(root))
-                    {
-                        Disk.delete(root);
-                    }
-            }
+    {
+        if (Files.exists(root))
+        {
+            Disk.delete(root);
+        }
+    }
 
 
     String[] args(String... args)
-            {
-                List<String> a = new ArrayList<>();
+    {
+        List<String> a = new ArrayList<>();
 
-                // we always want the output in the output directory
-                a.addAll(Arrays.asList("-o", outputDirectory.toString()));
-                a.addAll(Arrays.asList(args));
+        // we always want the output in the output directory
+        a.addAll(Arrays.asList("-o", outputDirectory.toString()));
+        a.addAll(Arrays.asList(args));
 
-                return a.toArray(new String[0]);
-            }
+        return a.toArray(new String[0]);
+    }
 
 
     String[] grammars(String... exclusions) throws IOException
-            {
-                List<String> result = new ArrayList<>();
+    {
+        List<String> result = new ArrayList<>();
 
-                Files.walkFileTree(root,
-                        EnumSet.of(FileVisitOption.FOLLOW_LINKS),
-                        Integer.MAX_VALUE,
-                        new SimpleFileVisitor<Path>()
-                                {
-                                    PathMatcher grammar = root.getFileSystem()
-                                            .getPathMatcher("glob:**/*.g{3,4,}");
-                                    Set<String> excludes = new HashSet<>(Arrays.asList(exclusions));
+        Files.walkFileTree(root,
+                EnumSet.of(FileVisitOption.FOLLOW_LINKS),
+                Integer.MAX_VALUE,
+                new SimpleFileVisitor<Path>()
+                {
+                    PathMatcher grammar = root.getFileSystem()
+                            .getPathMatcher("glob:**/*.g{3,4,}");
+                    Set<String> excludes = new HashSet<>(Arrays.asList(exclusions));
 
-                                    @Override
-                                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                                            throws IOException
-                                            {
-                                                if (grammar.matches(file)
-                                                        && !excludes.contains(file.getFileName().toString()))
-                                                    {
-                                                        result.add(file.toAbsolutePath().toString());
-                                                    }
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                            throws IOException
+                    {
+                        if (grammar.matches(file)
+                                && !excludes.contains(file.getFileName().toString()))
+                        {
+                            result.add(file.toAbsolutePath().toString());
+                        }
 
-                                                return FileVisitResult.CONTINUE;
-                                            }
-                                });
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
 
-                return result.toArray(new String[0]);
-            }
+        return result.toArray(new String[0]);
+    }
 
 
     Path outputDirectory()
-            {
-                return outputDirectory;
-            }
+    {
+        return outputDirectory;
+    }
 
 
     Path relative(Path link)
-            {
-                return root.relativize(link);
-            }
+    {
+        return root.relativize(link);
+    }
 
 
     Path resolve(String string)
-            {
-                return root.resolve(string);
-            }
+    {
+        return root.resolve(string);
+    }
 
 
     Path root()
-            {
-                return root;
-            }
+    {
+        return root;
+    }
 
 
     Path srcjar()
-            {
-                return outputDirectory.resolve(name + ".srcjar");
-            }
+    {
+        return outputDirectory.resolve(name + ".srcjar");
+    }
 
 
     /**
@@ -196,50 +195,50 @@ class TestProject implements Closeable
      * @throws  IOException  if an I/O error occurred.
      */
     void validate(String... paths) throws IOException
+    {
+        Path srcjar = srcjar();
+
+        assertTrue(Files.exists(srcjar));
+
+        URI uri = URI.create("jar:file:" + srcjar.toUri().getPath());
+
+        try (FileSystem fs = FileSystems.newFileSystem(uri, new HashMap<String, String>()))
+        {
+            for (String path : paths)
             {
-                Path srcjar = srcjar();
-
-                assertTrue(Files.exists(srcjar));
-
-                URI uri = URI.create("jar:file:" + srcjar.toUri().getPath());
-
-                try (FileSystem fs = FileSystems.newFileSystem(uri, new HashMap<String, String>()))
-                        {
-                            for (String path : paths)
-                                {
-                                    if (Files.notExists(fs.getPath(path)))
-                                        {
-                                            throw new AssertionError(
-                                                    String.format("Path does not exist: %s. Archive contains: %s",
-                                                            path,
-                                                            contents(fs.getPath("/"))));
-                                        }
-                                }
-                        }
+                if (Files.notExists(fs.getPath(path)))
+                {
+                    throw new AssertionError(
+                            String.format("Path does not exist: %s. Archive contains: %s",
+                                    path,
+                                    contents(fs.getPath("/"))));
+                }
             }
+        }
+    }
 
 
     private String contents(Path root) throws IOException
-            {
-                List<String> paths = new ArrayList<>();
+    {
+        List<String> paths = new ArrayList<>();
 
-                Files.walkFileTree(root,
-                        EnumSet.of(FileVisitOption.FOLLOW_LINKS),
-                        Integer.MAX_VALUE,
-                        new SimpleFileVisitor<Path>()
-                                {
-                                    @Override
-                                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                                            throws IOException
-                                            {
-                                                paths.add(root.relativize(file).toString());
+        Files.walkFileTree(root,
+                EnumSet.of(FileVisitOption.FOLLOW_LINKS),
+                Integer.MAX_VALUE,
+                new SimpleFileVisitor<Path>()
+                {
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                            throws IOException
+                    {
+                        paths.add(root.relativize(file).toString());
 
-                                                return FileVisitResult.CONTINUE;
-                                            }
-                                });
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
 
-                Collections.sort(paths);
+        Collections.sort(paths);
 
-                return paths.stream().collect(Collectors.joining("\n"));
-            }
+        return paths.stream().collect(Collectors.joining("\n"));
+    }
 }

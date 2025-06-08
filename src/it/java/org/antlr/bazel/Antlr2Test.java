@@ -19,180 +19,180 @@ public class Antlr2Test
 {
     @Test
     public void basic() throws Exception
-            {
-                try (TestProject project = TestProject.create("examples/antlr2/Calc"))
-                        {
-                            AntlrRules.create(project.root())
-                                    .srcjar(project.srcjar().toString())
-                                    .version("2")
-                                    .encoding("")
-                                    .classpath(classpath())
-                                    .outputDirectory(project.outputDirectory().toString())
-                                    .grammars(project.grammars())
-                                    .args(project.args())
-                                    .generate();
+    {
+        try (TestProject project = TestProject.create("examples/antlr2/Calc"))
+        {
+            AntlrRules.create(project.root())
+                    .srcjar(project.srcjar().toString())
+                    .version("2")
+                    .encoding("")
+                    .classpath(classpath())
+                    .outputDirectory(project.outputDirectory().toString())
+                    .grammars(project.grammars())
+                    .args(project.args())
+                    .generate();
 
-                            project.validate("calc/CalcLexer.java",
-                                    "calc/CalcLexer.smap",
-                                    "calc/CalcParser.java",
-                                    "calc/CalcParser.smap",
-                                    "calc/CalcParserTokenTypes.java",
-                                    "calc/CalcParserTokenTypes.txt",
-                                    "calc/CalcTreeWalker.java",
-                                    "calc/CalcTreeWalker.smap");
-                        }
-            }
+            project.validate("calc/CalcLexer.java",
+                    "calc/CalcLexer.smap",
+                    "calc/CalcParser.java",
+                    "calc/CalcParser.smap",
+                    "calc/CalcParserTokenTypes.java",
+                    "calc/CalcParserTokenTypes.txt",
+                    "calc/CalcTreeWalker.java",
+                    "calc/CalcTreeWalker.smap");
+        }
+    }
 
 
     @Test
     public void invalidGrammar() throws Exception
-            {
-                try (TestProject project = TestProject.create(
-                        "src/it/resources/antlr2/InvalidGrammar"))
-                        {
-                            AntlrRules.create(project.root())
-                                    .srcjar(project.srcjar().toString())
-                                    .version("2")
-                                    .classpath(classpath())
-                                    .outputDirectory(project.outputDirectory().toString())
-                                    .grammars(project.grammars())
-                                    .args(project.args())
-                                    .generate();
+    {
+        try (TestProject project = TestProject.create(
+                "src/it/resources/antlr2/InvalidGrammar"))
+        {
+            AntlrRules.create(project.root())
+                    .srcjar(project.srcjar().toString())
+                    .version("2")
+                    .classpath(classpath())
+                    .outputDirectory(project.outputDirectory().toString())
+                    .grammars(project.grammars())
+                    .args(project.args())
+                    .generate();
 
-                            fail("Expected InvocationTargetException");
-                        }
-                catch (InvocationTargetException ex)
-                        {
-                            assertEquals("ANTLR Panic: Exiting due to errors.",
-                                    ex.getCause().getMessage());
-                        }
-            }
+            fail("Expected InvocationTargetException");
+        }
+        catch (InvocationTargetException ex)
+        {
+            assertEquals("ANTLR Panic: Exiting due to errors.",
+                    ex.getCause().getMessage());
+        }
+    }
 
 
     @Test
     public void missingSuppergrammar() throws Exception
+    {
+        try (TestProject project = TestProject.create("examples/antlr2/InheritTinyC",
+                true))
+        {
+            String r = null;
+
+            try (TestProject ref = TestProject.create("examples/antlr2/TinyC", true))
             {
-                try (TestProject project = TestProject.create("examples/antlr2/InheritTinyC",
-                        true))
-                        {
-                            String r = null;
+                AntlrRules.create(ref.root())
+                        .srcjar(ref.srcjar().toString())
+                        .version("2")
+                        .classpath(classpath())
+                        .outputDirectory(ref.outputDirectory().toString())
+                        .grammars("src/main/antlr2/lexer.g", "src/main/antlr2/tinyc.g")
+                        .args(ref.args())
+                        .generate();
 
-                            try (TestProject ref = TestProject.create("examples/antlr2/TinyC", true))
-                                    {
-                                        AntlrRules.create(ref.root())
-                                                .srcjar(ref.srcjar().toString())
-                                                .version("2")
-                                                .classpath(classpath())
-                                                .outputDirectory(ref.outputDirectory().toString())
-                                                .grammars("src/main/antlr2/lexer.g", "src/main/antlr2/tinyc.g")
-                                                .args(ref.args())
-                                                .generate();
+                Path target = ref.srcjar();
+                Path link = project.outputDirectory().resolve(target.getFileName());
 
-                                        Path target = ref.srcjar();
-                                        Path link = project.outputDirectory().resolve(target.getFileName());
+                Files.createSymbolicLink(link, target);
 
-                                        Files.createSymbolicLink(link, target);
+                AntlrRules.create(project.root())
+                        .srcjar(project.srcjar().toString())
+                        .version("2")
+                        .classpath(classpath())
+                        .outputDirectory(project.outputDirectory().toString())
+                        .grammars("src/main/antlr2/subc.g")
+                        .args(
+                                project.args("-glib",
+                                        r = ref.root()
+                                                .resolve("src/main/antlr2/tinyc.g")
+                                                .toString()))
+                        .generate();
 
-                                        AntlrRules.create(project.root())
-                                                .srcjar(project.srcjar().toString())
-                                                .version("2")
-                                                .classpath(classpath())
-                                                .outputDirectory(project.outputDirectory().toString())
-                                                .grammars("src/main/antlr2/subc.g")
-                                                .args(
-                                                        project.args("-glib",
-                                                                r = ref.root()
-                                                                        .resolve("src/main/antlr2/tinyc.g")
-                                                                        .toString()))
-                                                .generate();
-
-                                        fail("Expected IllegalArgumentException");
-                                    }
-                            catch (IllegalArgumentException ex)
-                                    {
-                                        assertEquals(
-                                                String.format(
-                                                        "You have to provide the .srcjar created for '%s' as well",
-                                                        r),
-                                                ex.getMessage());
-                                    }
-                        }
+                fail("Expected IllegalArgumentException");
             }
+            catch (IllegalArgumentException ex)
+            {
+                assertEquals(
+                        String.format(
+                                "You have to provide the .srcjar created for '%s' as well",
+                                r),
+                        ex.getMessage());
+            }
+        }
+    }
 
 
     @Test
     public void separatedLexerParser() throws Exception
-            {
-                try (TestProject project = TestProject.create("examples/antlr2/TinyC"))
-                        {
-                            AntlrRules.create(project.root())
-                                    .srcjar(project.srcjar().toString())
-                                    .version("2")
-                                    .classpath(classpath())
-                                    .outputDirectory(project.outputDirectory().toString())
-                                    .grammars("src/main/antlr2/lexer.g", "src/main/antlr2/tinyc.g")
-                                    .args(project.args())
-                                    .generate();
+    {
+        try (TestProject project = TestProject.create("examples/antlr2/TinyC"))
+        {
+            AntlrRules.create(project.root())
+                    .srcjar(project.srcjar().toString())
+                    .version("2")
+                    .classpath(classpath())
+                    .outputDirectory(project.outputDirectory().toString())
+                    .grammars("src/main/antlr2/lexer.g", "src/main/antlr2/tinyc.g")
+                    .args(project.args())
+                    .generate();
 
-                            project.validate("tinyc/TinyCLexer.java",
-                                    "tinyc/TinyCLexer.smap",
-                                    "tinyc/TinyCParser.java",
-                                    "tinyc/TinyCParser.smap",
-                                    "tinyc/TinyCTokenTypes.java",
-                                    "tinyc/TinyCTokenTypes.txt",
-                                    "tinyc/TinyCParserTokenTypes.java",
-                                    "tinyc/TinyCParserTokenTypes.txt");
-                        }
-            }
+            project.validate("tinyc/TinyCLexer.java",
+                    "tinyc/TinyCLexer.smap",
+                    "tinyc/TinyCParser.java",
+                    "tinyc/TinyCParser.smap",
+                    "tinyc/TinyCTokenTypes.java",
+                    "tinyc/TinyCTokenTypes.txt",
+                    "tinyc/TinyCParserTokenTypes.java",
+                    "tinyc/TinyCParserTokenTypes.txt");
+        }
+    }
 
 
     @Test
     public void supergrammar() throws Exception
+    {
+        try (TestProject project = TestProject.create("examples/antlr2/InheritTinyC",
+                true))
+        {
+            try (TestProject ref = TestProject.create("examples/antlr2/TinyC", true))
             {
-                try (TestProject project = TestProject.create("examples/antlr2/InheritTinyC",
-                        true))
-                        {
-                            try (TestProject ref = TestProject.create("examples/antlr2/TinyC", true))
-                                    {
-                                        AntlrRules.create(ref.root())
-                                                .srcjar(ref.srcjar().toString())
-                                                .version("2")
-                                                .classpath(classpath())
-                                                .outputDirectory(ref.outputDirectory().toString())
-                                                .grammars("src/main/antlr2/lexer.g", "src/main/antlr2/tinyc.g")
-                                                .args(ref.args())
-                                                .generate();
+                AntlrRules.create(ref.root())
+                        .srcjar(ref.srcjar().toString())
+                        .version("2")
+                        .classpath(classpath())
+                        .outputDirectory(ref.outputDirectory().toString())
+                        .grammars("src/main/antlr2/lexer.g", "src/main/antlr2/tinyc.g")
+                        .args(ref.args())
+                        .generate();
 
-                                        Path target = ref.srcjar();
-                                        Path link = project.outputDirectory().resolve(target.getFileName());
+                Path target = ref.srcjar();
+                Path link = project.outputDirectory().resolve(target.getFileName());
 
-                                        Files.createSymbolicLink(link, target);
+                Files.createSymbolicLink(link, target);
 
-                                        AntlrRules.create(project.root())
-                                                .srcjar(project.srcjar().toString())
-                                                .version("2")
-                                                .classpath(classpath())
-                                                .outputDirectory(project.outputDirectory().toString())
-                                                .grammars("src/main/antlr2/subc.g")
-                                                .args(
-                                                        project.args("-glib",
-                                                                ref.root().resolve("src/main/antlr2/tinyc.g;")
-                                                                        + project.relative(link).toString()))
-                                                .generate();
-                                    }
-
-                            project.validate("MyCParserTokenTypes.txt",
-                                    "MyCParser.smap",
-                                    "MyCParser.java",
-                                    "MyCParserTokenTypes.java");
-                        }
+                AntlrRules.create(project.root())
+                        .srcjar(project.srcjar().toString())
+                        .version("2")
+                        .classpath(classpath())
+                        .outputDirectory(project.outputDirectory().toString())
+                        .grammars("src/main/antlr2/subc.g")
+                        .args(
+                                project.args("-glib",
+                                        ref.root().resolve("src/main/antlr2/tinyc.g;")
+                                                + project.relative(link).toString()))
+                        .generate();
             }
+
+            project.validate("MyCParserTokenTypes.txt",
+                    "MyCParser.smap",
+                    "MyCParser.java",
+                    "MyCParserTokenTypes.java");
+        }
+    }
 
 
     private String classpath()
-            {
-                Path root = Paths.get(System.getenv().get("RUNFILES_DIR"));
+    {
+        Path root = Paths.get(System.getenv().get("RUNFILES_DIR"));
 
-                return root.resolve("rules_antlr/external/antlr2/jar/downloaded.jar").toString();
-            }
+        return root.resolve("rules_antlr/external/antlr2/jar/downloaded.jar").toString();
+    }
 }

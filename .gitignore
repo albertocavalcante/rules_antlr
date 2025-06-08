@@ -1,6 +1,16 @@
+# Bazel
 bazel-*
-bazel-*/
+user.bazelrc
+
+# IntelliJ
+.bazelbsp
+
+# Java
 .classpath
+
+# IDEs
 .project
 .settings/
+
+# Binaries
 /bin/

@@ -20,9 +20,9 @@ import org.xml.sax.InputSource;
 public class Projects
 {
     private Projects()
-            {
-                super();
-            }
+    {
+        super();
+    }
 
     /**
      * Returns the absolute path for the given project relative path.
@@ -33,44 +33,43 @@ public class Projects
      * @throws IOException if the real path could not be resolved.
      */
     public static Path path(String path)
+    {
+        Path result = Paths.get(path);
+
+        // the folder structure is different when running under Bazel as the workspace
+        // is linked under the runfiles directory
+        if (Files.notExists(result))
+        {
+            Path external = Paths.get("external");
+
+            if (Files.exists(external))
             {
-                Path result = Paths.get(path);
+                result = external.resolve(path);
+            }else
+            {
+                Path root = Projects.eclipseFolder();
 
-                // the folder structure is different when running under Bazel as the workspace
-                // is linked under the runfiles directory
-                if (Files.notExists(result))
-                    {
-                        Path external = Paths.get("external");
-
-                        if (Files.exists(external))
-                            {
-                                result = external.resolve(path);
-                            }
-                        else
-                            {
-                                Path root = Projects.eclipseFolder();
-
-                                if (root != null)
-                                    {
-                                        result = root.resolve(path);
-                                    }
-                            }
-                    }
-
-                try
-                        {
-                            if (Files.exists(result))
-                                {
-                                    result = result.toRealPath();
-                                }
-                        }
-                catch (IOException ex)
-                        {
-                            throw new IllegalStateException(ex);
-                        }
-
-                return result;
+                if (root != null)
+                {
+                    result = root.resolve(path);
+                }
             }
+        }
+
+        try
+        {
+            if (Files.exists(result))
+            {
+                result = result.toRealPath();
+            }
+        }
+        catch (IOException ex)
+        {
+            throw new IllegalStateException(ex);
+        }
+
+        return result;
+    }
 
     /**
      * Returns the Eclipse project folder.
@@ -78,35 +77,35 @@ public class Projects
      * @return the Eclipse project folder.
      */
     private static Path eclipseFolder()
+    {
+        Path src = Paths.get(".project");
+
+        // when using Eclipse the source files might not be under the workspace
+        if (Files.exists(src))
+        {
+            try (BufferedReader in = Files.newBufferedReader(src))
             {
-                Path src = Paths.get(".project");
+                InputSource inputXML = new InputSource( in );
+                XPath xpath = XPathFactory.newInstance().newXPath();
+                NodeList result = (NodeList) xpath.evaluate("//linkedResources/link/location", inputXML, XPathConstants.NODESET);
 
-                // when using Eclipse the source files might not be under the workspace
-                if (Files.exists(src))
+                for (int i = 0, size = result.getLength(); i < size; i++)
+                {
+                    Element item = (Element) result.item(i);
+                    Matcher matcher = Pattern.compile(".*rules_antlr").matcher(item.getTextContent());
+
+                    if (matcher.find())
                     {
-                        try (BufferedReader in = Files.newBufferedReader(src))
-                                {
-                                    InputSource inputXML = new InputSource( in );
-                                    XPath xpath = XPathFactory.newInstance().newXPath();
-                                    NodeList result = (NodeList) xpath.evaluate("//linkedResources/link/location", inputXML, XPathConstants.NODESET);
-
-                                    for (int i = 0, size = result.getLength(); i < size; i++)
-                                        {
-                                            Element item = (Element) result.item(i);
-                                            Matcher matcher = Pattern.compile(".*rules_antlr").matcher(item.getTextContent());
-
-                                            if (matcher.find())
-                                                {
-                                                    return Paths.get(matcher.group());
-                                                }
-                                        }
-                                }
-                        catch (Exception ex)
-                                {
-                                    throw new IllegalStateException(ex);
-                                }
+                        return Paths.get(matcher.group());
                     }
-
-                return null;
+                }
             }
+            catch (Exception ex)
+            {
+                throw new IllegalStateException(ex);
+            }
+        }
+
+        return null;
+    }
 }

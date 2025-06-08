@@ -1,0 +1,10 @@
+common:ci --announce_rc
+
+# BuildBuddy
+build:ci --build_metadata=ROLE=CI
+build:ci --build_metadata=VISIBILITY=PUBLIC
+
+build:ci --verbose_failures
+
+test:ci --test_output=errors
+test:ci --flaky_test_attempts=3

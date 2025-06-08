@@ -7,15 +7,16 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Bazel command for integration testing.
  *
- * @author  Marco Hunsicker
+ * @author Marco Hunsicker
  */
-class Command
-{
+class Command {
     private String target;
     private Path directory;
     private int exitValue = -1;
@@ -24,60 +25,78 @@ class Command
     /**
      * Creates a new Command object.
      *
-     * @param  directory  the working directory.
-     * @param  target     the build target.
+     * @param directory the working directory.
+     * @param target    the build target.
      */
-    public Command(Path directory, String target)
-            {
-                this.target = target;
-                this.directory = directory;
-            }
+    public Command(Path directory, String target) {
+        this.target = target;
+        this.directory = directory;
+    }
 
     /**
      * Returns the process exit value.
      *
-     * @return  the exit value.
+     * @return the exit value.
      */
-    public int exitValue()
-            {
-                return exitValue;
-            }
+    public int exitValue() {
+        return exitValue;
+    }
 
     /**
      * Returns the build output.
      *
-     * @return  the build output.
+     * @return the build output.
      */
-    public String output()
-            {
-                return output;
-            }
+    public String output() {
+        return output;
+    }
 
     /**
      * Builds the specified target.
+     * 
+     * @return this Command instance.
+     * @throws Exception if an error occurs.
      */
-    public Command build() throws Exception
-            {
-                Path repositoryCache = Paths
-                        .get(System.getProperty("user.home"))
-                        .resolve(".cache/bazel/_bazel_" + System.getProperty("user.name") + "/cache/repos/v1");
+    public Command build() throws Exception {
+        return build(new String[0]);
+    }
 
-                // TODO by default, Bazel 2.0 does not seem to share the repository cache for
-                // tests which causes the dependencies to be downloaded each time, we therefore
-                // try to share it manually
-                Process p = new ProcessBuilder()
-                        .command(
-                                "bazel", "build", "--jobs", "2", "--repository_cache", repositoryCache.toString(), target)
-                        .directory(directory.toFile())
-                        .redirectErrorStream(true)
-                        .start();
+    /**
+     * Builds the specified target with additional flags.
+     * 
+     * @param flags Additional flags to pass to the bazel build command.
+     * @return this Command instance.
+     * @throws Exception if an error occurs.
+     */
+    public Command build(String... flags) throws Exception {
+        List<String> command = new ArrayList<>();
+        command.add("bazel");
+        command.add("build");
+        command.add("--jobs");
+        command.add("2");
+        command.add("--verbose_failures");
+        command.add("--noenable_bzlmod");
 
-                output = new String(p.getInputStream().readAllBytes());
+        // Add any additional flags
+        if (flags != null && flags.length > 0) {
+            command.addAll(Arrays.asList(flags));
+        }
 
-                p.waitFor();
+        // Add the target at the end
+        command.add(target);
 
-                exitValue = p.exitValue();
+        Process p = new ProcessBuilder()
+                .command(command)
+                .directory(directory.toFile())
+                .redirectErrorStream(true)
+                .start();
 
-                return this;
-            }
+        output = new String(p.getInputStream().readAllBytes());
+
+        p.waitFor();
+
+        exitValue = p.exitValue();
+
+        return this;
+    }
 }

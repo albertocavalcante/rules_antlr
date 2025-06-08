@@ -1,1 +1,6 @@
-build --incompatible_use_platforms_repo_for_constraints
+import ../tools/rc/correctness.bazelrc
+import ../.java.bazelrc
+import ../.remote-cache.bazelrc
+import ../.ci.bazelrc
+
+common --noenable_bzlmod
