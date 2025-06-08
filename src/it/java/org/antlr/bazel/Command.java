@@ -62,6 +62,16 @@ class Command {
     }
 
     /**
+     * Gets the bazel command to execute, respecting the BAZEL environment variable.
+     * 
+     * @return the bazel command path or "bazel" if not set.
+     */
+    private static String getBazelCommand() {
+        String bazelPath = System.getenv("BAZEL");
+        return bazelPath != null ? bazelPath : "bazel";
+    }
+
+    /**
      * Builds the specified target with additional flags.
      * 
      * @param flags Additional flags to pass to the bazel build command.
@@ -70,7 +80,7 @@ class Command {
      */
     public Command build(String... flags) throws Exception {
         List<String> command = new ArrayList<>();
-        command.add("bazel");
+        command.add(getBazelCommand());
         command.add("build");
         command.add("--jobs");
         command.add("2");

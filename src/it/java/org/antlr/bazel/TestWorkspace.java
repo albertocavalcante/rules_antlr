@@ -148,6 +148,16 @@ class TestWorkspace
     }
 
     /**
+     * Gets the bazel command to execute, respecting the BAZEL environment variable.
+     * 
+     * @return the bazel command path or "bazel" if not set.
+     */
+    private static String getBazelCommand() {
+        String bazelPath = System.getenv("BAZEL");
+        return bazelPath != null ? bazelPath : "bazel";
+    }
+
+    /**
      * Retrieves a Bazel information path by executing a bazel info command.
      * This is used to get various Bazel-specific paths like bazel-bin.
      *
@@ -158,7 +168,7 @@ class TestWorkspace
     public Path path(String key) throws Exception
     {
         // Execute bazel info to get information about paths
-        Process p = new ProcessBuilder().command("bazel", "info", key)
+        Process p = new ProcessBuilder().command(getBazelCommand(), "info", key)
                 .redirectErrorStream(true)
                 .directory(root.toFile())
                 .start();
