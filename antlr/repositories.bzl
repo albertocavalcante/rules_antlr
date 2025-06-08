@@ -1,7 +1,7 @@
 """Loads ANTLR dependencies."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_jar")
-load(":lang.bzl", "C", "CPP", "GO", "JAVA", "OBJC", "PYTHON", "PYTHON2", "PYTHON3", supportedLanguages = "supported")
+load(":lang.bzl", "C", "CPP", "GO", "JAVA", "OBJC", "PYTHON", "PYTHON2", "PYTHON3", supported_languages = "supported")
 
 v4 = [4, "4.7.1", "4.7.2", "4.8", "4.9.1", "4.9.2"]
 v4_opt = [4, "4.7.1", "4.7.2", "4.7.3", "4.7.4"]
@@ -161,7 +161,11 @@ PACKAGES = {
     },
 }
 
-def rules_antlr_dependencies(*versionsAndLanguages):
+def _fail_with_attr(message, attr_name):
+    """Helper function for consistent error handling with attribute context."""
+    fail(message, attr = attr_name)
+
+def rules_antlr_dependencies(*versions_and_languages):
     """Loads the dependencies for the specified ANTLR releases.
 
     You have to provide at least the version number of the ANTLR release you want to use. To
@@ -175,36 +179,54 @@ def rules_antlr_dependencies(*versionsAndLanguages):
     ```
 
     Args:
-      *versionsAndLanguages: the ANTLR release versions to make available for the provided target languages.
+      *versions_and_languages: the ANTLR release versions to make available for the provided target languages.
     """
-    if versionsAndLanguages:
+    if versions_and_languages:
         versions = []
         languages = []
-        supportedVersions = v4 + v3 + v2
+        supported_versions = v4 + v3 + v2
 
-        for versionOrLanguage in versionsAndLanguages:
-            if not versionOrLanguage in supportedVersions:
-                if type(versionOrLanguage) == "int" or str(versionOrLanguage).isdigit():
-                    fail('Integer version \'{}\' no longer valid. Use semantic version "{}" instead.'.format(versionOrLanguage, ".".join(str(versionOrLanguage).elems())), attr = "versionsAndLanguages")
-                elif str(versionOrLanguage).replace(".", "").isdigit():
-                    fail('Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(versionOrLanguage, supportedVersions), attr = "versionsAndLanguages")
-                elif not versionOrLanguage in supportedLanguages():
-                    fail('Invalid language provided: "{0}". Currently supported are: {1}'.format(versionOrLanguage, supportedLanguages()), attr = "versionsAndLanguages")
-                languages.append(versionOrLanguage)
+        for version_or_language in versions_and_languages:
+            if not version_or_language in supported_versions:
+                if type(version_or_language) == "int" or str(version_or_language).isdigit():
+                    _fail_with_attr(
+                        'Integer version \'{}\' no longer valid. Use semantic version "{}" instead.'.format(
+                            version_or_language,
+                            ".".join(str(version_or_language).elems()),
+                        ),
+                        "versions_and_languages",
+                    )
+                elif str(version_or_language).replace(".", "").isdigit():
+                    _fail_with_attr(
+                        'Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(
+                            version_or_language,
+                            supported_versions,
+                        ),
+                        "versions_and_languages",
+                    )
+                elif not version_or_language in supported_languages():
+                    _fail_with_attr(
+                        'Invalid language provided: "{0}". Currently supported are: {1}'.format(
+                            version_or_language,
+                            supported_languages(),
+                        ),
+                        "versions_and_languages",
+                    )
+                languages.append(version_or_language)
             else:
-                versions.append(versionOrLanguage)
+                versions.append(version_or_language)
 
         if not versions:
-            fail("Missing ANTLR version", attr = "versionsAndLanguages")
+            _fail_with_attr("Missing ANTLR version", "versions_and_languages")
 
         # only one version allowed per ANTLR release stream
-        _validateVersions(versions)
+        _validate_versions(versions)
 
         # if no language is specified, assume Java
         if not languages:
             languages = [JAVA]
 
-        for version in sorted(versions, key = _toString):
+        for version in sorted(versions, key = _to_string):
             if version == 4 or version == "4.9.2":
                 _antlr492_dependencies(languages)
             elif version == "4.9.1":
@@ -220,7 +242,7 @@ def rules_antlr_dependencies(*versionsAndLanguages):
             elif version == 2 or version == "2.7.7":
                 _antlr277_dependencies(languages)
     else:
-        fail("Missing ANTLR version", attr = "versionsAndLanguages")
+        _fail_with_attr("Missing ANTLR version", "versions_and_languages")
 
 def rules_antlr_optimized_dependencies(version):
     """Loads the dependencies for the "optimized" fork of ANTLR 4 maintained by Sam Harwell.
@@ -243,9 +265,21 @@ def rules_antlr_optimized_dependencies(version):
     elif version == "4.7.1":
         _antlr471_optimized_dependencies()
     elif type(version) == "int" or str(version).isdigit():
-        fail('Integer version \'{}\' no longer valid. Use semantic version "{}" instead.'.format(version, ".".join(str(version).elems())), attr = "version")
+        _fail_with_attr(
+            'Integer version \'{}\' no longer valid. Use semantic version "{}" instead.'.format(
+                version,
+                ".".join(str(version).elems()),
+            ),
+            "version",
+        )
     else:
-        fail('Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(version, v4_opt), attr = "version")
+        _fail_with_attr(
+            'Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(
+                version,
+                v4_opt,
+            ),
+            "version",
+        )
 
 def _antlr492_dependencies(languages):
     _antlr4_dependencies(
@@ -577,18 +611,22 @@ def _download(name, path, sha256):
         sha256 = sha256,
     )
 
-def _validateVersions(versions):
+def _validate_versions(versions):
     bundled = v4 + v3 + v2
     store = {}
     for version in versions:
         v = str(version)[0]
         p = store.get(v)
         if p:
-            fail(
-                'You can only load one version from ANTLR {0}. You specified both "{1}" and "{2}".'.format(v, p, version),
-                attr = "versionsAndLanguages",
+            _fail_with_attr(
+                'You can only load one version from ANTLR {0}. You specified both "{1}" and "{2}".'.format(
+                    v,
+                    p,
+                    version,
+                ),
+                "versions_and_languages",
             )
         store[v] = version
 
-def _toString(x):
+def _to_string(x):
     return str(x)
