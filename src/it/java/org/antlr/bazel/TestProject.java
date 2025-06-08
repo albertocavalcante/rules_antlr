@@ -54,8 +54,7 @@ class TestProject implements Closeable
         if (copy)
         {
             Disk.copy(Projects.path(project), root);
-        }
-        else
+        }else
         {
             try (DirectoryStream<Path> entries = Files.newDirectoryStream(Projects.path(project)))
             {
@@ -132,27 +131,27 @@ class TestProject implements Closeable
         List<String> result = new ArrayList<>();
 
         Files.walkFileTree(root,
-            EnumSet.of(FileVisitOption.FOLLOW_LINKS),
-            Integer.MAX_VALUE,
-            new SimpleFileVisitor<Path>()
-            {
-                PathMatcher grammar = root.getFileSystem()
-                        .getPathMatcher("glob:**/*.g{3,4,}");
-                Set<String> excludes = new HashSet<>(Arrays.asList(exclusions));
-
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                    throws IOException
+                EnumSet.of(FileVisitOption.FOLLOW_LINKS),
+                Integer.MAX_VALUE,
+                new SimpleFileVisitor<Path>()
                 {
-                    if (grammar.matches(file)
-                        && !excludes.contains(file.getFileName().toString()))
-                    {
-                        result.add(file.toAbsolutePath().toString());
-                    }
+                    PathMatcher grammar = root.getFileSystem()
+                            .getPathMatcher("glob:**/*.g{3,4,}");
+                    Set<String> excludes = new HashSet<>(Arrays.asList(exclusions));
 
-                    return FileVisitResult.CONTINUE;
-                }
-            });
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                            throws IOException
+                    {
+                        if (grammar.matches(file)
+                                && !excludes.contains(file.getFileName().toString()))
+                        {
+                            result.add(file.toAbsolutePath().toString());
+                        }
+
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
 
         return result.toArray(new String[0]);
     }
@@ -210,9 +209,9 @@ class TestProject implements Closeable
                 if (Files.notExists(fs.getPath(path)))
                 {
                     throw new AssertionError(
-                        String.format("Path does not exist: %s. Archive contains: %s",
-                            path,
-                            contents(fs.getPath("/"))));
+                            String.format("Path does not exist: %s. Archive contains: %s",
+                                    path,
+                                    contents(fs.getPath("/"))));
                 }
             }
         }
@@ -224,19 +223,19 @@ class TestProject implements Closeable
         List<String> paths = new ArrayList<>();
 
         Files.walkFileTree(root,
-            EnumSet.of(FileVisitOption.FOLLOW_LINKS),
-            Integer.MAX_VALUE,
-            new SimpleFileVisitor<Path>()
-            {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                    throws IOException
+                EnumSet.of(FileVisitOption.FOLLOW_LINKS),
+                Integer.MAX_VALUE,
+                new SimpleFileVisitor<Path>()
                 {
-                    paths.add(root.relativize(file).toString());
+                    @Override
+                    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
+                            throws IOException
+                    {
+                        paths.add(root.relativize(file).toString());
 
-                    return FileVisitResult.CONTINUE;
-                }
-            });
+                        return FileVisitResult.CONTINUE;
+                    }
+                });
 
         Collections.sort(paths);
 

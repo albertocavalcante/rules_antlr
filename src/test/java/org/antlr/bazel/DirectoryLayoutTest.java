@@ -110,14 +110,14 @@ public class DirectoryLayoutTest
     public void tostring()
     {
         assertEquals(".*[\\\\/]src[\\\\/]main[\\\\/]antlr[234]?[\\\\/](.*)",
-            Language.JAVA.getLayout().toString());
+                Language.JAVA.getLayout().toString());
     }
 
 
     private void test(String expected,
-        DirectoryLayout dir,
-        String path,
-        Configuration config) throws IOException
+                        DirectoryLayout dir,
+                        String path,
+                        Configuration config) throws IOException
     {
         try (FileSystem fs = Jimfs.newFileSystem(config))
         {
@@ -132,14 +132,14 @@ public class DirectoryLayoutTest
 
 
     private void unix(String expected, DirectoryLayout dir, String path)
-        throws IOException
+            throws IOException
     {
         test(expected, dir, path, Configuration.unix());
     }
 
 
     private void windows(String expected, DirectoryLayout dir, String path)
-        throws IOException
+            throws IOException
     {
         test(expected, dir, path, Configuration.windows());
     }

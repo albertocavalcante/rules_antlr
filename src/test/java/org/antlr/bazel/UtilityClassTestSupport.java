@@ -32,7 +32,7 @@ class UtilityClassTestSupport
         if (!Modifier.isPrivate(c.getModifiers()))
         {
             throw new AssertionError(
-                MessageFormat.format("Constructor {0} is not private", c));
+                    MessageFormat.format("Constructor {0} is not private", c));
         }
 
         c.setAccessible(true);

@@ -78,320 +78,320 @@ enum Language
 
     /** The C# target language. */
     CSHARP
-    {
-        @Override
-        public String toPath(String namespace)
-        {
-            return namespace.replace('.', '/');
-        }
+            {
+                @Override
+                public String toPath(String namespace)
+                {
+                    return namespace.replace('.', '/');
+                }
 
 
-        @Override
-        public String toId(Path path)
-        {
-            return path.toString().replaceAll("[/\\\\]", ".");
-        }
+                @Override
+                public String toId(Path path)
+                {
+                    return path.toString().replaceAll("[/\\\\]", ".");
+                }
 
 
-        @Override
-        public Namespace detectNamespace(String grammar)
-        {
-            Matcher matcher = NAMESPACE.matcher(grammar);
+                @Override
+                public Namespace detectNamespace(String grammar)
+                {
+                    Matcher matcher = NAMESPACE.matcher(grammar);
 
-            return matcher.find() ? namespace(matcher.group(1)) : null;
-        }
+                    return matcher.find() ? namespace(matcher.group(1)) : null;
+                }
 
 
-        @Override
-        public DirectoryLayout getLayout()
-        {
-            return LAYOUT;
-        }
-    },
+                @Override
+                public DirectoryLayout getLayout()
+                {
+                    return LAYOUT;
+                }
+            },
 
     /** The Go target language. */
     GO
-    {
-        private final DirectoryLayout layout = new DirectoryLayout();
-
-        @Override
-        public String toPath(String namespace)
-        {
-            return namespace;
-        }
-
-
-        @Override
-        public String toId(Path path)
-        {
-            return path.toString().replaceAll("[\\\\]", "/");
-        }
-
-
-        @Override
-        public Namespace detectNamespace(String grammar)
-        {
-            String header = header(grammar);
-
-            if (header != null)
             {
-                Matcher matcher = PACKAGE.matcher(header);
+                private final DirectoryLayout layout = new DirectoryLayout();
 
-                if (matcher.find())
+                @Override
+                public String toPath(String namespace)
                 {
-                    return namespace(matcher.group(1));
+                    return namespace;
                 }
-            }
-
-            return null;
-        }
 
 
-        @Override
-        public DirectoryLayout getLayout()
-        {
-            return layout;
-        }
-    },
+                @Override
+                public String toId(Path path)
+                {
+                    return path.toString().replaceAll("[\\\\]", "/");
+                }
+
+
+                @Override
+                public Namespace detectNamespace(String grammar)
+                {
+                    String header = header(grammar);
+
+                    if (header != null)
+                    {
+                        Matcher matcher = PACKAGE.matcher(header);
+
+                        if (matcher.find())
+                        {
+                            return namespace(matcher.group(1));
+                        }
+                    }
+
+                    return null;
+                }
+
+
+                @Override
+                public DirectoryLayout getLayout()
+                {
+                    return layout;
+                }
+            },
 
     /** The Java target language. */
     JAVA
-    {
-        private final DirectoryLayout layout = new DirectoryLayout(
-            Pattern.compile(".*[\\\\/]src[\\\\/]main[\\\\/]antlr[234]?[\\\\/](.*)"));
-
-        @Override
-        public String toPath(String namespace)
-        {
-            return namespace.replace('.', '/');
-        }
-
-
-        @Override
-        public String toId(Path path)
-        {
-            return path.toString().replaceAll("[/\\\\]", "\\.");
-        }
-
-
-        @Override
-        public Namespace detectNamespace(String grammar)
-        {
-            String header = header(grammar);
-
-            if (header != null)
             {
-                Matcher matcher = PACKAGE.matcher(header);
+                private final DirectoryLayout layout = new DirectoryLayout(
+                        Pattern.compile(".*[\\\\/]src[\\\\/]main[\\\\/]antlr[234]?[\\\\/](.*)"));
 
-                return matcher.find() ? namespace(matcher.group(1)) : null;
-            }
+                @Override
+                public String toPath(String namespace)
+                {
+                    return namespace.replace('.', '/');
+                }
 
-            return null;
-        }
+
+                @Override
+                public String toId(Path path)
+                {
+                    return path.toString().replaceAll("[/\\\\]", "\\.");
+                }
 
 
-        @Override
-        public DirectoryLayout getLayout()
-        {
-            return layout;
-        }
-    },
+                @Override
+                public Namespace detectNamespace(String grammar)
+                {
+                    String header = header(grammar);
+
+                    if (header != null)
+                    {
+                        Matcher matcher = PACKAGE.matcher(header);
+
+                        return matcher.find() ? namespace(matcher.group(1)) : null;
+                    }
+
+                    return null;
+                }
+
+
+                @Override
+                public DirectoryLayout getLayout()
+                {
+                    return layout;
+                }
+            },
 
     /** The JavaScript target language. */
     JAVASCRIPT
-    {
-        @Override
-        public String toPath(String namespace)
-        {
-            return namespace;
-        }
+            {
+                @Override
+                public String toPath(String namespace)
+                {
+                    return namespace;
+                }
 
 
-        @Override
-        public String toId(Path path)
-        {
-            return path.toString().replaceAll("[\\\\]", "/");
-        }
+                @Override
+                public String toId(Path path)
+                {
+                    return path.toString().replaceAll("[\\\\]", "/");
+                }
 
 
-        @Override
-        public Namespace detectNamespace(String grammar)
-        {
-            return null;
-        }
+                @Override
+                public Namespace detectNamespace(String grammar)
+                {
+                    return null;
+                }
 
 
-        @Override
-        public DirectoryLayout getLayout()
-        {
-            return LAYOUT;
-        }
-    },
+                @Override
+                public DirectoryLayout getLayout()
+                {
+                    return LAYOUT;
+                }
+            },
 
     /** The Objective-C target language. */
     OBJC
-    {
-        private final DirectoryLayout layout = new DirectoryLayout();
+            {
+                private final DirectoryLayout layout = new DirectoryLayout();
 
-        @Override
-        public String toPath(String namespace)
-        {
-            return namespace;
-        }
-
-
-        @Override
-        public String toId(Path path)
-        {
-            return path.toString();
-        }
+                @Override
+                public String toPath(String namespace)
+                {
+                    return namespace;
+                }
 
 
-        @Override
-        public Namespace detectNamespace(String grammar)
-        {
-            return null;
-        }
+                @Override
+                public String toId(Path path)
+                {
+                    return path.toString();
+                }
 
 
-        @Override
-        public DirectoryLayout getLayout()
-        {
-            return layout;
-        }
-    },
+                @Override
+                public Namespace detectNamespace(String grammar)
+                {
+                    return null;
+                }
+
+
+                @Override
+                public DirectoryLayout getLayout()
+                {
+                    return layout;
+                }
+            },
 
     /** The Python target language. */
     PYTHON
-    {
-        @Override
-        public String toPath(String namespace)
-        {
-            return namespace.replace('.', '/');
-        }
+            {
+                @Override
+                public String toPath(String namespace)
+                {
+                    return namespace.replace('.', '/');
+                }
 
 
-        @Override
-        public String toId(Path path)
-        {
-            return path.toString().replaceAll("[\\\\]", "/");
-        }
+                @Override
+                public String toId(Path path)
+                {
+                    return path.toString().replaceAll("[\\\\]", "/");
+                }
 
 
-        @Override
-        public Namespace detectNamespace(String grammar)
-        {
-            return null;
-        }
+                @Override
+                public Namespace detectNamespace(String grammar)
+                {
+                    return null;
+                }
 
 
-        @Override
-        public DirectoryLayout getLayout()
-        {
-            return LAYOUT;
-        }
-    },
+                @Override
+                public DirectoryLayout getLayout()
+                {
+                    return LAYOUT;
+                }
+            },
 
     /** The Ruby target language. */
     RUBY
-    {
-        private final Pattern module = Pattern.compile("module\\s*(.*?)\\s*$",
-            Pattern.DOTALL | Pattern.MULTILINE);
-
-        @Override
-        public String toPath(String namespace)
-        {
-            return namespace.replaceAll("::", "/");
-        }
-
-
-        @Override
-        public String toId(Path path)
-        {
-            return path.toString().replaceAll("[/\\\\]", "::");
-        }
-
-
-        @Override
-        public Namespace detectNamespace(String grammar)
-        {
-            String header = header(grammar);
-
-            if (header != null)
             {
-                Matcher matcher = module.matcher(header);
+                private final Pattern module = Pattern.compile("module\\s*(.*?)\\s*$",
+                        Pattern.DOTALL | Pattern.MULTILINE);
 
-                if (matcher.find())
+                @Override
+                public String toPath(String namespace)
                 {
-                    return namespace(matcher.group(1));
+                    return namespace.replaceAll("::", "/");
                 }
-            }
-
-            return null;
-        }
 
 
-        @Override
-        public DirectoryLayout getLayout()
-        {
-            throw new UnsupportedOperationException("Not yet implemented");
-        }
-    },
+                @Override
+                public String toId(Path path)
+                {
+                    return path.toString().replaceAll("[/\\\\]", "::");
+                }
+
+
+                @Override
+                public Namespace detectNamespace(String grammar)
+                {
+                    String header = header(grammar);
+
+                    if (header != null)
+                    {
+                        Matcher matcher = module.matcher(header);
+
+                        if (matcher.find())
+                        {
+                            return namespace(matcher.group(1));
+                        }
+                    }
+
+                    return null;
+                }
+
+
+                @Override
+                public DirectoryLayout getLayout()
+                {
+                    throw new UnsupportedOperationException("Not yet implemented");
+                }
+            },
 
     /** The Swift target language. */
     SWIFT
-    {
-        private final DirectoryLayout layout = new DirectoryLayout();
+            {
+                private final DirectoryLayout layout = new DirectoryLayout();
 
-        @Override
-        public String toPath(String namespace)
-        {
-            return namespace.replace('.', '/');
-        }
-
-
-        @Override
-        public String toId(Path path)
-        {
-            return path.toString().replaceAll("[/\\\\]", ".");
-        }
+                @Override
+                public String toPath(String namespace)
+                {
+                    return namespace.replace('.', '/');
+                }
 
 
-        @Override
-        public Namespace detectNamespace(String grammar)
-        {
-            // Swift does not support namespaces within modules
-            return null;
-        }
+                @Override
+                public String toId(Path path)
+                {
+                    return path.toString().replaceAll("[/\\\\]", ".");
+                }
 
 
-        @Override
-        public DirectoryLayout getLayout()
-        {
-            return layout;
-        }
-    };
+                @Override
+                public Namespace detectNamespace(String grammar)
+                {
+                    // Swift does not support namespaces within modules
+                    return null;
+                }
+
+
+                @Override
+                public DirectoryLayout getLayout()
+                {
+                    return layout;
+                }
+            };
 
     private static final Pattern OPTIONS = Pattern.compile("options\\s*\\{.*?\\}",
-        Pattern.DOTALL);
+            Pattern.DOTALL);
 
     private static final Pattern LANGUAGE = Pattern.compile(
-        "language\\s*=\\s*([a-zA-Z0-9]+)",
-        Pattern.DOTALL);
+            "language\\s*=\\s*([a-zA-Z0-9]+)",
+            Pattern.DOTALL);
 
     private static final Pattern HEADER = Pattern.compile(
-        "@?(?:(?:parser|lexer)::)?header.*?\\{(.*?)\\}",
-        Pattern.DOTALL);
+            "@?(?:(?:parser|lexer)::)?header.*?\\{(.*?)\\}",
+            Pattern.DOTALL);
 
     private static final Pattern NAMESPACE = Pattern.compile(
-        "@(?:(?:parser|lexer)::)?namespace\\s*\\{\\s*(.*?)\\s*\\}",
-        Pattern.DOTALL);
+            "@(?:(?:parser|lexer)::)?namespace\\s*\\{\\s*(.*?)\\s*\\}",
+            Pattern.DOTALL);
 
     private static final Pattern PACKAGE = Pattern.compile("package\\s+(.+?)\\s*;?\\s*$",
-        Pattern.DOTALL | Pattern.MULTILINE);
+            Pattern.DOTALL | Pattern.MULTILINE);
 
     private static final DirectoryLayout LAYOUT = new DirectoryLayout(
-        DirectoryLayout.PATH);
+            DirectoryLayout.PATH);
 
     /**
      * Determines the namespace from the grammar header when present.
@@ -542,7 +542,7 @@ enum Language
     private static String header(String grammar)
     {
         // remove comments to avoid erroneous matches
-        Matcher header = HEADER.matcher(grammar.replaceAll("(?m://.*$)|(?s:/\\*.*?\\*/)",""));
+        Matcher header = HEADER.matcher(grammar.replaceAll("(?m://.*$)|(?s:/\\*.*?\\*/)", ""));
 
         return header.find() ? header.group(1) : null;
     }

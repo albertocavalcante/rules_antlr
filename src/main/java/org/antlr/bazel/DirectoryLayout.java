@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 class DirectoryLayout
 {
     static final Pattern PATH = Pattern.compile(
-        ".*[\\\\/]src[\\\\/]antlr[234]?[\\\\/](.*)");
+            ".*[\\\\/]src[\\\\/]antlr[234]?[\\\\/](.*)");
 
     private boolean flat;
 
@@ -34,14 +34,14 @@ class DirectoryLayout
     public DirectoryLayout(String path)
     {
         this(
-            "flat".equalsIgnoreCase(path)
-            ? null
-            : Pattern.compile(
-                ".*"
-                + ((!path.startsWith("/") && !path.startsWith("\\")) ? "[\\\\/]" : "")
-                + path.replaceAll("[\\\\/]", "[\\\\\\\\/]")
-                + ((!path.endsWith("/") && !path.endsWith("\\")) ? "[\\\\/]" : "")
-                + "(.*)"));
+                "flat".equalsIgnoreCase(path)
+                        ? null
+                        : Pattern.compile(
+                        ".*"
+                                + ((!path.startsWith("/") && !path.startsWith("\\")) ? "[\\\\/]" : "")
+                                + path.replaceAll("[\\\\/]", "[\\\\\\\\/]")
+                                + ((!path.endsWith("/") && !path.endsWith("\\")) ? "[\\\\/]" : "")
+                                + "(.*)"));
 
         flat = "flat".equalsIgnoreCase(path);
     }

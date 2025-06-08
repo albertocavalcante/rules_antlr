@@ -25,13 +25,13 @@ public class Antlr3Test
         try (TestProject project = TestProject.create("examples/antlr3/Java"))
         {
             AntlrRules.create(project.root())
-                .srcjar(project.srcjar().toString())
-                .version("3")
-                .classpath(classpath())
-                .outputDirectory(project.outputDirectory().toString())
-                .grammars(project.grammars())
-                .args(project.args())
-                .generate();
+                    .srcjar(project.srcjar().toString())
+                    .version("3")
+                    .classpath(classpath())
+                    .outputDirectory(project.outputDirectory().toString())
+                    .grammars(project.grammars())
+                    .args(project.args())
+                    .generate();
 
             project.validate("SimpleCLexer.java", "SimpleCParser.java", "SimpleC.tokens");
         }
@@ -44,17 +44,17 @@ public class Antlr3Test
         try (TestProject project = TestProject.create("examples/antlr3/DetectLanguage/src/main/antlr3"))
         {
             AntlrRules.create(project.root())
-                .srcjar(project.srcjar().toString())
-                .version("3")
-                .classpath(classpath())
-                .outputDirectory(project.outputDirectory().toString())
-                .grammars(project.grammars())
-                .args(project.args())
-                .generate();
+                    .srcjar(project.srcjar().toString())
+                    .version("3")
+                    .classpath(classpath())
+                    .outputDirectory(project.outputDirectory().toString())
+                    .grammars(project.grammars())
+                    .args(project.args())
+                    .generate();
 
             project.validate("Antlr/Examples/HoistedPredicates/TLexer.cs",
-                "Antlr/Examples/HoistedPredicates/TParser.cs",
-                "Antlr/Examples/HoistedPredicates/T.tokens");
+                    "Antlr/Examples/HoistedPredicates/TParser.cs",
+                    "Antlr/Examples/HoistedPredicates/T.tokens");
         }
     }
 
@@ -64,18 +64,18 @@ public class Antlr3Test
         try (TestProject project = TestProject.create("examples/antlr3/InheritLibFolder"))
         {
             AntlrRules.create(project.root())
-                .srcjar(project.srcjar().toString())
-                .version("3")
-                .classpath(classpath())
-                .outputDirectory(project.outputDirectory().toString())
-                .grammars(project.grammars())
-                .args(project.args("-lib", "src/main/antlr3/lib"))
-                .generate();
+                    .srcjar(project.srcjar().toString())
+                    .version("3")
+                    .classpath(classpath())
+                    .outputDirectory(project.outputDirectory().toString())
+                    .grammars(project.grammars())
+                    .args(project.args("-lib", "src/main/antlr3/lib"))
+                    .generate();
 
             project.validate("Simple_CommonLexer.java",
-                "SimpleLexer.java",
-                "SimpleParser.java",
-                "Simple.tokens");
+                    "SimpleLexer.java",
+                    "SimpleParser.java",
+                    "Simple.tokens");
         }
     }
 
@@ -86,18 +86,18 @@ public class Antlr3Test
         try (TestProject project = TestProject.create("examples/antlr3/InheritSameFolder"))
         {
             AntlrRules.create(project.root())
-                .srcjar(project.srcjar().toString())
-                .version("3")
-                .classpath(classpath())
-                .outputDirectory(project.outputDirectory().toString())
-                .grammars(project.grammars("CommonLexer.g"))
-                .args(project.args())
-                .generate();
+                    .srcjar(project.srcjar().toString())
+                    .version("3")
+                    .classpath(classpath())
+                    .outputDirectory(project.outputDirectory().toString())
+                    .grammars(project.grammars("CommonLexer.g"))
+                    .args(project.args())
+                    .generate();
 
             project.validate("Simple_CommonLexer.java",
-                "SimpleLexer.java",
-                "SimpleParser.java",
-                "Simple.tokens");
+                    "SimpleLexer.java",
+                    "SimpleParser.java",
+                    "Simple.tokens");
         }
     }
 
@@ -108,19 +108,19 @@ public class Antlr3Test
         try (TestProject project = TestProject.create("examples/antlr3/InheritLibFolder"))
         {
             AntlrRules.create(project.root())
-                .srcjar(project.srcjar().toString())
-                .version("3")
-                .classpath(classpath())
-                .outputDirectory(project.outputDirectory().toString())
-                .grammars(project.grammars("CommonLexer.g"))
-                .args(project.args("-lib", "src/main/antlr3/lib", "-XsaveLexer"))
-                .generate();
+                    .srcjar(project.srcjar().toString())
+                    .version("3")
+                    .classpath(classpath())
+                    .outputDirectory(project.outputDirectory().toString())
+                    .grammars(project.grammars("CommonLexer.g"))
+                    .args(project.args("-lib", "src/main/antlr3/lib", "-XsaveLexer"))
+                    .generate();
 
             project.validate("Simple_CommonLexer.java",
-                "SimpleLexer.java",
-                "CommonLexer.tokens",
-                "SimpleParser.java",
-                "Simple.tokens");
+                    "SimpleLexer.java",
+                    "CommonLexer.tokens",
+                    "SimpleParser.java",
+                    "Simple.tokens");
         }
     }
 
@@ -132,13 +132,13 @@ public class Antlr3Test
                 "src/it/resources/antlr3/SeveralErrors"))
         {
             AntlrRules.create(project.root())
-                .srcjar(project.srcjar().toString())
-                .version("3")
-                .classpath(classpath())
-                .outputDirectory(project.outputDirectory().toString())
-                .grammars(project.grammars())
-                .args(project.args())
-                .generate();
+                    .srcjar(project.srcjar().toString())
+                    .version("3")
+                    .classpath(classpath())
+                    .outputDirectory(project.outputDirectory().toString())
+                    .grammars(project.grammars())
+                    .args(project.args())
+                    .generate();
 
             assertTrue(Files.exists(project.srcjar()));
 
@@ -158,13 +158,13 @@ public class Antlr3Test
                 "src/it/resources/antlr3/SingleError"))
         {
             AntlrRules.create(project.root())
-                .srcjar(project.srcjar().toString())
-                .version("3")
-                .classpath(classpath())
-                .outputDirectory(project.outputDirectory().toString())
-                .grammars(project.grammars())
-                .args(project.args())
-                .generate();
+                    .srcjar(project.srcjar().toString())
+                    .version("3")
+                    .classpath(classpath())
+                    .outputDirectory(project.outputDirectory().toString())
+                    .grammars(project.grammars())
+                    .args(project.args())
+                    .generate();
 
             assertTrue(Files.exists(project.srcjar()));
 
@@ -183,19 +183,19 @@ public class Antlr3Test
         try (TestProject project = TestProject.create("examples/antlr3/ObjC"))
         {
             AntlrRules.create(project.root())
-                .srcjar(project.srcjar().toString())
-                .version("3")
-                .classpath(classpath())
-                .outputDirectory(project.outputDirectory().toString())
-                .grammars(project.grammars())
-                .args(project.args())
-                .generate();
+                    .srcjar(project.srcjar().toString())
+                    .version("3")
+                    .classpath(classpath())
+                    .outputDirectory(project.outputDirectory().toString())
+                    .grammars(project.grammars())
+                    .args(project.args())
+                    .generate();
 
             project.validate("SimpleCLexer.h",
-                "SimpleCLexer.m",
-                "SimpleCParser.h",
-                "SimpleCParser.m",
-                "SimpleC.tokens");
+                    "SimpleCLexer.m",
+                    "SimpleCParser.h",
+                    "SimpleCParser.m",
+                    "SimpleC.tokens");
         }
     }
 
@@ -204,10 +204,10 @@ public class Antlr3Test
     {
         Path root = Paths.get(System.getenv().get("RUNFILES_DIR"));
 
-        return new String[] {
-            root.resolve("rules_antlr/external/antlr3_runtime/jar/downloaded.jar").toString(),
-            root.resolve("rules_antlr/external/antlr3_tool/jar/downloaded.jar").toString(),
-            root.resolve("rules_antlr/external/stringtemplate4/jar/downloaded.jar").toString(),
+        return new String[]{
+                root.resolve("rules_antlr/external/antlr3_runtime/jar/downloaded.jar").toString(),
+                root.resolve("rules_antlr/external/antlr3_tool/jar/downloaded.jar").toString(),
+                root.resolve("rules_antlr/external/stringtemplate4/jar/downloaded.jar").toString()
         };
     }
 }

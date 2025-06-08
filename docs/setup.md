@@ -3,14 +3,14 @@
 To use the rules, add the following to your [`WORKSPACE`](https://docs.bazel.build/versions/master/build-ref.html#workspace) file to include
 the external repository:
 
-```python
+```starlark
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "rules_antlr",
-    sha256 = "26e6a83c665cf6c1093b628b3a749071322f0f70305d12ede30909695ed85591",
-    strip_prefix = "rules_antlr-0.5.0",
-    urls = ["https://github.com/marcohu/rules_antlr/archive/0.5.0.tar.gz"],
+    sha256 = "67d9938ac2f811bf6357c35f8ee43f2b229ef93d6756dabf6d2986ceaf757598",
+    strip_prefix = "rules_antlr-0.6.0",
+    urls = ["https://github.com/albertocavalcante/rules_antlr/releases/download/0.6.0/rules_antlr-0.6.0.tar.gz"],
 )
 ```
 
@@ -18,7 +18,7 @@ Then you can load the necessary external dependencies in your [`WORKSPACE`](http
 
 Either specify just the major version:
 
-```python
+```starlark
 load("@rules_antlr//antlr:repositories.bzl", "rules_antlr_dependencies")
 
 rules_antlr_dependencies(4)
@@ -26,7 +26,7 @@ rules_antlr_dependencies(4)
 
 Or better and recommended make the version explicit to avoid coupling:
 
-```python
+```starlark
 load("@rules_antlr//antlr:repositories.bzl", "rules_antlr_dependencies")
 
 rules_antlr_dependencies("4.7.2")
@@ -41,7 +41,7 @@ release as the bundled dependencies might change.
 If you require several releases, you can specify several versions at once, but only from
 different release streams:
 
-```python
+```starlark
 load("@rules_antlr//antlr:repositories.bzl", "rules_antlr_dependencies")
 
 rules_antlr_dependencies("2.7.7", "3.5.2", "4.7.2")
@@ -52,7 +52,7 @@ you have to provide the target languages as well, in no particular order.
 
 To load C++ and Go dependencies for ANTLR 3.5.2 and 4.7.2:
 
-```python
+```starlark
 load("@rules_antlr//antlr:repositories.bzl", "antlr_dependencies")
 load("@rules_antlr//antlr:lang.bzl", "CPP", "GO")
 
@@ -62,7 +62,7 @@ rules_antlr_dependencies("3.5.2", CPP, "4.7.2", GO)
 If you need different releases for different target languages, you can employ multiple
 calls:
 
-```python
+```starlark
 load("@rules_antlr//antlr:repositories.bzl", "antlr_dependencies")
 load("@rules_antlr//antlr:lang.bzl", "CPP", "GO", "PYTHON")
 
@@ -81,30 +81,30 @@ The currently supported releases are:
 If your preferred ANTLR release is not supported out-of-the-box, you can pull
 the necessary dependencies yourself. E.g. for ANTLR 4.7:
 
-```python
+```starlark
 http_jar(
     name = "antlr4_runtime",
-    url = "https://jcenter.bintray.com/org/antlr/antlr4-runtime/4.7/antlr4-runtime-4.7.jar",
+    url = "https://repo1.maven.org/maven2/org/antlr/antlr4-runtime/4.7/antlr4-runtime-4.7.jar",
     sha256 = "2a61943f803bbd1d0e02dffd19b92a418f83340c994346809e3b51e2231aa6c0",
 )
 http_jar(
     name = "antlr4_tool",
-    url = "https://jcenter.bintray.com/org/antlr/antlr4/4.7/antlr4-4.7.jar",
+    url = "https://repo1.maven.org/maven2/org/antlr/antlr4/4.7/antlr4-4.7.jar",
     sha256 = "7867257028b3373af011dee7b6ce9b587a8fd5c7a0b25f68b2ff4cb90be8aa07",
 )
 http_jar(
     name = "antlr3_runtime",
-    url = "https://jcenter.bintray.com/org/antlr/antlr-runtime/3.5.2/antlr-runtime-3.5.2.jar",
+    url = "https://repo1.maven.org/maven2/org/antlr/antlr-runtime/3.5.2/antlr-runtime-3.5.2.jar",
     sha256 = "ce3fc8ecb10f39e9a3cddcbb2ce350d272d9cd3d0b1e18e6fe73c3b9389c8734",
 )
 http_jar(
     name = "stringtemplate4",
-    url = "https://jcenter.bintray.com/org/antlr/ST4/4.0.8/ST4-4.0.8.jar",
+    url = "https://repo1.maven.org/maven2/org/antlr/ST4/4.0.8/ST4-4.0.8.jar",
     sha256 = "58caabc40c9f74b0b5993fd868e0f64a50c0759094e6a251aaafad98edfc7a3b",
 )
 http_jar(
     name = "javax_json",
-    url = "https://jcenter.bintray.com/org/glassfish/javax.json/1.0.4/javax.json-1.0.4.jar",
+    url = "https://repo1.maven.org/maven2/org/glassfish/javax.json/1.0.4/javax.json-1.0.4.jar",
     sha256 = "0e1dec40a1ede965941251eda968aeee052cc4f50378bc316cc48e8159bdbeb4",
 )
 ```
@@ -117,7 +117,7 @@ invocation via the [`deps`](antlr4.md#antlr-deps) parameter.
 
 As a convenience there is also a shortcut for the ["optimized" ANTLR4 fork](https://github.com/tunnelvisionlabs/antlr4) maintained by Sam Harwell:
 
-```python
+```starlark
 load("@rules_antlr//antlr:repositories.bzl", "rules_antlr_optimized_dependencies")
 
 rules_antlr_optimized_dependencies("4.7.2")

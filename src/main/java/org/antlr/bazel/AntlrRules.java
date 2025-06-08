@@ -39,8 +39,8 @@ import java.util.TreeMap;
 public class AntlrRules
 {
     private final static CopyOption[] COPY_OPTIONS = {
-        StandardCopyOption.COPY_ATTRIBUTES,
-        StandardCopyOption.REPLACE_EXISTING
+            StandardCopyOption.COPY_ATTRIBUTES,
+            StandardCopyOption.REPLACE_EXISTING
     };
 
     private String[] args;
@@ -85,18 +85,18 @@ public class AntlrRules
         Map<String, String> env = System.getenv();
 
         AntlrRules.create()
-            .srcjar(env.get("SRC_JAR"))
-            .version(env.get("ANTLR_VERSION"))
-            .classpath(env.get("TOOL_CLASSPATH").split(","))
-            .outputDirectory(env.get("OUTPUT_DIRECTORY"))
-            .encoding(env.get("ENCODING"))
-            .grammars(env.get("GRAMMARS").split(","))
-            .namespace(env.get("PACKAGE_NAME"))
-            .language(env.get("TARGET_LANGUAGE"))
-            .layout(env.get("DIRECTORY_LAYOUT"))
-            .target(env.get("TARGET"))
-            .args(args)
-            .generate();
+                .srcjar(env.get("SRC_JAR"))
+                .version(env.get("ANTLR_VERSION"))
+                .classpath(env.get("TOOL_CLASSPATH").split(","))
+                .outputDirectory(env.get("OUTPUT_DIRECTORY"))
+                .encoding(env.get("ENCODING"))
+                .grammars(env.get("GRAMMARS").split(","))
+                .namespace(env.get("PACKAGE_NAME"))
+                .language(env.get("TARGET_LANGUAGE"))
+                .layout(env.get("DIRECTORY_LAYOUT"))
+                .target(env.get("TARGET"))
+                .args(args)
+                .generate();
     }
 
 
@@ -127,7 +127,7 @@ public class AntlrRules
     AntlrRules encoding(String encoding)
     {
         this.encoding = encoding.isEmpty() ? Charset.defaultCharset()
-                                           : Charset.forName(encoding);
+                : Charset.forName(encoding);
 
         return this;
     }
@@ -177,8 +177,8 @@ public class AntlrRules
                         : namespaces.entrySet())
                     {
                         antlr4(loader,
-                            arguments.log,
-                            arguments.build(e.getKey(), e.getValue()));
+                                arguments.log,
+                                arguments.build(e.getKey(), e.getValue()));
                     }
 
                     break;
@@ -195,16 +195,16 @@ public class AntlrRules
                 Files.createDirectories(outputDirectory);
                 Path other = Files.createDirectories(
                         outputDirectory
-                            .getParent()
-                            .resolve(target + ".antlr"));
+                                .getParent()
+                                .resolve(target + ".antlr"));
                 Path headers = Files.createDirectories(
                         outputDirectory
-                            .getParent()
-                            .resolve(target + ".inc"));
+                                .getParent()
+                                .resolve(target + ".inc"));
                 Path includes = Files.createDirectories(
                         outputDirectory
-                            .getParent()
-                            .resolve(target + ".inc"));
+                                .getParent()
+                                .resolve(target + ".inc"));
                 Files.createDirectories(includes);
 
                 List<String> files = new ArrayList<>();
@@ -212,13 +212,13 @@ public class AntlrRules
                 try (DirectoryStream<Path> entries = Files.newDirectoryStream(outputDirectory))
                 {
                     PathMatcher expanded = outputDirectory.getFileSystem()
-                        .getPathMatcher("glob:**/expanded*.g");
+                            .getPathMatcher("glob:**/expanded*.g");
                     PathMatcher csources = outputDirectory.getFileSystem()
-                        .getPathMatcher("glob:**.{c,cc,cpp,cxx,c++,C,m,mm}");
+                            .getPathMatcher("glob:**.{c,cc,cpp,cxx,c++,C,m,mm}");
                     PathMatcher cheaders = outputDirectory.getFileSystem()
-                        .getPathMatcher("glob:**.{h,hh,hpp,hxx,h++,inc,inl,ipp,pch,tlh,tli,H}");
+                            .getPathMatcher("glob:**.{h,hh,hpp,hxx,h++,inc,inl,ipp,pch,tlh,tli,H}");
                     PathMatcher gosources = outputDirectory.getFileSystem()
-                        .getPathMatcher("glob:**.{go}");
+                            .getPathMatcher("glob:**.{go}");
 
                     for (Path entry : entries)
                     {
@@ -251,46 +251,45 @@ public class AntlrRules
                         }
 
                         if (language != null)
-                        switch (language)
-                        {
-                            case C :
-                            case CPP :
-                            case OBJC:
+                            switch (language)
                             {
-                                if (cheaders.matches(entry))
+                                case C :
+                                case CPP :
+                                case OBJC:
                                 {
-                                    if (split)
+                                    if (cheaders.matches(entry))
                                     {
-                                        Path target = headers.resolve(
-                                                grammar.getNamespacePath().toString())
-                                                .resolve(entry.getFileName());
-                                        Files.createDirectories(target.getParent());
-                                        Files.move(entry, target);
+                                        if (split)
+                                        {
+                                            Path target = headers.resolve(
+                                                    grammar.getNamespacePath().toString())
+                                                    .resolve(entry.getFileName());
+                                            Files.createDirectories(target.getParent());
+                                            Files.move(entry, target);
+                                            continue;
+                                        }
+                                    }else if (!csources.matches(entry))
+                                    {
+                                        Files.move(entry, other.resolve(entry.getFileName()));
+
                                         continue;
                                     }
+
+                                    break;
                                 }
-                                else if (!csources.matches(entry))
+
+                                case GO:
                                 {
-                                    Files.move(entry, other.resolve(entry.getFileName()));
+                                    if (!gosources.matches(entry))
+                                    {
+                                        Files.move(entry, other.resolve(entry.getFileName()));
 
-                                    continue;
+                                        continue;
+                                    }
+
+                                    break;
                                 }
-
-                                break;
                             }
-
-                            case GO:
-                            {
-                                if (!gosources.matches(entry))
-                                {
-                                    Files.move(entry, other.resolve(entry.getFileName()));
-
-                                    continue;
-                                }
-
-                                break;
-                            }
-                        }
 
                         // source files should be stored below their corresponding
                         // package/namespace
@@ -321,48 +320,48 @@ public class AntlrRules
                     Path root = archive.getPath("/");
 
                     Files.walkFileTree(outputDirectory, new SimpleFileVisitor<Path>()
-                        {
-                            @Override
-                            public FileVisitResult visitFile(Path file, BasicFileAttributes attr)
+                    {
+                        @Override
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attr)
                                 throws IOException
+                        {
+                            String filename = file.getFileName().toString();
+
+                            if (filename.endsWith(".srcjar"))
                             {
-                                String filename = file.getFileName().toString();
-
-                                if (filename.endsWith(".srcjar"))
-                                {
-                                    return CONTINUE;
-                                }
-
-                                if (filename.startsWith("expanded"))
-                                {
-                                    return CONTINUE;
-                                }
-
-                                Path target = root.resolve(
-                                    outputDirectory.relativize(file).toString());
-
-                                if (!filename.endsWith(".log"))
-                                {
-                                    Grammar grammar = findGrammar(file, names);
-
-                                    // indicates imported file that does not belong in the .srcjar
-                                    if (grammar == null)
-                                    {
-                                        return CONTINUE;
-                                    }
-
-                                    // source files should be stored below their corresponding
-                                    // package/namespace
-                                    target = root.resolve(grammar.getNamespacePath().toString())
-                                        .resolve(target.getFileName());
-                                }
-
-                                Files.createDirectories(target.getParent());
-                                Files.copy(file, target, COPY_OPTIONS);
-
                                 return CONTINUE;
                             }
-                        });
+
+                            if (filename.startsWith("expanded"))
+                            {
+                                return CONTINUE;
+                            }
+
+                            Path target = root.resolve(
+                                    outputDirectory.relativize(file).toString());
+
+                            if (!filename.endsWith(".log"))
+                            {
+                                Grammar grammar = findGrammar(file, names);
+
+                                // indicates imported file that does not belong in the .srcjar
+                                if (grammar == null)
+                                {
+                                    return CONTINUE;
+                                }
+
+                                // source files should be stored below their corresponding
+                                // package/namespace
+                                target = root.resolve(grammar.getNamespacePath().toString())
+                                        .resolve(target.getFileName());
+                            }
+
+                            Files.createDirectories(target.getParent());
+                            Files.copy(file, target, COPY_OPTIONS);
+
+                            return CONTINUE;
+                        }
+                    });
                 }
                 break;
             }
@@ -376,7 +375,13 @@ public class AntlrRules
 
         for (String grammar : grammars)
         {
-            this.grammars.add(sandbox.resolve(grammar).toString());
+            if (this.version == Version.V2)
+            {
+                this.grammars.add(sandbox.resolve(grammar).toString());
+            }else
+            {
+                this.grammars.add(grammar);
+            }
         }
 
         return this;
@@ -453,7 +458,7 @@ public class AntlrRules
         Class<?> $Tool = loader.loadClass("antlr.Tool");
 
         $Tool.getDeclaredMethod("doEverything", String[].class)
-            .invoke($Tool.getDeclaredConstructor().newInstance(), new Object[] { args });
+                .invoke($Tool.getDeclaredConstructor().newInstance(), new Object[]{args});
     }
 
 
@@ -463,7 +468,7 @@ public class AntlrRules
         Class<?> $ErrorManager = loader.loadClass("org.antlr.tool.ErrorManager");
 
         Object tool = $Tool.getConstructor(String[].class)
-            .newInstance(new Object[] { args });
+                .newInstance(new Object[]{args});
 
         $Tool.getDeclaredMethod("process").invoke(tool);
 
@@ -472,44 +477,44 @@ public class AntlrRules
         if (errors > 0)
         {
             throw new IllegalStateException(
-                String.format("ANTLR terminated with %s error%s",
-                    errors,
-                    (errors == 1) ? "" : "s"));
+                    String.format("ANTLR terminated with %s error%s",
+                            errors,
+                            (errors == 1) ? "" : "s"));
         }
     }
 
 
     private void antlr4(URLClassLoader loader, boolean log, String[] args)
-        throws Exception
+            throws Exception
     {
         Class<?> $Tool = loader.loadClass("org.antlr.v4.Tool");
         Class<?> $ErrorManager = loader.loadClass("org.antlr.v4.tool.ErrorManager");
         Object tool = $Tool.getConstructor(String[].class)
-            .newInstance(new Object[] { args });
+                .newInstance(new Object[]{args});
         Object errorManager = $Tool.getDeclaredField("errMgr").get(tool);
         $Tool.getDeclaredMethod("processGrammarsOnCommandLine").invoke(tool);
 
         if (log)
         {
             Class<?> $LogManager = loader.loadClass(
-                "org.antlr.v4.runtime.misc.LogManager");
+                    "org.antlr.v4.runtime.misc.LogManager");
             Object logManager = $Tool.getDeclaredField("logMgr").get(tool);
             String filename = (String) $LogManager.getDeclaredMethod("save")
-                .invoke(logManager);
+                    .invoke(logManager);
             Path logFile = fs.getPath(filename).toRealPath();
             Files.copy(logFile, outputDirectory.resolve(logFile.getFileName()));
             Files.delete(logFile);
         }
 
         int errors = (int) $ErrorManager.getDeclaredMethod("getNumErrors")
-            .invoke(errorManager);
+                .invoke(errorManager);
 
         if (errors > 0)
         {
             throw new IllegalStateException(
-                String.format("ANTLR terminated with %s error%s",
-                    errors,
-                    (errors == 1) ? "" : "s"));
+                    String.format("ANTLR terminated with %s error%s",
+                            errors,
+                            (errors == 1) ? "" : "s"));
         }
     }
 
@@ -560,7 +565,7 @@ public class AntlrRules
                     {
                         @Override
                         public FileVisitResult preVisitDirectory(Path dir,
-                            BasicFileAttributes attrs) throws IOException
+                                                                                                                                                                   BasicFileAttributes attrs) throws IOException
                         {
                             Files.createDirectories(target.resolve(root.relativize(dir).toString()));
 
@@ -570,7 +575,7 @@ public class AntlrRules
 
                         @Override
                         public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
-                            throws IOException
+                                throws IOException
                         {
                             Files.copy(file, target.resolve(file.getFileName().toString()), COPY_OPTIONS);
 
@@ -601,23 +606,23 @@ public class AntlrRules
             String grammarName = e.getKey();
 
             if (fileName.startsWith(e.getKey())
-                // the Go target uses lower underscore, but not consistently
-                || fileName.startsWith(CaseFormat.toLowerUnderscore(grammarName))
-                || fileName.startsWith(grammarName.toLowerCase()))
+                    // the Go target uses lower underscore, but not consistently
+                    || fileName.startsWith(CaseFormat.toLowerUnderscore(grammarName))
+                    || fileName.startsWith(grammarName.toLowerCase()))
             {
                 return e.getValue();
             }
 
             // ANTLR 2 does not enforce casing for grammars
             if ((version == Version.V2)
-                && fileName.toLowerCase().startsWith(e.getKey().toLowerCase()))
+                    && fileName.toLowerCase().startsWith(e.getKey().toLowerCase()))
             {
                 return e.getValue();
             }
         }
 
         throw new IllegalStateException(
-            "Could not find matching grammar for " + file.getFileName());
+                "Could not find matching grammar for " + file.getFileName());
     }
 
 
@@ -630,7 +635,7 @@ public class AntlrRules
      * @return  the sorted map.
      */
     private Map<String, Grammar> grammarNames(
-        Map<Namespace, Collection<Grammar>> namespaces)
+            Map<Namespace, Collection<Grammar>> namespaces)
     {
         Map<String, Grammar> result = new TreeMap<>(new LengthComparator());
 
@@ -655,18 +660,18 @@ public class AntlrRules
 
 
     private Map<Namespace, Collection<Grammar>> groupByNamespace(
-        Collection<String> grammars) throws IOException
+            Collection<String> grammars) throws IOException
     {
         Map<Namespace, Collection<Grammar>> result = new LinkedHashMap<>();
 
         for (String path : grammars)
         {
             Grammar grammar = new Grammar(version,
-                fs.getPath(path),
-                language,
-                namespace,
-                encoding,
-                layout);
+                    fs.getPath(path),
+                    language,
+                    namespace,
+                    encoding,
+                    layout);
 
             List<Grammar> files = (List<Grammar>) result.get(grammar.namespace);
 
@@ -725,26 +730,26 @@ public class AntlrRules
                             new HashMap<String, String>()))
                     {
                         Files.walkFileTree(fs.getPath("/"),
-                            new SimpleFileVisitor<Path>()
-                            {
-                                @Override
-                                public FileVisitResult visitFile(Path file,
-                                    BasicFileAttributes attr) throws IOException
+                                new SimpleFileVisitor<Path>()
                                 {
-                                    if (file.getFileName().toString().endsWith(".txt"))
+                                    @Override
+                                    public FileVisitResult visitFile(Path file,
+                                                                                                                                                                                           BasicFileAttributes attr) throws IOException
                                     {
-                                        Path copy = target.resolve(
-                                            file.getFileName().toString());
-
-                                        if (Files.notExists(copy))
+                                        if (file.getFileName().toString().endsWith(".txt"))
                                         {
-                                            Files.copy(file, copy);
-                                        }
-                                    }
+                                            Path copy = target.resolve(
+                                                    file.getFileName().toString());
 
-                                    return CONTINUE;
-                                }
-                            });
+                                            if (Files.notExists(copy))
+                                            {
+                                                Files.copy(file, copy);
+                                            }
+                                        }
+
+                                        return CONTINUE;
+                                    }
+                                });
                     }
                 }
             }
@@ -752,9 +757,9 @@ public class AntlrRules
             if (!srcjarFound)
             {
                 throw new IllegalArgumentException(
-                    String.format(
-                        "You have to provide the .srcjar created for '%s' as well",
-                        argument));
+                        String.format(
+                                "You have to provide the .srcjar created for '%s' as well",
+                                argument));
             }
 
             arguments.set(glib + 1, argument);
@@ -780,7 +785,7 @@ public class AntlrRules
                     {
                         // ensure absolute path
                         this.arguments.set(i + 1,
-                            sandbox.resolve(this.arguments.get(i + 1)).toString());
+                                sandbox.resolve(this.arguments.get(i + 1)).toString());
 
                         break;
                     }

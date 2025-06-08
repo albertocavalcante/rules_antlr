@@ -58,6 +58,7 @@ def _args(ctx, output_dir):
     if ctx.attr.no_visitor:
         args.add("-no-visitor")
 
+    args.add("-Xexact-output-dir")
     args.add("-o")
     args.add(output_dir)
 
@@ -109,7 +110,7 @@ you need to use a different version, you can specify the dependencies here.
         "visitor": attr.bool(default = False, doc = "Generate parse tree visitor."),
         "_tool": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             default = Label("@rules_antlr//src/main/java/org/antlr/bazel"),
         ),
     },

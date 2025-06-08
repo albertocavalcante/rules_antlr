@@ -45,8 +45,7 @@ public class Projects
             if (Files.exists(external))
             {
                 result = external.resolve(path);
-            }
-            else
+            }else
             {
                 Path root = Projects.eclipseFolder();
 
@@ -88,7 +87,7 @@ public class Projects
             {
                 InputSource inputXML = new InputSource( in );
                 XPath xpath = XPathFactory.newInstance().newXPath();
-                NodeList result = (NodeList)xpath.evaluate("//linkedResources/link/location", inputXML, XPathConstants.NODESET);
+                NodeList result = (NodeList) xpath.evaluate("//linkedResources/link/location", inputXML, XPathConstants.NODESET);
 
                 for (int i = 0, size = result.getLength(); i < size; i++)
                 {

@@ -1,6 +1,16 @@
-build --javacopt="--release 11"
+import %workspace%/tools/rc/correctness.bazelrc
+import %workspace%/.java.bazelrc
+import %workspace%/.remote-cache.bazelrc
+import %workspace%/.rbe.bazelrc
+import %workspace%/.ci.bazelrc
 
-build --java_language_version=11
-build --java_runtime_version=11
-build --tool_java_language_version=11
-build --tool_java_runtime_version=11
+startup --digest_function=blake3
+
+common --noenable_bzlmod
+common --enable_platform_specific_config
+
+build --jobs=auto
+build --action_env=HOME
+build --action_env=USE_BAZEL_VERSION=7.5.0
+
+try-import %workspace%/user.bazelrc

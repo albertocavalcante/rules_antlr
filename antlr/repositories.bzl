@@ -1,7 +1,7 @@
 """Loads ANTLR dependencies."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_jar")
-load(":lang.bzl", "C", "CPP", "GO", "JAVA", "OBJC", "PYTHON", "PYTHON2", "PYTHON3", supportedLanguages = "supported")
+load(":lang.bzl", "C", "CPP", "GO", "JAVA", "OBJC", "PYTHON", "PYTHON2", "PYTHON3", supported_languages = "supported")
 
 v4 = [4, "4.7.1", "4.7.2", "4.8", "4.9", "4.9.1", "4.9.2", "4.9.3", "4.10", "4.10.1", "4.11.0", "4.12.0"]
 v4_opt = [4, "4.7.1", "4.7.2", "4.7.3", "4.7.4"]
@@ -119,6 +119,14 @@ PACKAGES = {
             "path": "org/antlr/antlr4-runtime/4.9/antlr4-runtime-4.9.jar",
             "sha256": "c961cf29061bc383aafbbf0c78bdd3c2514a87d65e1c830b1c6d3634dab99043",
         },
+        "4.9.2": {
+            "path": "org/antlr/antlr4-runtime/4.9.2/antlr4-runtime-4.9.2.jar",
+            "sha256": "120053628dd598d43cb7ac6b9ecc72529dfa5a5fd3292d37cf638a81cc0075f6",
+        },
+        "4.9.1": {
+            "path": "org/antlr/antlr4-runtime/4.9.1/antlr4-runtime-4.9.1.jar",
+            "sha256": "a80502c3140ae7acfbb1f57847c8eb1c101461a969215ec38c3f1ebdff61ac29",
+        },
         "4.8": {
             "path": "org/antlr/antlr4-runtime/4.8/antlr4-runtime-4.8.jar",
             "sha256": "2337df5d81e715b39aeea07aac46ad47e4f1f9e9cd7c899f124f425913efdcf8",
@@ -175,11 +183,11 @@ PACKAGES = {
         },
         "4.9.2": {
             "path": "org/antlr/antlr4/4.9.2/antlr4-4.9.2.jar",
-            "sha256": "",
+            "sha256": "7d66253762da7c8c7ab6ac05da1471aeeb3cb8e92310ecfb08f939306b4c7dae",
         },
         "4.9.1": {
             "path": "org/antlr/antlr4/4.9.1/antlr4-4.9.1.jar",
-            "sha256": "",
+            "sha256": "e6bd18f14126ab85a42dcb80ba5f67da2f35ba164ec5a64d40024bd0e7436584",
         },
         "4.9": {
             "path": "org/antlr/antlr4/4.9/antlr4-4.9.jar",
@@ -252,13 +260,17 @@ PACKAGES = {
     },
 }
 
-def rules_antlr_dependencies(*versionsAndLanguages):
+def _fail_with_attr(message, attr_name):
+    """Helper function for consistent error handling with attribute context."""
+    fail(message, attr = attr_name)
+
+def rules_antlr_dependencies(*versions_and_languages):
     """Loads the dependencies for the specified ANTLR releases.
 
     You have to provide at least the version number of the ANTLR release you want to use. To
     load the dependencies for languages besides Java, you have to indicate the languages as well.
 
-    ```python
+    ```starlark
     load("@rules_antlr//antlr:lang.bzl", "CPP", "PYTHON")
     load("@rules_antlr//antlr:repositories.bzl", "rules_antlr_dependencies")
 
@@ -266,52 +278,70 @@ def rules_antlr_dependencies(*versionsAndLanguages):
     ```
 
     Args:
-      *versionsAndLanguages: the ANTLR release versions to make available for the provided target languages.
+      *versions_and_languages: the ANTLR release versions to make available for the provided target languages.
     """
-    if versionsAndLanguages:
+    if versions_and_languages:
         versions = []
         languages = []
-        supportedVersions = v4 + v3 + v2
+        supported_versions = v4 + v3 + v2
 
-        for versionOrLanguage in versionsAndLanguages:
-            if not versionOrLanguage in supportedVersions:
-                if type(versionOrLanguage) == "int" or str(versionOrLanguage).isdigit():
-                    fail('Integer version \'{}\' no longer valid. Use semantic version "{}" instead.'.format(versionOrLanguage, ".".join(str(versionOrLanguage).elems())), attr = "versionsAndLanguages")
-                elif str(versionOrLanguage).replace(".", "").isdigit():
-                    fail('Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(versionOrLanguage, supportedVersions), attr = "versionsAndLanguages")
-                elif not versionOrLanguage in supportedLanguages():
-                    fail('Invalid language provided: "{0}". Currently supported are: {1}'.format(versionOrLanguage, supportedLanguages()), attr = "versionsAndLanguages")
-                languages.append(versionOrLanguage)
+        for version_or_language in versions_and_languages:
+            if not version_or_language in supported_versions:
+                if type(version_or_language) == "int" or str(version_or_language).isdigit():
+                    _fail_with_attr(
+                        'Integer version \'{}\' no longer valid. Use semantic version "{}" instead.'.format(
+                            version_or_language,
+                            ".".join(str(version_or_language).elems()),
+                        ),
+                        "versions_and_languages",
+                    )
+                elif str(version_or_language).replace(".", "").isdigit():
+                    _fail_with_attr(
+                        'Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(
+                            version_or_language,
+                            supported_versions,
+                        ),
+                        "versions_and_languages",
+                    )
+                elif not version_or_language in supported_languages():
+                    _fail_with_attr(
+                        'Invalid language provided: "{0}". Currently supported are: {1}'.format(
+                            version_or_language,
+                            supported_languages(),
+                        ),
+                        "versions_and_languages",
+                    )
+                languages.append(version_or_language)
             else:
-                versions.append(versionOrLanguage)
+                versions.append(version_or_language)
 
         if not versions:
-            fail("Missing ANTLR version", attr = "versionsAndLanguages")
+            _fail_with_attr("Missing ANTLR version", "versions_and_languages")
 
         # only one version allowed per ANTLR release stream
-        _validateVersions(versions)
+        _validate_versions(versions)
 
         # if no language is specified, assume Java
         if not languages:
             languages = [JAVA]
 
-        for version in sorted(versions, key = _toString):
+        for version in sorted(versions, key = _to_string):
             if version in v4:
-                version = "4.13.1" if version == 4 else version
-                _antlr4_dependencies(version, languages)
+                version = "4.12.0" if version == 4 else version
+                _antlr4_dependencies(languages, version)
             elif version in v3:
                 version = "3.5.2" if version == 3 else version
-                _antlr3_dependencies(version, languages)
+                _antlr3_dependencies(languages, version)
             elif version in v2:
                 version = "2.7.7" if version == 2 else version
-                _antlr2_dependencies(version, languages)
+                _antlr2_dependencies(languages, version)
     else:
-        fail("Missing ANTLR version", attr = "versionsAndLanguages")
+        _fail_with_attr("Missing ANTLR version", "versions_and_languages")
 
 def rules_antlr_optimized_dependencies(version):
     """Loads the dependencies for the "optimized" fork of ANTLR 4 maintained by Sam Harwell.
 
-    ```python
+    ```starlark
     load("@rules_antlr//antlr:repositories.bzl", "rules_antlr_optimized_dependencies")
 
     rules_antlr_optimized_dependencies("4.7.2")
@@ -322,11 +352,23 @@ def rules_antlr_optimized_dependencies(version):
     """
     if version in v4_opt:
         version = "4.12.0" if version == 4 else version
-        _antlr4_optimized_dependencies()
+        _antlr4_optimized_dependencies(version = version)
     elif type(version) == "int" or str(version).isdigit():
-        fail('Integer version \'{}\' no longer valid. Use semantic version "{}" instead.'.format(version, ".".join(str(version).elems())), attr = "version")
+        _fail_with_attr(
+            'Integer version \'{}\' no longer valid. Use semantic version "{}" instead.'.format(
+                version,
+                ".".join(str(version).elems()),
+            ),
+            "version",
+        )
     else:
-        fail('Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(version, v4_opt), attr = "version")
+        _fail_with_attr(
+            'Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(
+                version,
+                v4_opt,
+            ),
+            "version",
+        )
 
 def _antlr4_optimized_dependencies(version):
     _dependencies({
@@ -337,12 +379,13 @@ def _antlr4_optimized_dependencies(version):
         "javax_json": "1.0.4",
     })
 
+
 def _antlr4_dependencies(version, languages):
     _dependencies({
         "antlr4_runtime": version,
         "antlr4_tool": version,
         "antlr3_runtime": "3.5.2",
-        "stringtemplate4": "4.0.8",
+        "stringtemplate4": "4.3.3",
         "javax_json": "1.0.4",
     })
     archive = PACKAGES["antlr"][version]
@@ -377,21 +420,21 @@ cc_library(
         workspace += _load_http(workspace) + """
 http_archive(
     name = "io_bazel_rules_go",
+    sha256 = "b78f77458e77162f45b4564d6b20b6f92f56431ed59eaaab09e7819d1d850313",
     urls = [
-        "https://storage.googleapis.com/bazel-mirror/github.com/bazelbuild/rules_go/releases/download/v0.20.3/rules_go-v0.20.3.tar.gz",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.20.3/rules_go-v0.20.3.tar.gz",
+        "https://mirror.bazel.build/github.com/bazel-contrib/rules_go/releases/download/v0.53.0/rules_go-v0.53.0.zip",
+        "https://github.com/bazel-contrib/rules_go/releases/download/v0.53.0/rules_go-v0.53.0.zip",
     ],
-    sha256 = "e88471aea3a3a4f19ec1310a55ba94772d087e9ce46e41ae38ecebe17935de7b",
 )
 load("@io_bazel_rules_go//go:deps.bzl", "go_rules_dependencies", "go_register_toolchains")
 go_rules_dependencies()
-go_register_toolchains()
+go_register_toolchains(version = "1.24.1")
 """
         script += """
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go",
-    srcs = glob(["runtime/Go/antlr/*.go"]),
+    srcs = glob(["runtime/Go/antlr/*.go"], allow_empty = True),
     importpath = "github.com/antlr/antlr4/runtime/Go/antlr",
     visibility = ["//visibility:public"],
 )
@@ -402,7 +445,7 @@ go_library(
         script += _load_rules_python_defs(script) + """
 py_library(
     name = "python2",
-    srcs = glob(["runtime/Python3/src/*.py"]),
+    srcs = glob(["runtime/Python3/src/**/*.py"], allow_empty = True),
     imports = ["runtime/Python3/src"],
     visibility = ["//visibility:public"],
 )
@@ -413,7 +456,7 @@ py_library(
         script += _load_rules_python_defs(script) + """
 py_library(
     name = "python",
-    srcs = glob(["runtime/Python3/src/*.py"]),
+    srcs = glob(["runtime/Python3/src/**/*.py"], allow_empty = True),
     imports = ["runtime/Python3/src"],
     visibility = ["//visibility:public"],
 )
@@ -432,8 +475,9 @@ def _load_rules_python_repositories(workspace):
     return "" if workspace.find('load("@rules_python//python:repositories.bzl", "py_repositories")') > -1 else """
 http_archive(
     name = "rules_python",
-    sha256 = "aa96a691d3a8177f3215b14b0edc9641787abaaa30363a080165d06ab65e1161",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.0.1/rules_python-0.0.1.tar.gz",
+    sha256 = "2ef40fdcd797e07f0b6abda446d1d84e2d9570d234fddf8fcd2aa262da852d1c",
+    strip_prefix = "rules_python-1.2.0",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/1.2.0/rules_python-1.2.0.tar.gz",
 )
 load("@rules_python//python:repositories.bzl", "py_repositories")
 py_repositories()
@@ -553,24 +597,25 @@ def _dependencies(dependencies):
 def _download(name, path, sha256):
     http_jar(
         name = name,
-        urls = [
-            path if path.startswith("https") else "https://jcenter.bintray.com/" + path,
-            path if path.startswith("https") else "https://repo1.maven.org/maven2/" + path,
-        ],
+        url = path if path.startswith("https") else "https://repo1.maven.org/maven2/" + path,
         sha256 = sha256,
     )
 
-def _validateVersions(versions):
+def _validate_versions(versions):
     store = {}
     for version in versions:
         v = str(version)[0]
         p = store.get(v)
         if p:
-            fail(
-                'You can only load one version from ANTLR {0}. You specified both "{1}" and "{2}".'.format(v, p, version),
-                attr = "versionsAndLanguages",
+            _fail_with_attr(
+                'You can only load one version from ANTLR {0}. You specified both "{1}" and "{2}".'.format(
+                    v,
+                    p,
+                    version,
+                ),
+                "versions_and_languages",
             )
         store[v] = version
 
-def _toString(x):
+def _to_string(x):
     return str(x)

@@ -19,8 +19,7 @@ class LengthComparator implements Comparator<String>
         if (length1 < length2)
         {
             return 1;
-        }
-        else if (length1 > length2)
+        }else if (length1 > length2)
         {
             return -1;
         }

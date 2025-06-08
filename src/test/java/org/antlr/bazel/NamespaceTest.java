@@ -57,23 +57,23 @@ public class NamespaceTest
     public void of()
     {
         assertEquals("org::antlr::test",
-            Namespace.of(Paths.get("org\\antlr/test"), Language.CPP).toString());
+                Namespace.of(Paths.get("org\\antlr/test"), Language.CPP).toString());
         assertEquals("org.antlr.test",
-            Namespace.of(Paths.get("org\\antlr/test"), Language.CSHARP).toString());
+                Namespace.of(Paths.get("org\\antlr/test"), Language.CSHARP).toString());
         assertEquals("org/antlr/test",
-            Namespace.of(Paths.get("org\\antlr/test"), Language.GO).toString());
+                Namespace.of(Paths.get("org\\antlr/test"), Language.GO).toString());
         assertEquals("org.antlr.test",
-            Namespace.of(Paths.get("org\\antlr/test"), Language.JAVA).toString());
+                Namespace.of(Paths.get("org\\antlr/test"), Language.JAVA).toString());
         assertEquals("org/antlr/test",
-            Namespace.of(Paths.get("org\\antlr/test"), Language.JAVASCRIPT).toString());
+                Namespace.of(Paths.get("org\\antlr/test"), Language.JAVASCRIPT).toString());
         assertEquals("org\\antlr/test",
-            Namespace.of(Paths.get("org\\antlr/test"), Language.OBJC).toString());
+                Namespace.of(Paths.get("org\\antlr/test"), Language.OBJC).toString());
         assertEquals("org/antlr/test",
-            Namespace.of(Paths.get("org\\antlr/test"), Language.PYTHON).toString());
+                Namespace.of(Paths.get("org\\antlr/test"), Language.PYTHON).toString());
         assertEquals("org::antlr::test",
-            Namespace.of(Paths.get("org\\antlr/test"), Language.RUBY).toString());
+                Namespace.of(Paths.get("org\\antlr/test"), Language.RUBY).toString());
         assertEquals("org.antlr.test",
-            Namespace.of(Paths.get("org\\antlr/test"), Language.SWIFT).toString());
+                Namespace.of(Paths.get("org\\antlr/test"), Language.SWIFT).toString());
     }
 
 
@@ -81,22 +81,22 @@ public class NamespaceTest
     public void toPath()
     {
         assertEquals("org/antlr/test",
-            Namespace.of("org::antlr::test").toPath(Language.CPP));
+                Namespace.of("org::antlr::test").toPath(Language.CPP));
         assertEquals("org/antlr/test",
-            Namespace.of("org.antlr.test").toPath(Language.CSHARP));
+                Namespace.of("org.antlr.test").toPath(Language.CSHARP));
         assertEquals("org/antlr/test",
-            Namespace.of("org/antlr/test").toPath(Language.GO));
+                Namespace.of("org/antlr/test").toPath(Language.GO));
         assertEquals("org/antlr/test",
-            Namespace.of("org.antlr.test").toPath(Language.JAVA));
+                Namespace.of("org.antlr.test").toPath(Language.JAVA));
         assertEquals("org/antlr/test",
-            Namespace.of("org/antlr/test").toPath(Language.JAVASCRIPT));
+                Namespace.of("org/antlr/test").toPath(Language.JAVASCRIPT));
         assertEquals("org/antlr/test",
-            Namespace.of("org/antlr/test").toPath(Language.OBJC));
+                Namespace.of("org/antlr/test").toPath(Language.OBJC));
         assertEquals("org/antlr/test",
-            Namespace.of("org.antlr.test").toPath(Language.PYTHON));
+                Namespace.of("org.antlr.test").toPath(Language.PYTHON));
         assertEquals("org/antlr/test",
-            Namespace.of("org::antlr::test").toPath(Language.RUBY));
+                Namespace.of("org::antlr::test").toPath(Language.RUBY));
         assertEquals("org/antlr/test",
-            Namespace.of("org.antlr.test").toPath(Language.SWIFT));
+                Namespace.of("org.antlr.test").toPath(Language.SWIFT));
     }
 }

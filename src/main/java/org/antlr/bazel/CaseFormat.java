@@ -12,10 +12,10 @@ import java.util.regex.Pattern;
 class CaseFormat
 {
     private static final Pattern UPPER_CAMEL = Pattern.compile(
-        "((?:^|_)\\p{javaLowerCase})");
+            "((?:^|_)\\p{javaLowerCase})");
 
     private static final Pattern LOWER_UNDERSCORE = Pattern.compile(
-        "(.)(\\p{javaUpperCase})");
+            "(.)(\\p{javaUpperCase})");
 
     /** Creates a new CaseFormat object. */
     private CaseFormat()
@@ -54,11 +54,10 @@ class CaseFormat
             if (matcher.start() == 0)
             {
                 matcher.appendReplacement(buf, matcher.group(1).toUpperCase());
-            }
-            else
+            }else
             {
                 matcher.appendReplacement(buf,
-                    matcher.group(1).substring(1).toUpperCase());
+                        matcher.group(1).substring(1).toUpperCase());
             }
         }
 

@@ -70,7 +70,7 @@ compile.
         "traceTreeParser": attr.bool(default = False, doc = "Have tree walker rules call traceIn/traceOut."),
         "_tool": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             default = Label("@rules_antlr//src/main/java/org/antlr/bazel"),
         ),
     },

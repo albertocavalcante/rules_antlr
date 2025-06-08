@@ -1,0 +1,168 @@
+name: Release Drafter
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g., 0.6.0)"
+        required: true
+        default: ""
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update_release_draft:
+    runs-on: ubuntu-latest
+    outputs:
+      release_id: ${{ steps.release-drafter.outputs.id }}
+      upload_url: ${{ steps.release-drafter.outputs.upload_url }}
+      tag: ${{ steps.release-drafter.outputs.tag_name }}
+      version: ${{ steps.release-drafter.outputs.resolved_version }}
+    steps:
+      - name: Release Drafter
+        id: release-drafter
+        uses: release-drafter/release-drafter@v5
+        with:
+          config-name: release-drafter.yml
+          disable-autolabeler: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  create_release_archive:
+    needs: update_release_draft
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set version
+        id: version
+        run: |
+          echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          echo "Using version: ${{ github.event.inputs.version }}"
+
+      - name: Create Tag
+        run: |
+          if ! git rev-parse ${{ env.VERSION }} >/dev/null 2>&1; then
+            git config user.name "GitHub Actions"
+            git config user.email "actions@github.com"
+            git tag ${{ env.VERSION }}
+            git push origin ${{ env.VERSION }}
+            echo "Created and pushed new tag: ${{ env.VERSION }}"
+          else
+            echo "Tag ${{ env.VERSION }} already exists"
+          fi
+
+      - name: Create Release Archive
+        run: |
+          # Create release archive with the version number
+          git archive --format=tar.gz --prefix=rules_antlr-${{ env.VERSION }}/ -o rules_antlr-${{ env.VERSION }}.tar.gz HEAD
+          echo "ARCHIVE_PATH=rules_antlr-${{ env.VERSION }}.tar.gz" >> $GITHUB_ENV
+
+      - name: Calculate SHA256
+        id: sha
+        run: |
+          SHA=$(sha256sum ${{ env.ARCHIVE_PATH }} | awk '{print $1}')
+          echo "SHA256=$SHA" >> $GITHUB_ENV
+          echo "SHA256 hash: $SHA"
+
+      - name: Delete existing asset if it exists
+        uses: actions/github-script@v7
+        continue-on-error: true
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const releaseId = '${{ needs.update_release_draft.outputs.release_id }}';
+            const assetName = 'rules_antlr-${{ env.VERSION }}.tar.gz';
+            
+            try {
+              // List all assets for the release
+              const assets = await github.rest.repos.listReleaseAssets({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: releaseId
+              });
+              
+              console.log(`Found ${assets.data.length} assets on the release`);
+              
+              // Delete the asset if it exists
+              const asset = assets.data.find(a => a.name === assetName);
+              if (asset) {
+                console.log(`Found existing asset: ${asset.name} (ID: ${asset.id})`);
+                await github.rest.repos.deleteReleaseAsset({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  asset_id: asset.id
+                });
+                console.log(`Deleted asset: ${asset.name}`);
+              }
+            } catch (error) {
+              console.error(`Error handling assets: ${error.message}`);
+            }
+
+      - name: Upload Release Asset
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const releaseId = '${{ needs.update_release_draft.outputs.release_id }}';
+            const assetPath = 'rules_antlr-${{ env.VERSION }}.tar.gz';
+            
+            try {
+              console.log(`Uploading asset: ${assetPath}`);
+              await github.rest.repos.uploadReleaseAsset({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: releaseId,
+                name: assetPath,
+                data: fs.readFileSync(assetPath),
+                headers: {
+                  'content-type': 'application/gzip',
+                  'content-length': fs.statSync(assetPath).size
+                }
+              });
+              console.log(`Successfully uploaded ${assetPath}`);
+            } catch (error) {
+              console.error(`Error uploading asset: ${error.message}`);
+              throw error;
+            }
+
+      - name: Update Release with SHA256
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const releaseId = '${{ needs.update_release_draft.outputs.release_id }}';
+            
+            try {
+              // Get the current release
+              const { data: release } = await github.rest.repos.getRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: releaseId
+              });
+              
+              // Update SHA256 in body
+              let body = release.body;
+              body = body.replace(/sha256 = ".*?"/, `sha256 = "${{ env.SHA256 }}"`);
+              
+              // Update release with SHA
+              await github.rest.repos.updateRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                release_id: releaseId,
+                body: body,
+                draft: true // Ensure it stays as a draft
+              });
+              
+              console.log('Updated release description with SHA256');
+              console.log(`View the draft release at: https://github.com/${context.repo.owner}/${context.repo.repo}/releases`);
+            } catch (error) {
+              console.error(`Error updating release description: ${error.message}`);
+              throw error;
+            }

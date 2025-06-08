@@ -53,18 +53,18 @@ class Grammar implements Comparable<Grammar>
      * @throws  IOException  if an I/O error occurred.
      */
     public Grammar(Version version,
-        Path path,
-        Language language,
-        Namespace namespace,
-        Charset encoding,
-        String layout) throws IOException
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                             Path path,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                             Language language,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                             Namespace namespace,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                             Charset encoding,
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                             String layout) throws IOException
     {
         String text = new String(Files.readAllBytes(path), encoding);
         this.path = path;
         this.encoding = encoding;
         this.language = (language != null) ? language : Language.detect(text);
         this.layout = (layout != null) ? new DirectoryLayout(layout)
-                                       : this.language.getLayout();
+                : this.language.getLayout();
         this.namespace = namespace(namespace, text);
         this.names = detectNames(version, text);
         this.imports = detectImports(text);
@@ -79,12 +79,10 @@ class Grammar implements Comparable<Grammar>
             {
                 return 1;
             }
-        }
-        else if (other.imports.isEmpty())
+        }else if (other.imports.isEmpty())
         {
             return -1;
-        }
-        else if (imports.contains(Strings.stripFileExtension(other.toString())))
+        }else if (imports.contains(Strings.stripFileExtension(other.toString())))
         {
             return -1;
         }
@@ -121,7 +119,7 @@ class Grammar implements Comparable<Grammar>
     {
         // flat layout might be forced for namespace
         return path.getFileSystem()
-            .getPath(layout.isFlat() ? "" : namespace.toPath(language));
+                .getPath(layout.isFlat() ? "" : namespace.toPath(language));
     }
 
 
@@ -166,14 +164,14 @@ class Grammar implements Comparable<Grammar>
         if (version == Version.V2)
         {
             Pattern[] patterns =
-                {
-                    Pattern.compile("^\\s*class\\s+(\\S*?)\\s+extends\\s+\\S*?Parser",
-                        Pattern.DOTALL | Pattern.MULTILINE),
-                    Pattern.compile("^\\s*class\\s+(\\S*?)\\s+extends\\s+\\S*?Lexer",
-                        Pattern.DOTALL | Pattern.MULTILINE),
-                    Pattern.compile("^\\s*class\\s+(\\S*?)\\s+extends\\s+\\S*?TreeParser",
-                        Pattern.DOTALL | Pattern.MULTILINE)
-                };
+                    {
+                            Pattern.compile("^\\s*class\\s+(\\S*?)\\s+extends\\s+\\S*?Parser",
+                                    Pattern.DOTALL | Pattern.MULTILINE),
+                            Pattern.compile("^\\s*class\\s+(\\S*?)\\s+extends\\s+\\S*?Lexer",
+                                    Pattern.DOTALL | Pattern.MULTILINE),
+                            Pattern.compile("^\\s*class\\s+(\\S*?)\\s+extends\\s+\\S*?TreeParser",
+                                    Pattern.DOTALL | Pattern.MULTILINE)
+                    };
 
             for (Pattern pattern : patterns)
             {
@@ -184,12 +182,11 @@ class Grammar implements Comparable<Grammar>
                     names.add(name);
                 }
             }
-        }
-        else
+        }else
         {
             Pattern pattern = Pattern.compile(
-                "^\\s*(?:(?:parser|lexer|tree|combined)\\s+)?grammar\\s+(\\S*?)\\s*;",
-                Pattern.DOTALL | Pattern.MULTILINE);
+                    "^\\s*(?:(?:parser|lexer|tree|combined)\\s+)?grammar\\s+(\\S*?)\\s*;",
+                    Pattern.DOTALL | Pattern.MULTILINE);
             Matcher matcher = pattern.matcher(text);
 
             while (matcher.find())
@@ -222,16 +219,15 @@ class Grammar implements Comparable<Grammar>
         if (result == null)
         {
             result = ns;
-        }
-        else if (ns != null && !ns.equals(namespace))
+        }else if (ns != null && !ns.equals(namespace))
         {
             throw new IllegalStateException(
-                String.format(
-                    "Specified package attribute '%s' %s namespace '%s' in grammar %s",
-                    namespace,
-                    "conflicting with",
-                    ns,
-                    path.getFileName()));
+                    String.format(
+                            "Specified package attribute '%s' %s namespace '%s' in grammar %s",
+                            namespace,
+                            "conflicting with",
+                            ns,
+                            path.getFileName()));
         }
 
         if (result == null)

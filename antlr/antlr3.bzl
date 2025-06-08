@@ -48,7 +48,7 @@ def _args(ctx, output_dir):
     if ctx.attr.nfa:
         args.add("-nfa")
 
-    args.add("-o")
+    args.add("-fo")
     args.add(output_dir)
 
     if ctx.attr.profile:
@@ -159,7 +159,7 @@ dependencies here.
         "Xwatchconversion": attr.bool(default = False, doc = "Don't delete temporary lexers generated from combined grammars."),
         "_tool": attr.label(
             executable = True,
-            cfg = "host",
+            cfg = "exec",
             default = Label("@rules_antlr//src/main/java/org/antlr/bazel"),
         ),
     },
