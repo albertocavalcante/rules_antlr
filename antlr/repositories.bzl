@@ -163,7 +163,7 @@ PACKAGES = {
 
 def _fail_with_attr(message, attr_name):
     """Helper function for consistent error handling with attribute context."""
-    fail(message, attr = attr_name)
+    fail(message, attr = attr_name) # type: ignore
 
 def rules_antlr_dependencies(*versions_and_languages):
     """Loads the dependencies for the specified ANTLR releases.
