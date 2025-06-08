@@ -372,8 +372,8 @@ def rules_antlr_optimized_dependencies(version):
 
 def _antlr4_optimized_dependencies(version):
     _dependencies({
-        "antlr4_runtime": version,
-        "antlr4_tool": version,
+        "antlr4_runtime": "%s-opt" % version,
+        "antlr4_tool": "%s-opt" % version,
         "antlr3_runtime": "3.5.2",
         "stringtemplate4": "4.0.8",
         "javax_json": "1.0.4",
