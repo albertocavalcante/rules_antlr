@@ -101,7 +101,7 @@ def _get_test_names(test_files):
     for test_file in test_files:
         if not test_file.endswith("Test.java"):
             continue
-        test_names += [test_file[:-5]]
+        test_names.append(test_file[:-5])
     return test_names
 
 def _package_from_path(package_path, src_impls = None):
