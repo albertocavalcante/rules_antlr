@@ -109,7 +109,7 @@ def extension(language):
     if language == OBJC:
         return ".objc"
     if language == PYTHON or language == PYTHON2 or language == PYTHON3:
-        return ".py"
+        return "_py"
     return ""
 
 def lib_dir(imports):

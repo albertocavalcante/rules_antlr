@@ -3,13 +3,23 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_jar")
 load(":lang.bzl", "C", "CPP", "GO", "JAVA", "OBJC", "PYTHON", "PYTHON2", "PYTHON3", supported_languages = "supported")
 
-v4 = [4, "4.7.1", "4.7.2", "4.8"]
+v4 = [4, "4.7.1", "4.7.2", "4.8", "4.9.1", "4.9.2"]
 v4_opt = [4, "4.7.1", "4.7.2", "4.7.3", "4.7.4"]
 v3 = [3, "3.5.2"]
 v2 = [2, "2.7.7"]
 
 PACKAGES = {
     "antlr": {
+        "4.9.2": {
+            "url": "https://github.com/antlr/antlr4/archive/4.9.2.tar.gz",
+            "prefix": "antlr4-4.9.2",
+            "sha256": "db170179917ce6fec7bc4ecf72edba36b97c9881e09e03af6ac0c901eba52a8f",
+        },
+        "4.9.1": {
+            "url": "https://github.com/antlr/antlr4/archive/4.9.1.tar.gz",
+            "prefix": "antlr4-4.9.1",
+            "sha256": "db170179917ce6fec7bc4ecf72edba36b97c9881e09e03af6ac0c901eba52a8f",
+        },
         "4.8": {
             "url": "https://github.com/antlr/antlr4/archive/4.8.tar.gz",
             "prefix": "antlr4-4.8",
@@ -38,6 +48,14 @@ PACKAGES = {
         },
     },
     "antlr4_runtime": {
+        "4.9.2": {
+            "path": "org/antlr/antlr4-runtime/4.9.2/antlr4-runtime-4.9.2.jar",
+            "sha256": "120053628dd598d43cb7ac6b9ecc72529dfa5a5fd3292d37cf638a81cc0075f6",
+        },
+        "4.9.1": {
+            "path": "org/antlr/antlr4-runtime/4.9.1/antlr4-runtime-4.9.1.jar",
+            "sha256": "a80502c3140ae7acfbb1f57847c8eb1c101461a969215ec38c3f1ebdff61ac29",
+        },
         "4.8": {
             "path": "org/antlr/antlr4-runtime/4.8/antlr4-runtime-4.8.jar",
             "sha256": "2337df5d81e715b39aeea07aac46ad47e4f1f9e9cd7c899f124f425913efdcf8",
@@ -68,6 +86,14 @@ PACKAGES = {
         },
     },
     "antlr4_tool": {
+        "4.9.2": {
+            "path": "org/antlr/antlr4/4.9.2/antlr4-4.9.2.jar",
+            "sha256": "7d66253762da7c8c7ab6ac05da1471aeeb3cb8e92310ecfb08f939306b4c7dae",
+        },
+        "4.9.1": {
+            "path": "org/antlr/antlr4/4.9.1/antlr4-4.9.1.jar",
+            "sha256": "e6bd18f14126ab85a42dcb80ba5f67da2f35ba164ec5a64d40024bd0e7436584",
+        },
         "4.8": {
             "path": "org/antlr/antlr4/4.8/antlr4-4.8.jar",
             "sha256": "6e4477689371f237d4d8aa40642badbb209d4628ccdd81234d90f829a743bac8",
@@ -201,7 +227,11 @@ def rules_antlr_dependencies(*versions_and_languages):
             languages = [JAVA]
 
         for version in sorted(versions, key = _to_string):
-            if version == 4 or version == "4.8":
+            if version == 4 or version == "4.9.2":
+                _antlr492_dependencies(languages)
+            elif version == "4.9.1":
+                _antlr491_dependencies(languages)
+            elif version == "4.8":
                 _antlr48_dependencies(languages)
             elif version == "4.7.2":
                 _antlr472_dependencies(languages)
@@ -250,6 +280,32 @@ def rules_antlr_optimized_dependencies(version):
             ),
             "version",
         )
+
+def _antlr492_dependencies(languages):
+    _antlr4_dependencies(
+        "4.9.2",
+        languages,
+        {
+            "antlr4_runtime": "4.9.2",
+            "antlr4_tool": "4.9.2",
+            "antlr3_runtime": "3.5.2",
+            "stringtemplate4": "4.3",
+            "javax_json": "1.0.4",
+        },
+    )
+
+def _antlr491_dependencies(languages):
+    _antlr4_dependencies(
+        "4.9.1",
+        languages,
+        {
+            "antlr4_runtime": "4.9.1",
+            "antlr4_tool": "4.9.1",
+            "antlr3_runtime": "3.5.2",
+            "stringtemplate4": "4.3",
+            "javax_json": "1.0.4",
+        },
+    )
 
 def _antlr48_dependencies(languages):
     _antlr4_dependencies(
@@ -385,7 +441,7 @@ go_library(
         script += _load_rules_python_defs(script) + """
 py_library(
     name = "python2",
-    srcs = glob(["runtime/Python3/src/*.py"], allow_empty = True),
+    srcs = glob(["runtime/Python3/src/**/*.py"], allow_empty = True),
     imports = ["runtime/Python3/src"],
     visibility = ["//visibility:public"],
 )
@@ -396,7 +452,7 @@ py_library(
         script += _load_rules_python_defs(script) + """
 py_library(
     name = "python",
-    srcs = glob(["runtime/Python3/src/*.py"], allow_empty = True),
+    srcs = glob(["runtime/Python3/src/**/*.py"], allow_empty = True),
     imports = ["runtime/Python3/src"],
     visibility = ["//visibility:public"],
 )
