@@ -119,14 +119,6 @@ PACKAGES = {
             "path": "org/antlr/antlr4-runtime/4.9/antlr4-runtime-4.9.jar",
             "sha256": "c961cf29061bc383aafbbf0c78bdd3c2514a87d65e1c830b1c6d3634dab99043",
         },
-        "4.9.2": {
-            "path": "org/antlr/antlr4-runtime/4.9.2/antlr4-runtime-4.9.2.jar",
-            "sha256": "120053628dd598d43cb7ac6b9ecc72529dfa5a5fd3292d37cf638a81cc0075f6",
-        },
-        "4.9.1": {
-            "path": "org/antlr/antlr4-runtime/4.9.1/antlr4-runtime-4.9.1.jar",
-            "sha256": "a80502c3140ae7acfbb1f57847c8eb1c101461a969215ec38c3f1ebdff61ac29",
-        },
         "4.8": {
             "path": "org/antlr/antlr4-runtime/4.8/antlr4-runtime-4.8.jar",
             "sha256": "2337df5d81e715b39aeea07aac46ad47e4f1f9e9cd7c899f124f425913efdcf8",
