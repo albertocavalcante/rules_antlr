@@ -3,23 +3,13 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_jar")
 load(":lang.bzl", "C", "CPP", "GO", "JAVA", "OBJC", "PYTHON", "PYTHON2", "PYTHON3", supportedLanguages = "supported")
 
-v4 = [4, "4.7.1", "4.7.2", "4.8", "4.9", "4.9.1", "4.9.2", "4.9.3", "4.10", "4.10.1", "4.11.0", "4.12.0", "4.13.0", "4.13.1"]
+v4 = [4, "4.7.1", "4.7.2", "4.8", "4.9", "4.9.1", "4.9.2", "4.9.3", "4.10", "4.10.1", "4.11.0", "4.12.0"]
 v4_opt = [4, "4.7.1", "4.7.2", "4.7.3", "4.7.4"]
 v3 = [3, "3.5.2"]
 v2 = [2, "2.7.7"]
 
 PACKAGES = {
     "antlr": {
-        "4.13.1": {
-            "url": "https://github.com/antlr/antlr4/archive/4.13.1.tar.gz",
-            "prefix": "antlr4-4.13.1",
-            "sha256": "",
-        },
-        "4.13.0": {
-            "url": "https://github.com/antlr/antlr4/archive/4.13.0.tar.gz",
-            "prefix": "antlr4-4.13.0",
-            "sha256": "",
-        },
         "4.12.0": {
             "url": "https://github.com/antlr/antlr4/archive/4.12.0.tar.gz",
             "prefix": "antlr4-4.12.0",
@@ -93,14 +83,6 @@ PACKAGES = {
         },
     },
     "antlr4_runtime": {
-        "4.13.1": {
-            "path": "org/antlr/antlr4-runtime/4.13.1/antlr4-runtime-4.13.1.jar",
-            "sha256": "",
-        },
-        "4.13.0": {
-            "path": "org/antlr/antlr4-runtime/4.13.0/antlr4-runtime-4.13.0.jar",
-            "sha256": "",
-        },
         "4.12.0": {
             "path": "org/antlr/antlr4-runtime/4.12.0/antlr4-runtime-4.12.0.jar",
             "sha256": "",
@@ -167,14 +149,6 @@ PACKAGES = {
         },
     },
     "antlr4_tool": {
-        "4.13.1": {
-            "path": "org/antlr/antlr4/4.13.1/antlr4-4.13.1.jar",
-            "sha256": "",
-        },
-        "4.13.0": {
-            "path": "org/antlr/antlr4/4.13.0/antlr4-4.13.0.jar",
-            "sha256": "",
-        },
         "4.12.0": {
             "path": "org/antlr/antlr4/4.12.0/antlr4-4.12.0.jar",
             "sha256": "",
@@ -347,7 +321,7 @@ def rules_antlr_optimized_dependencies(version):
       version: the ANTLR release version to make available.
     """
     if version in v4_opt:
-        version = "4.13.1" if version == 4 else version
+        version = "4.12.0" if version == 4 else version
         _antlr4_optimized_dependencies()
     elif type(version) == "int" or str(version).isdigit():
         fail('Integer version \'{}\' no longer valid. Use semantic version "{}" instead.'.format(version, ".".join(str(version).elems())), attr = "version")
