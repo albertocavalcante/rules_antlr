@@ -243,6 +243,10 @@ PACKAGES = {
         },
     },
     "stringtemplate4": {
+        "4.3.3": {
+            "path": "org/antlr/ST4/4.3.3/ST4-4.3.3.jar",
+            "sha256": "64503dd855b48edfe0e597494acfb4a481f26a8e254608ad7506d991674f5bce",
+        },
         "4.3": {
             "path": "org/antlr/ST4/4.3/ST4-4.3.jar",
             "sha256": "28547dba48cfceb77b6efbfe069aebe9ed3324ae60dbd52093d13a1d636ed069",
