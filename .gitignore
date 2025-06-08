@@ -14,3 +14,4 @@ user.bazelrc
 
 # Binaries
 /bin/
+.ijwb
