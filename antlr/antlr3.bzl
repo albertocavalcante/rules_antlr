@@ -8,9 +8,9 @@ load(
 
 def imports(folder):
     """Returns the grammar and token files found below the given lib directory."""
-    return (native.glob(["{0}/*.g".format(folder)]) +
-            native.glob(["{0}/*.g3".format(folder)]) +
-            native.glob(["{0}/*.tokens".format(folder)]))
+    return (native.glob(["{0}/*.g".format(folder)], allow_empty = True) +
+            native.glob(["{0}/*.g3".format(folder)], allow_empty = True) +
+            native.glob(["{0}/*.tokens".format(folder)], allow_empty = True))
 
 def _generate(ctx):
     return _antlr("3", ctx, _args)
