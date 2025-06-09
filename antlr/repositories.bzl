@@ -1,7 +1,10 @@
 """Loads ANTLR dependencies."""
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_jar")
+load("@bazel_tools//tools/build_defs/repo:utils.bzl", "maybe")
 load(":lang.bzl", "C", "CPP", "GO", "JAVA", "OBJC", "PYTHON", "PYTHON2", "PYTHON3", supported_languages = "supported")
+
+_MAVEN_CENTRAL = "https://repo.maven.apache.org/maven2"
 
 v4 = [4, "4.7.1", "4.7.2", "4.8", "4.9.1", "4.9.2"]
 v4_opt = [4, "4.7.1", "4.7.2", "4.7.3", "4.7.4"]
@@ -605,9 +608,10 @@ def _dependencies(dependencies):
         )
 
 def _download(name, path, sha256):
-    http_jar(
+    maybe(
+        http_jar,
         name = name,
-        url = path if path.startswith("https") else "https://repo1.maven.org/maven2/" + path,
+        url = path if path.startswith("https") else _MAVEN_CENTRAL + "/" + path,
         sha256 = sha256,
     )
 
@@ -630,3 +634,67 @@ def _validate_versions(versions):
 
 def _to_string(x):
     return str(x)
+
+def rules_antlr_test_dependencies(repository = _MAVEN_CENTRAL):
+    """Loads test and development dependencies for rules_antlr.
+
+    These dependencies are only needed when developing/testing rules_antlr itself,
+    not when using rules_antlr in your own projects. This macro:
+
+    - Uses maybe() to prevent duplicate loading
+    - Automatically constructs Maven Central URLs
+    - Centralizes version management for easier updates
+    - Separates test deps from runtime deps for cleaner dependency graphs
+
+    Should be called in WORKSPACE after rules_antlr_dependencies().
+
+    Args:
+        repository: Maven repository URL (defaults to Maven Central)
+
+    Example:
+        load("//antlr:repositories.bzl", "rules_antlr_dependencies", "rules_antlr_test_dependencies")
+        rules_antlr_dependencies("4.9.2")
+        rules_antlr_test_dependencies()
+    """
+    _maven_jars({
+        "junit": {
+            "group": "junit",
+            "artifact": "junit",
+            "version": "4.12",
+            "sha256": "59721f0805e223d84b90677887d9ff567dc534d7c502ca903c0c2b17f05c116a",
+        },
+        "jimfs": {
+            "group": "com.google.jimfs",
+            "artifact": "jimfs",
+            "version": "1.1",
+            "sha256": "c4828e28d7c0a930af9387510b3bada7daa5c04d7c25a75c7b8b081f1c257ddd",
+        },
+        "guava": {
+            "group": "com.google.guava",
+            "artifact": "guava",
+            "version": "27.1-jre",
+            "sha256": "4a5aa70cc968a4d137e599ad37553e5cfeed2265e8c193476d7119036c536fe7",
+        },
+    }, repository)
+
+def _maven_jars(dependencies, repository = _MAVEN_CENTRAL):
+    """Load Maven JAR dependencies using maybe() to avoid conflicts.
+
+    Args:
+        dependencies: Dict of name -> dict with keys: group, artifact, version, sha256
+        repository: Maven repository URL
+    """
+    for name, info in dependencies.items():
+        maybe(
+            http_jar,
+            name = name,
+            url = "{}/{}/{}/{}/{}-{}.jar".format(
+                repository,
+                info["group"].replace(".", "/"),
+                info["artifact"],
+                info["version"],
+                info["artifact"],
+                info["version"],
+            ),
+            sha256 = info["sha256"],
+        )
