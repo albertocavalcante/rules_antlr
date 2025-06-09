@@ -14,6 +14,10 @@ load("@rules_java//java:repositories.bzl", "rules_java_dependencies", "rules_jav
 
 rules_java_dependencies()
 
+# https://github.com/bazelbuild/bazel/issues/19934
+# https://github.com/bazelbuild/rules_java/issues/148
+register_toolchains("//:default_remotejdk_11_toolchain")
+
 rules_java_toolchains()
 
 http_archive(

@@ -1,5 +1,22 @@
+load("@rules_java//toolchains:default_java_toolchain.bzl", "default_java_toolchain")
+
 filegroup(
     name = "srcs",
     srcs = ["WORKSPACE.bazel"],
     visibility = ["//visibility:public"],
+)
+
+# To discover other available remote JDKs from @rules_java for future reference (e.g., for updates),
+# you can use a query like: bazel query 'filter(".*remote.*jdk.*", @rules_java//toolchains:all)'
+default_java_toolchain(
+    name = "default_remotejdk_11_toolchain_impl",
+    java_runtime = "@rules_java//toolchains:remote_jdk11",
+    source_version = "11",
+    target_version = "11",
+)
+
+toolchain(
+    name = "default_remotejdk_11_toolchain",
+    toolchain = ":default_remotejdk_11_toolchain_impl",
+    toolchain_type = "@bazel_tools//tools/jdk:toolchain_type",
 )
