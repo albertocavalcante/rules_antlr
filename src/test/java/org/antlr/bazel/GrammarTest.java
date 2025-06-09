@@ -13,12 +13,12 @@ import java.util.List;
 
 import com.google.common.jimfs.Configuration;
 import com.google.common.jimfs.Jimfs;
+import com.google.common.testing.EqualsTester;
 
 import static org.antlr.bazel.Language.*;
 import static org.antlr.bazel.Version.*;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -72,14 +72,16 @@ public class GrammarTest
     {
         Grammar g1 = grammar(V4,
                 path("examples/antlr4/InheritSameFolder/src/main/antlr4/G1.g4"));
-        assertEquals(g1, g1);
-        assertEquals(
-                grammar(V4, path("examples/antlr4/InheritSameFolder/src/main/antlr4/G3.g4")),
-                grammar(V4, path("examples/antlr4/InheritSameFolder/src/main/antlr4/G3.g4")));
-        assertNotEquals(g1,
-                grammar(V4, path("examples/antlr4/InheritSameFolder/src/main/antlr4/G2.g4")));
-        assertNotEquals(g1, null);
-        assertNotEquals(g1, new String());
+        Grammar g3a = grammar(V4, path("examples/antlr4/InheritSameFolder/src/main/antlr4/G3.g4"));
+        Grammar g3b = grammar(V4, path("examples/antlr4/InheritSameFolder/src/main/antlr4/G3.g4"));
+        Grammar g2 = grammar(V4, path("examples/antlr4/InheritSameFolder/src/main/antlr4/G2.g4"));
+        
+        new EqualsTester()
+                .addEqualityGroup(g1)
+                .addEqualityGroup(g3a, g3b)
+                .addEqualityGroup(g2)
+                .addEqualityGroup("different type")
+                .testEquals();
     }
 
 
