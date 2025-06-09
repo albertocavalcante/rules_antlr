@@ -660,20 +660,20 @@ def rules_antlr_test_dependencies(repository = _MAVEN_CENTRAL):
         "junit": {
             "group": "junit",
             "artifact": "junit",
-            "version": "4.12",
-            "sha256": "59721f0805e223d84b90677887d9ff567dc534d7c502ca903c0c2b17f05c116a",
+            "version": "4.13.2",
+            "sha256": "8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3",
         },
         "jimfs": {
             "group": "com.google.jimfs",
             "artifact": "jimfs",
-            "version": "1.1",
-            "sha256": "c4828e28d7c0a930af9387510b3bada7daa5c04d7c25a75c7b8b081f1c257ddd",
+            "version": "1.3.0",
+            "sha256": "82494408bb513f5512652e7b7f63d6f31f01eff57ce35c878644ffc2d25aee4f",
         },
         "guava": {
             "group": "com.google.guava",
             "artifact": "guava",
-            "version": "27.1-jre",
-            "sha256": "4a5aa70cc968a4d137e599ad37553e5cfeed2265e8c193476d7119036c536fe7",
+            "version": "33.4.8-jre",
+            "sha256": "f3d7f57f67fd622f4d468dfdd692b3a5e3909246c28017ac3263405f0fe617ed",
         },
     }, repository)
 
