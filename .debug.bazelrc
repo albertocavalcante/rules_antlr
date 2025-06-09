@@ -1,0 +1,1 @@
+common --toolchain_resolution_debug=@bazel_tools//tools/jdk:runtime_toolchain_type
