@@ -2,6 +2,8 @@ package org.antlr.bazel;
 
 import java.nio.file.Paths;
 
+import com.google.common.testing.EqualsTester;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -21,12 +23,17 @@ public class NamespaceTest
     @Test
     public void equals()
     {
-        Namespace namespace = Namespace.of("a");
-        assertTrue(Namespace.of("").equals(Namespace.of("")));
-        assertTrue(namespace.equals(namespace));
-        assertFalse(Namespace.of("").equals(Namespace.of("a")));
-        assertFalse(Namespace.of("").equals(null));
-        assertFalse(Namespace.of("").equals(""));
+        Namespace empty1 = Namespace.of("");
+        Namespace empty2 = Namespace.of("");
+        Namespace namespaceA = Namespace.of("a");
+        Namespace namespaceB = Namespace.of("b");
+        
+        new EqualsTester()
+                .addEqualityGroup(empty1, empty2)
+                .addEqualityGroup(namespaceA)
+                .addEqualityGroup(namespaceB)
+                .addEqualityGroup("different type")
+                .testEquals();
     }
 
 

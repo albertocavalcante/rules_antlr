@@ -675,6 +675,12 @@ def rules_antlr_test_dependencies(repository = _MAVEN_CENTRAL):
             "version": "33.4.8-jre",
             "sha256": "f3d7f57f67fd622f4d468dfdd692b3a5e3909246c28017ac3263405f0fe617ed",
         },
+        "guava_testlib": {
+            "group": "com.google.guava",
+            "artifact": "guava-testlib",
+            "version": "33.4.8-jre",
+            "sha256": "a58a38746f97e02ae3d067b74a25ad2b136650227baa7124ce03fa3bce4e8576",
+        },
     }, repository)
 
 def _maven_jars(dependencies, repository = _MAVEN_CENTRAL):
