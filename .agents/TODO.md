@@ -5,7 +5,7 @@
 This document outlines **19 critical vulnerabilities** discovered in the rules_antlr codebase requiring immediate attention:
 
 - **15 Critical NPE Vulnerabilities** - Could cause JVM crashes during build
-- **2 High-Priority Bazel Logic Errors** - Break compatibility with newer Bazel versions  
+- **2 High-Priority Bazel Logic Errors** - Break compatibility with newer Bazel versions
 - **2 Medium-Priority Resource Leaks** - Gradual system degradation
 
 **Note**: TODO-005 was cancelled after validation - the claimed Starlark deprecation was incorrect.
@@ -22,7 +22,7 @@ Each TODO item is structured for autonomous sub-agent execution with detailed pr
 ### Launch Parallel Claude Sessions
 ```bash
 ./run-parallel-claude.sh critical # Start 4 critical NPE fix sessions (RECOMMENDED)
-./run-parallel-claude.sh bazel    # Start 2 Bazel compatibility sessions  
+./run-parallel-claude.sh bazel    # Start 2 Bazel compatibility sessions
 ./run-parallel-claude.sh resource # Start 2 resource management sessions
 ./run-parallel-claude.sh all      # Start ALL 10 sessions (high resource usage)
 ```
@@ -40,10 +40,10 @@ tmux attach -t rules-antlr-npe-utility  # TODO-004
 ## Sub-Agent TODO Items
 
 ### TODO-001: Environment Variable NPE Fixes (AntlrRules.java main method)
-**Priority**: CRITICAL 🔴  
-**Agent Type**: NPE-Specialist  
-**Branch**: `fix/npe-environment-variables`  
-**Dependencies**: None  
+**Priority**: CRITICAL 🔴
+**Agent Type**: NPE-Specialist
+**Branch**: `fix/npe-environment-variables`
+**Dependencies**: None
 
 **🔧 Worktree Setup**:
 ```bash
@@ -67,14 +67,14 @@ tmux attach -t rules-antlr-npe-utility  # TODO-004
 ```
 Fix critical NPE vulnerabilities in AntlrRules.java main method. The following lines access environment variables and immediately call methods without null checks:
 
-Line 90: env.get("TOOL_CLASSPATH").split(",") 
+Line 90: env.get("TOOL_CLASSPATH").split(",")
 Line 93: env.get("GRAMMARS").split(",")
 
 These will throw NPE if environment variables are not set. Add defensive null checks and provide meaningful error messages.
 
 Implementation steps:
 1. Add null checks for each env.get() call
-2. Throw IllegalStateException with descriptive message if required env vars missing  
+2. Throw IllegalStateException with descriptive message if required env vars missing
 3. Consider providing default values where appropriate
 4. Maintain existing builder pattern flow
 
@@ -101,10 +101,10 @@ private static String getRequiredEnvVar(Map<String, String> env, String name) {
 ---
 
 ### TODO-002: Builder Method Parameter NPE Fixes
-**Priority**: CRITICAL 🔴  
-**Agent Type**: NPE-Specialist  
-**Branch**: `fix/npe-builder-parameters`  
-**Dependencies**: None  
+**Priority**: CRITICAL 🔴
+**Agent Type**: NPE-Specialist
+**Branch**: `fix/npe-builder-parameters`
+**Dependencies**: None
 
 **🔧 Worktree Setup**:
 ```bash
@@ -129,7 +129,7 @@ private static String getRequiredEnvVar(Map<String, String> env, String name) {
 Fix NPE vulnerabilities in AntlrRules builder methods. These methods call .isEmpty() or .trim() on parameters without null checks:
 
 - encoding(String encoding) - Line 129: encoding.isEmpty()
-- language(String language) - Line 393: language.isEmpty() 
+- language(String language) - Line 393: language.isEmpty()
 - layout(String layout) - Line 401: layout.isEmpty()
 - namespace(String namespace) - Line 409: namespace.isEmpty()
 - srcjar(String srcjar) - Line 426: srcjar.trim().isEmpty()
@@ -150,11 +150,11 @@ AntlrRules encoding(String encoding) {
 
 ---
 
-### TODO-003: Language Path Conversion NPE Fixes  
-**Priority**: CRITICAL 🔴  
-**Agent Type**: NPE-Specialist  
-**Branch**: `fix/npe-language-path-conversion`  
-**Dependencies**: None  
+### TODO-003: Language Path Conversion NPE Fixes
+**Priority**: CRITICAL 🔴
+**Agent Type**: NPE-Specialist
+**Branch**: `fix/npe-language-path-conversion`
+**Dependencies**: None
 
 **🔧 Worktree Setup**:
 ```bash
@@ -180,7 +180,7 @@ Fix NPE vulnerabilities in Language enum toId() methods. Multiple language imple
 
 Affected methods in Language.java:
 - C.toId() - Line 28
-- CPP.toId() - Line 59  
+- CPP.toId() - Line 59
 - CSHARP.toId() - Line 92
 - GO.toId() - Line 127
 - JAVA.toId() - Line 173
@@ -209,10 +209,10 @@ public String toId(Path path) {
 ---
 
 ### TODO-004: Utility Method NPE Fixes
-**Priority**: CRITICAL 🔴  
-**Agent Type**: NPE-Specialist  
-**Branch**: `fix/npe-utility-methods`  
-**Dependencies**: None  
+**Priority**: CRITICAL 🔴
+**Agent Type**: NPE-Specialist
+**Branch**: `fix/npe-utility-methods`
+**Dependencies**: None
 
 **🔧 Worktree Setup**:
 ```bash
@@ -231,7 +231,7 @@ public String toId(Path path) {
 
 **Files to Modify**:
 - `src/main/java/org/antlr/bazel/Language.java:469`
-- `src/main/java/org/antlr/bazel/Version.java:22`  
+- `src/main/java/org/antlr/bazel/Version.java:22`
 - `src/main/java/org/antlr/bazel/Strings.java:26`
 
 **Agent Prompt**:
@@ -239,7 +239,7 @@ public String toId(Path path) {
 Fix NPE vulnerabilities in utility methods that use switch statements without null checks:
 
 1. Language.of(String name) - Line 469: Switch on name without null check
-2. Version.of(String version) - Line 22: Switch on version without null check  
+2. Version.of(String version) - Line 22: Switch on version without null check
 3. Strings.stripFileExtension(String path) - Line 26: path.lastIndexOf() without null check
 
 Add null checks before switch statements and string method calls. Throw IllegalArgumentException with descriptive messages.
@@ -262,16 +262,16 @@ public static Language of(String name) {
 ---
 
 ### TODO-005: ~~Bazel Starlark Dictionary Access Fix~~ [CANCELLED - INCORRECT]
-**Priority**: ~~HIGH~~ CANCELLED ❌  
-**Agent Type**: ~~Bazel-Specialist~~  
-**Branch**: ~~`fix/bazel-dict-access`~~  
-**Dependencies**: None  
+**Priority**: ~~HIGH~~ CANCELLED ❌
+**Agent Type**: ~~Bazel-Specialist~~
+**Branch**: ~~`fix/bazel-dict-access`~~
+**Dependencies**: None
 
 **❌ CANCELLED: This TODO was based on incorrect information**
 
 **Analysis**: Research shows that `dict.keys()[0]` is **NOT deprecated** in any Bazel version:
 - ✅ Current Bazel 7.5.0 documentation confirms `dict.keys()` returns a **list** that supports indexing
-- ❌ No evidence found of deprecation in Bazel 6.0+ in official docs or release notes  
+- ❌ No evidence found of deprecation in Bazel 6.0+ in official docs or release notes
 - ⚠️ Starlark issue #203 discusses potential future changes but they are **not implemented**
 
 **Current Status**: The existing code `lib.keys()[0]` is **correct and valid** Bazel/Starlark syntax.
@@ -282,18 +282,18 @@ public static Language of(String name) {
 **Original Incorrect Claim**:
 ~~"Dictionary key access uses deprecated syntax that breaks in Bazel 6.0+"~~ - **FALSE**
 
-**Resolution**: 
+**Resolution**:
 - No code changes required
 - The proposed fix `list(lib.keys())[0]` would add unnecessary overhead
 - Current implementation follows documented Bazel/Starlark patterns
 
 ---
 
-### TODO-006: Bazel String Method Fix  
-**Priority**: HIGH 🟠  
-**Agent Type**: Bazel-Specialist  
-**Branch**: `fix/bazel-string-methods`  
-**Dependencies**: None  
+### TODO-006: Bazel String Method Fix
+**Priority**: HIGH 🟠
+**Agent Type**: Bazel-Specialist
+**Branch**: `fix/bazel-string-methods`
+**Dependencies**: None
 
 **🔧 Worktree Setup**:
 ```bash
@@ -336,10 +336,10 @@ Verification:
 ---
 
 ### TODO-007: Resource Management - Process Stream Leaks
-**Priority**: MEDIUM 🟡  
-**Agent Type**: Resource-Specialist  
-**Branch**: `fix/process-stream-leaks`  
-**Dependencies**: None  
+**Priority**: MEDIUM 🟡
+**Agent Type**: Resource-Specialist
+**Branch**: `fix/process-stream-leaks`
+**Dependencies**: None
 
 **🔧 Worktree Setup**:
 ```bash
@@ -380,11 +380,11 @@ Verification:
 
 ---
 
-### TODO-008: Resource Management - File Stream Leaks  
-**Priority**: MEDIUM 🟡  
-**Agent Type**: Resource-Specialist  
-**Branch**: `fix/file-stream-leaks`  
-**Dependencies**: None  
+### TODO-008: Resource Management - File Stream Leaks
+**Priority**: MEDIUM 🟡
+**Agent Type**: Resource-Specialist
+**Branch**: `fix/file-stream-leaks`
+**Dependencies**: None
 
 **🔧 Worktree Setup**:
 ```bash
@@ -429,10 +429,10 @@ Verification:
 ---
 
 ### TODO-009: Array Bounds Safety Improvements
-**Priority**: MEDIUM 🟡  
-**Agent Type**: Safety-Specialist  
-**Branch**: `fix/array-bounds-safety`  
-**Dependencies**: None  
+**Priority**: MEDIUM 🟡
+**Agent Type**: Safety-Specialist
+**Branch**: `fix/array-bounds-safety`
+**Dependencies**: None
 
 **🔧 Worktree Setup**:
 ```bash
@@ -465,17 +465,17 @@ if (args[i].equals("-lib") && i + 1 < args.length && args[i + 1].endsWith(".srcj
 
 Verification:
 1. Test with args array ending in "-lib" to verify no exception
-2. Test normal cases to ensure functionality preserved  
+2. Test normal cases to ensure functionality preserved
 3. Add unit test covering this edge case
 ```
 
 ---
 
 ### TODO-010: Error Message Quality Improvements
-**Priority**: LOW 🟢  
-**Agent Type**: Quality-Specialist  
-**Branch**: `fix/error-message-quality`  
-**Dependencies**: None  
+**Priority**: LOW 🟢
+**Agent Type**: Quality-Specialist
+**Branch**: `fix/error-message-quality`
+**Dependencies**: None
 
 **🔧 Worktree Setup**:
 ```bash
@@ -522,11 +522,11 @@ Verification:
 # Phase 1: Critical NPE Fixes (4 parallel Claude sessions)
 ./run-parallel-claude.sh critical
 # ├── TODO-001: Environment Variable NPE Fixes
-# ├── TODO-002: Builder Method Parameter NPE Fixes  
+# ├── TODO-002: Builder Method Parameter NPE Fixes
 # ├── TODO-003: Language Path Conversion NPE Fixes
 # └── TODO-004: Utility Method NPE Fixes
 
-# Phase 2: High Priority Bazel Fixes (1 parallel Claude session)  
+# Phase 2: High Priority Bazel Fixes (1 parallel Claude session)
 ./run-parallel-claude.sh bazel
 # ├── TODO-005: [CANCELLED] Bazel Starlark Dictionary Access Fix
 # └── TODO-006: Bazel String Method Fix
@@ -564,12 +564,12 @@ tmux attach -t rules-antlr-npe-utility  # TODO-004
 ```bash
 # Create worktrees for parallel development
 git worktree add ../npe-fixes fix/npe-environment-variables
-git worktree add ../bazel-fixes fix/bazel-dict-access  
+git worktree add ../bazel-fixes fix/bazel-dict-access
 git worktree add ../resource-fixes fix/process-stream-leaks
 
 # Assign agents to worktrees
 NPE-Agent -> ../npe-fixes (TODO-001 through TODO-004)
-Bazel-Agent -> ../bazel-fixes (TODO-005, TODO-006)  
+Bazel-Agent -> ../bazel-fixes (TODO-005, TODO-006)
 Resource-Agent -> ../resource-fixes (TODO-007, TODO-008)
 
 # Each agent creates PR when complete
@@ -578,7 +578,7 @@ Resource-Agent -> ../resource-fixes (TODO-007, TODO-008)
 
 ### Agent Specializations
 - **NPE-Specialist**: Focuses on null pointer vulnerabilities, defensive programming
-- **Bazel-Specialist**: Expert in Starlark syntax, Bazel version compatibility  
+- **Bazel-Specialist**: Expert in Starlark syntax, Bazel version compatibility
 - **Resource-Specialist**: Resource management, try-with-resources patterns
 - **Safety-Specialist**: Bounds checking, edge case handling
 - **Quality-Specialist**: Code style, error messages, documentation
@@ -603,7 +603,7 @@ After all critical fixes (TODO-001 through TODO-008):
 
 This TODO structure is designed to enable:
 - **Autonomous execution** by specialized AI agents
-- **Parallel development** using git worktrees  
+- **Parallel development** using git worktrees
 - **Quality assurance** through detailed verification steps
 - **Scalability** for larger codebases with hundreds of issues
 

@@ -66,10 +66,15 @@ check_worktree_status() {
     local todo_index="$1"
     
     # Extract data from YAML
-    local todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
-    local todo_status=$(yq eval ".todos[${todo_index}].status // \"active\"" "$TODOS_YAML")
-    local branch_name=$(yq eval ".todos[${todo_index}].git.branch" "$TODOS_YAML")
-    local worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
+    local todo_id
+    local todo_status
+    local branch_name
+    local worktree_dir
+    
+    todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
+    todo_status=$(yq eval ".todos[${todo_index}].status // \"active\"" "$TODOS_YAML")
+    branch_name=$(yq eval ".todos[${todo_index}].git.branch" "$TODOS_YAML")
+    worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
     
     local worktree_path="$WORKTREE_DIR/$worktree_dir"
     
@@ -85,18 +90,18 @@ check_worktree_status() {
         return 1
     fi
     
-    cd "$worktree_path"
-    
     # Check if there are changes to commit
-    if ! git diff --quiet || ! git diff --cached --quiet; then
+    if ! (cd "$worktree_path" && git diff --quiet && git diff --cached --quiet); then
         echo -e "${YELLOW}⚠️  $todo_id has uncommitted changes${NC}"
         return 2
     fi
     
     # Check if branch is ahead of main
-    local default_branch=$(yq eval '.config.default_branch_base' "$TODOS_YAML")
+    local default_branch
     local ahead
-    if ! ahead=$(git rev-list --count "${default_branch}..$branch_name" 2>/dev/null); then
+    
+    default_branch=$(yq eval '.config.default_branch_base' "$TODOS_YAML")
+    if ! ahead=$(cd "$worktree_path" && git rev-list --count "${default_branch}..$branch_name" 2>/dev/null); then
         ahead=0
     fi
     if [ "$ahead" -eq 0 ]; then
@@ -113,23 +118,25 @@ run_tests() {
     local todo_index="$1"
     
     # Extract data from YAML
-    local todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
-    local worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
+    local todo_id
+    local worktree_dir
+    
+    todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
+    worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
     local worktree_path="$WORKTREE_DIR/$worktree_dir"
     
     echo -e "${BLUE}🧪 Running tests for $todo_id...${NC}"
-    cd "$worktree_path"
     
     # Check if there's a test script or standard test command
-    if [ -f "./ci.sh" ]; then
+    if [ -f "$worktree_path/ci.sh" ]; then
         echo "Running ./ci.sh..."
-        if ! ./ci.sh; then
+        if ! (cd "$worktree_path" && ./ci.sh); then
             echo -e "${RED}❌ Tests failed for $todo_id${NC}"
             return 1
         fi
-    elif [ -f "BUILD.bazel" ]; then
+    elif [ -f "$worktree_path/BUILD.bazel" ]; then
         echo "Running bazel test..."
-        if ! bazel test //...; then
+        if ! (cd "$worktree_path" && bazel test //...); then
             echo -e "${RED}❌ Bazel tests failed for $todo_id${NC}"
             return 1
         fi
@@ -146,25 +153,35 @@ create_pr() {
     local todo_index="$1"
     
     # Extract data from YAML
-    local todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
-    local todo_title=$(yq eval ".todos[${todo_index}].title" "$TODOS_YAML")
-    local todo_description=$(yq eval ".todos[${todo_index}].description" "$TODOS_YAML")
-    local branch_name=$(yq eval ".todos[${todo_index}].git.branch" "$TODOS_YAML")
-    local worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
-    local priority=$(yq eval ".todos[${todo_index}].priority" "$TODOS_YAML")
-    local phase=$(yq eval ".todos[${todo_index}].phase" "$TODOS_YAML")
+    local todo_id
+    local todo_title
+    local todo_description
+    local branch_name
+    local worktree_dir
+    local priority
+    local phase
+    
+    todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
+    todo_title=$(yq eval ".todos[${todo_index}].title" "$TODOS_YAML")
+    todo_description=$(yq eval ".todos[${todo_index}].description" "$TODOS_YAML")
+    branch_name=$(yq eval ".todos[${todo_index}].git.branch" "$TODOS_YAML")
+    worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
+    priority=$(yq eval ".todos[${todo_index}].priority" "$TODOS_YAML")
+    phase=$(yq eval ".todos[${todo_index}].phase" "$TODOS_YAML")
     
     local worktree_path="$WORKTREE_DIR/$worktree_dir"
     
     echo -e "${PURPLE}📝 Creating PR for $todo_id...${NC}"
-    cd "$worktree_path"
     
     # Push branch to origin
-    git push -u origin "$branch_name"
+    (cd "$worktree_path" && git push -u origin "$branch_name")
     
     # Create PR body with structured information
-    local default_branch=$(yq eval '.config.default_branch_base' "$TODOS_YAML")
-    local pr_body="## $todo_id: $todo_title
+    local default_branch
+    local pr_body
+    
+    default_branch=$(yq eval '.config.default_branch_base' "$TODOS_YAML")
+    pr_body="## $todo_id: $todo_title
 
 **Priority**: $priority
 **Phase**: $phase
@@ -175,7 +192,7 @@ $todo_description
 
 ### Changes Made
 <!-- Auto-generated commit list -->
-$(git log --oneline ${default_branch}..$branch_name | sed 's/^/- /')
+$(cd "$worktree_path" && git log --oneline "${default_branch}".."$branch_name" | sed 's/^/- /')
 
 ### Testing
 - [ ] Unit tests added/updated
@@ -233,7 +250,8 @@ show_usage() {
     echo
     echo "Examples:"
     echo "  $0 status       # Check what's ready to merge"
-    local first_phase=$(yq eval '.phases | to_entries | sort_by(.value.priority) | .[0].key' "$TODOS_YAML")
+    local first_phase
+    first_phase=$(yq eval '.phases | to_entries | sort_by(.value.priority) | .[0].key' "$TODOS_YAML")
     echo "  $0 $first_phase     # Create PRs for highest priority phase"
     echo "  $0 all          # Create PRs for everything ready"
 }

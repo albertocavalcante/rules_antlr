@@ -58,12 +58,12 @@ tmux attach -t rules-antlr-npe-utility  # TODO-004: Utility Method NPE Fixes
 ## 🎯 TODO Items by Priority
 
 ### 🔴 Critical NPE Fixes (Phase 1) - Parallel Execution
-- **TODO-001**: Environment Variable NPE Fixes  
+- **TODO-001**: Environment Variable NPE Fixes
 - **TODO-002**: Builder Method Parameter NPE Fixes
 - **TODO-003**: Language Path Conversion NPE Fixes
 - **TODO-004**: Utility Method NPE Fixes
 
-### 🟠 High Priority Bazel Fixes (Phase 2) - Parallel Execution  
+### 🟠 High Priority Bazel Fixes (Phase 2) - Parallel Execution
 - **TODO-005**: Bazel Starlark Dictionary Access Fix
 - **TODO-006**: Bazel String Method Fix
 
@@ -120,7 +120,7 @@ tmux kill-session -t rules-antlr-npe-env
 
 ### Session Naming Convention
 - `rules-antlr-npe-*` - Critical NPE fix sessions
-- `rules-antlr-bazel-*` - Bazel compatibility sessions  
+- `rules-antlr-bazel-*` - Bazel compatibility sessions
 - `rules-antlr-resource-*` - Resource management sessions
 - `rules-antlr-quality-*` - Quality improvement sessions
 
@@ -158,7 +158,7 @@ rules_antlr/                           # Main repository
 # Check active Claude sessions
 ./run-parallel-claude.sh status
 
-# Check cleanup status  
+# Check cleanup status
 ./cleanup-worktrees.sh status
 ```
 
@@ -178,7 +178,7 @@ rules_antlr/                           # Main repository
 
 ### Phase 3: Resource and Quality Fixes
 1. `./run-parallel-claude.sh resource` - Start resource management sessions
-2. `./run-parallel-claude.sh quality` - Start quality improvement sessions  
+2. `./run-parallel-claude.sh quality` - Start quality improvement sessions
 3. Work on remaining TODO items
 4. `./merge-workflow.sh all` - Create PRs for remaining fixes
 
@@ -214,7 +214,7 @@ rules_antlr/                           # Main repository
 - **Independent development** prevents conflicts
 - **Immediate PR creation** for completed fixes
 
-### Quality  
+### Quality
 - **Specialized context** for each Claude session
 - **Independent testing** of each fix
 - **Systematic approach** to complex bug remediation

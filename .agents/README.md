@@ -102,9 +102,10 @@ sudo pacman -S yq tmux github-cli
 ## Usage
 
 ### 1. Environment Setup
-```bashbash
-./setup-worktrees.sh
 ```bash
+./setup-worktrees.sh
+```
+
 Creates git worktrees for all active TODO items defined in `todos.yaml`. Each worktree is created in a separate directory with its own branch.
 
 ### 2. Start Development Sessions
@@ -203,7 +204,7 @@ init_yaml_utils "todos.yaml"
 get_config "worktree_base_dir"          # Get config values
 get_fallback_config "tmux_session_prefix"  # Get defaults
 
-# TODO queries  
+# TODO queries
 get_all_todo_indices                    # List all TODO indices
 get_todo_field 0 "title"               # Get specific TODO field
 is_todo_active 0                       # Check if TODO is not cancelled
