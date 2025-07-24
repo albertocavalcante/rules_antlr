@@ -142,7 +142,7 @@ remove_worktrees() {
                     
                     if [ "$dry_run" != "true" ]; then
                         # Remove the worktree using git
-                        git worktree remove "$full_path" --force 2>/dev/null || {
+                        git -C "$REPO_ROOT" worktree remove "$full_path" --force 2>/dev/null || {
                             # If git worktree remove fails, try manual cleanup
                             echo -e "    ${YELLOW}Git cleanup failed, removing directory manually...${NC}"
                             rm -rf "$full_path"
@@ -161,7 +161,7 @@ remove_worktrees() {
                 
                 if [ "$dry_run" != "true" ]; then
                     # Remove the worktree using git
-                    git worktree remove "$dir_path" --force 2>/dev/null || {
+                    git -C "$REPO_ROOT" worktree remove "$dir_path" --force 2>/dev/null || {
                         # If git worktree remove fails, try manual cleanup
                         echo -e "    ${YELLOW}Git cleanup failed, removing directory manually...${NC}"
                         rm -rf "$dir_path"
@@ -211,12 +211,12 @@ cleanup_branches() {
             if [ -n "$branch_name" ]; then
                 branches+=("$branch_name")
             fi
-        done < <(git branch --format="%(refname:short)" | grep "^fix/" || true)
+        done < <(git -C "$REPO_ROOT" branch --format="%(refname:short)" | grep "^fix/" || true)
     fi
     
     for branch in "${branches[@]}"; do
         # Check if branch exists locally
-        if git show-ref --verify --quiet "refs/heads/$branch"; then
+        if git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/$branch"; then
             echo -e "  Local branch found: ${CYAN}$branch${NC}"
             
             if [ "$force" = "true" ] || [ "$dry_run" = "true" ]; then
@@ -228,7 +228,7 @@ cleanup_branches() {
             
             if [[ $delete_local =~ ^[Yy]$ ]]; then
                 if [ "$dry_run" != "true" ]; then
-                    git branch -D "$branch" 2>/dev/null || true
+                    git -C "$REPO_ROOT" branch -D "$branch" 2>/dev/null || true
                 fi
                 echo -e "    ${GREEN}✅ Deleted local branch${NC}"
                 ((deleted_count++))
@@ -236,7 +236,7 @@ cleanup_branches() {
         fi
         
         # Check if branch exists on remote
-        if git ls-remote --heads origin "$branch" | grep -q "$branch"; then
+        if git -C "$REPO_ROOT" ls-remote --heads origin "$branch" | grep -q "$branch"; then
             echo -e "  Remote branch found: ${CYAN}origin/$branch${NC}"
             
             if [ "$force" = "true" ] || [ "$dry_run" = "true" ]; then
@@ -248,7 +248,7 @@ cleanup_branches() {
             
             if [[ $delete_remote =~ ^[Yy]$ ]]; then
                 if [ "$dry_run" != "true" ]; then
-                    git push origin --delete "$branch" 2>/dev/null || true
+                    git -C "$REPO_ROOT" push origin --delete "$branch" 2>/dev/null || true
                 fi
                 echo -e "    ${GREEN}✅ Deleted remote branch${NC}"
                 ((deleted_count++))
@@ -318,7 +318,7 @@ show_status() {
     # Check worktrees
     echo -e "${CYAN}Git Worktrees:${NC}"
     local worktree_list
-    worktree_list=$(git worktree list | grep "$WORKTREE_DIR" || true)
+    worktree_list=$(git -C "$REPO_ROOT" worktree list | grep "$WORKTREE_DIR" || true)
     if [ -n "$worktree_list" ]; then
         echo "$worktree_list" | sed 's/^/  /'
     else
@@ -330,7 +330,7 @@ show_status() {
     # Check branches
     echo -e "${CYAN}Fix Branches:${NC}"
     local fix_branches
-    fix_branches=$(git branch | grep "fix/" || true)
+    fix_branches=$(git -C "$REPO_ROOT" branch | grep "fix/" || true)
     if [ -n "$fix_branches" ]; then
         echo "$fix_branches" | sed 's/^/  /'
     else

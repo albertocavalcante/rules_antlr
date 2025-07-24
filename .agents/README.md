@@ -97,14 +97,14 @@ sudo apt-get install yq tmux gh
 
 # Arch Linux
 sudo pacman -S yq tmux github-cli
-```
+```bash
 
 ## Usage
 
 ### 1. Environment Setup
-```bash
+```bashbash
 ./setup-worktrees.sh
-```
+```bash
 Creates git worktrees for all active TODO items defined in `todos.yaml`. Each worktree is created in a separate directory with its own branch.
 
 ### 2. Start Development Sessions

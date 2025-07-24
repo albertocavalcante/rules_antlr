@@ -37,7 +37,6 @@ log_test() {
 run_test() {
     local test_name="$1"
     local test_command="$2"
-    local expected_result="$3"
     
     ((TESTS_RUN++))
     
@@ -95,15 +94,15 @@ test_worktree_setup() {
     echo -e "${YELLOW}  Creating test worktrees...${NC}"
     if ./setup-worktrees.sh > /dev/null 2>&1; then
         run_test "Worktree creation successful" \
-            "[ -d '$WORKTREE_DIR' ]" \
+            "[ -d \"$WORKTREE_DIR\" ]" \
             "true"
         
         run_test "All expected worktrees created" \
-            "[ -d '$WORKTREE_DIR/npe-env' ] && [ -d '$WORKTREE_DIR/bazel-dict' ] && [ -d '$WORKTREE_DIR/resource-process' ]" \
+            "[ -d \"$WORKTREE_DIR/npe-env\" ] && [ -d \"$WORKTREE_DIR/bazel-dict\" ] && [ -d \"$WORKTREE_DIR/resource-process\" ]" \
             "true"
         
         run_test "TODO.md copied to worktrees" \
-            "[ -f '$WORKTREE_DIR/npe-env/TODO.md' ]" \
+            "[ -f \"$WORKTREE_DIR/npe-env/TODO.md\" ]" \
             "true"
     else
         echo -e "  ${RED}Failed to create worktrees${NC}"
@@ -242,16 +241,16 @@ test_e2e_workflow() {
     # Setup
     echo -e "${YELLOW}  Setting up worktrees...${NC}"
     if ./setup-worktrees.sh > /dev/null 2>&1; then
-        run_test "E2E: Worktree setup" "[ -d '$WORKTREE_DIR' ]" "true"
+        run_test "E2E: Worktree setup" "[ -d \"$WORKTREE_DIR\" ]" "true"
         
         # Test that we can navigate to worktrees
         run_test "E2E: Can navigate to worktrees" \
-            "cd '$WORKTREE_DIR/npe-env' && pwd | grep -q 'npe-env'" \
+            "(cd \"$WORKTREE_DIR/npe-env\" && pwd | grep -q 'npe-env')" \
             "true"
         
         # Test that TODO.md is available in worktrees
         run_test "E2E: TODO.md available in worktrees" \
-            "[ -f '$WORKTREE_DIR/npe-env/TODO.md' ]" \
+            "[ -f \"$WORKTREE_DIR/npe-env/TODO.md\" ]" \
             "true"
         
         # Test merge workflow status
@@ -264,7 +263,7 @@ test_e2e_workflow() {
         ./cleanup-worktrees.sh all --force > /dev/null 2>&1 || true
         
         run_test "E2E: Cleanup successful" \
-            "[ ! -d '$WORKTREE_DIR' ]" \
+            "[ ! -d \"$WORKTREE_DIR\" ]" \
             "true"
     else
         echo -e "  ${RED}E2E test failed: Could not set up worktrees${NC}"

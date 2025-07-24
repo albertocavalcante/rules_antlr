@@ -323,9 +323,9 @@ Line 274: ".".join(str(version).elems())
 
 The .elems() method doesn't exist on strings in Starlark. These should just use the string directly.
 
-Fix by removing .elems() calls:
-".".join(str(version_or_language))
-".".join(str(version))
+Fix by removing .elems() calls and wrapping in list:
+".".join([str(version_or_language)])
+".".join([str(version)])
 
 Verification:
 1. Test dependency loading with invalid versions to trigger error paths

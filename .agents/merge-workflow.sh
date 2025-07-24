@@ -95,7 +95,10 @@ check_worktree_status() {
     
     # Check if branch is ahead of main
     local default_branch=$(yq eval '.config.default_branch_base' "$TODOS_YAML")
-    local ahead=$(git rev-list --count ${default_branch}..$branch_name 2>/dev/null || echo "0")
+    local ahead
+    if ! ahead=$(git rev-list --count "${default_branch}..$branch_name" 2>/dev/null); then
+        ahead=0
+    fi
     if [ "$ahead" -eq 0 ]; then
         echo -e "${YELLOW}⚠️  $todo_id has no commits (nothing to merge)${NC}"
         return 3
@@ -202,7 +205,7 @@ $(git log --oneline ${default_branch}..$branch_name | sed 's/^/- /')
         --assignee "@me")
     
     echo -e "${GREEN}✅ PR created: $pr_url${NC}"
-    echo "$pr_url" >> ../../pr_urls.txt
+    echo "$pr_url" >> "${REPO_ROOT}/.agents/pr_urls.txt"
     
     return 0
 }
@@ -378,9 +381,9 @@ case "${1:-status}" in
         ;;
     
     "list-prs")
-        if [ -f "../../pr_urls.txt" ]; then
+        if [ -f "${REPO_ROOT}/.agents/pr_urls.txt" ]; then
             echo -e "${BLUE}📋 Created PRs:${NC}"
-            cat ../../pr_urls.txt
+            cat "${REPO_ROOT}/.agents/pr_urls.txt"
         else
             echo -e "${YELLOW}No PRs created yet${NC}"
         fi

@@ -52,8 +52,39 @@ DEFAULT_BRANCH=$(get_config "default_branch_base")
 
 # Ensure we're on main branch and up to date
 echo -e "${YELLOW}📍 Ensuring $DEFAULT_BRANCH branch is up to date...${NC}"
-git checkout "$DEFAULT_BRANCH"
-git pull origin "$DEFAULT_BRANCH"
+
+# Fetch latest changes from remote
+echo -e "  Fetching latest changes from remote..."
+if ! git fetch origin "$DEFAULT_BRANCH"; then
+    echo -e "${RED}❌ Error: Failed to fetch from remote${NC}"
+    echo -e "${YELLOW}💡 This might be due to network issues or authentication problems${NC}"
+    exit 1
+fi
+
+# Switch to default branch
+echo -e "  Switching to $DEFAULT_BRANCH branch..."
+if ! git checkout "$DEFAULT_BRANCH"; then
+    echo -e "${RED}❌ Error: Failed to checkout $DEFAULT_BRANCH branch${NC}"
+    echo -e "${YELLOW}💡 Make sure you have no uncommitted changes or use 'git stash' first${NC}"
+    exit 1
+fi
+
+# Update local branch with remote changes
+echo -e "  Updating $DEFAULT_BRANCH with remote changes..."
+local_commit=$(git rev-parse HEAD)
+remote_commit=$(git rev-parse "origin/$DEFAULT_BRANCH")
+
+if [ "$local_commit" != "$remote_commit" ]; then
+    echo -e "  ${CYAN}Local and remote branches differ, updating...${NC}"
+    if ! git pull origin "$DEFAULT_BRANCH"; then
+        echo -e "${RED}❌ Error: Failed to pull changes from remote${NC}"
+        echo -e "${YELLOW}💡 This might be due to merge conflicts or force-push scenarios${NC}"
+        echo -e "${YELLOW}💡 Consider using 'git reset --hard origin/$DEFAULT_BRANCH' if you want to discard local changes${NC}"
+        exit 1
+    fi
+else
+    echo -e "  ${GREEN}✅ $DEFAULT_BRANCH is already up to date${NC}"
+fi
 
 # Create parent directory for worktrees (use absolute path for robustness)
 REPO_ROOT="$(git rev-parse --show-toplevel)"
