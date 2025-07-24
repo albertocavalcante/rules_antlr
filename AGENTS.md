@@ -84,7 +84,7 @@ rules_antlr_dependencies("4.8")  # or 2, 3, specific version
 - **ANTLR 4**: 4.7.1, 4.7.2, 4.8, 4.9.1, 4.9.2
 - **ANTLR 3**: 3.5.2
 - **ANTLR 2**: 2.7.7
-- **Optimized ANTLR**: TunnelVision Labs fork support
+- **Optimized ANTLR**: TunnelVision Labs fork support (versions 4.7.1, 4.7.2, 4.7.3, 4.7.4)
 
 ## Code Conventions
 - **Starlark**: 4-space indentation, underscore for private functions
