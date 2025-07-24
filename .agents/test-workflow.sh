@@ -98,7 +98,7 @@ test_worktree_setup() {
             "true"
         
         run_test "All expected worktrees created" \
-            "[ -d \"$WORKTREE_DIR/npe-env\" ] && [ -d \"$WORKTREE_DIR/bazel-dict\" ] && [ -d \"$WORKTREE_DIR/resource-process\" ]" \
+            "[ -d \"$WORKTREE_DIR/npe-env\" ] && [ -d \"$WORKTREE_DIR/npe-builder\" ] && [ -d \"$WORKTREE_DIR/resource-process\" ]" \
             "true"
         
         run_test "TODO.md copied to worktrees" \
