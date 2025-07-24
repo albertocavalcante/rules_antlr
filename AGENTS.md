@@ -54,7 +54,7 @@ antlr(
 
 ## Output Patterns
 - **Java**: `.srcjar` archive
-- **C++**: Headers (`.inc`) + sources (`.cc`) + includes
+- **C++**: Headers (`.h`) + sources (`.cpp`) + includes
 - **Others**: Directory with generated files
 
 ## Core Constraints
