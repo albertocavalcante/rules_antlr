@@ -2,11 +2,13 @@
 
 ## Executive Summary
 
-This document outlines **20 critical vulnerabilities** discovered in the rules_antlr codebase requiring immediate attention:
+This document outlines **19 critical vulnerabilities** discovered in the rules_antlr codebase requiring immediate attention:
 
 - **15 Critical NPE Vulnerabilities** - Could cause JVM crashes during build
-- **3 High-Priority Bazel Logic Errors** - Break compatibility with newer Bazel versions  
+- **2 High-Priority Bazel Logic Errors** - Break compatibility with newer Bazel versions  
 - **2 Medium-Priority Resource Leaks** - Gradual system degradation
+
+**Note**: TODO-005 was cancelled after validation - the claimed Starlark deprecation was incorrect.
 
 Each TODO item is structured for autonomous sub-agent execution with detailed prompts, file locations, fix instructions, and verification steps.
 
@@ -259,46 +261,31 @@ public static Language of(String name) {
 
 ---
 
-### TODO-005: Bazel Starlark Dictionary Access Fix
-**Priority**: HIGH 🟠  
-**Agent Type**: Bazel-Specialist  
-**Branch**: `fix/bazel-dict-access`  
+### TODO-005: ~~Bazel Starlark Dictionary Access Fix~~ [CANCELLED - INCORRECT]
+**Priority**: ~~HIGH~~ CANCELLED ❌  
+**Agent Type**: ~~Bazel-Specialist~~  
+**Branch**: ~~`fix/bazel-dict-access`~~  
 **Dependencies**: None  
 
-**🔧 Worktree Setup**:
-```bash
-# Automatic (via script): ./setup-worktrees.sh
-# Manual: git worktree add ../rules_antlr-worktrees/bazel-dict fix/bazel-dict-access
-```
+**❌ CANCELLED: This TODO was based on incorrect information**
 
-**🤖 Claude Session**:
-```bash
-# Launch: ./run-parallel-claude.sh bazel
-# Manual: cd ../rules_antlr-worktrees/bazel-dict && claude
-# Attach: tmux attach -t rules-antlr-bazel-dict
-```
+**Analysis**: Research shows that `dict.keys()[0]` is **NOT deprecated** in any Bazel version:
+- ✅ Current Bazel 7.5.0 documentation confirms `dict.keys()` returns a **list** that supports indexing
+- ❌ No evidence found of deprecation in Bazel 6.0+ in official docs or release notes  
+- ⚠️ Starlark issue #203 discusses potential future changes but they are **not implemented**
 
-**Problem**: Dictionary key access uses deprecated syntax that breaks in Bazel 6.0+.
+**Current Status**: The existing code `lib.keys()[0]` is **correct and valid** Bazel/Starlark syntax.
 
 **Files to Modify**:
-- `antlr/impl.bzl:134`
+- ~~`antlr/impl.bzl:134`~~ - NO CHANGES NEEDED
 
-**Agent Prompt**:
-```
-Fix Bazel Starlark compatibility issue in impl.bzl. Line 134 uses deprecated dictionary access syntax:
+**Original Incorrect Claim**:
+~~"Dictionary key access uses deprecated syntax that breaks in Bazel 6.0+"~~ - **FALSE**
 
-return lib.keys()[0] if count == 1 else None
-
-In modern Bazel, dict.keys() returns a view object that doesn't support indexing. This breaks builds in Bazel 6.0+.
-
-Fix by converting keys to list first:
-return list(lib.keys())[0] if count == 1 else None
-
-Verification: 
-1. Build with Bazel 6.0+ to confirm fix works
-2. Build with older Bazel versions to ensure backward compatibility
-3. Run integration tests to verify lib_dir function works correctly
-```
+**Resolution**: 
+- No code changes required
+- The proposed fix `list(lib.keys())[0]` would add unnecessary overhead
+- Current implementation follows documented Bazel/Starlark patterns
 
 ---
 
@@ -539,9 +526,9 @@ Verification:
 # ├── TODO-003: Language Path Conversion NPE Fixes
 # └── TODO-004: Utility Method NPE Fixes
 
-# Phase 2: High Priority Bazel Fixes (2 parallel Claude sessions)
+# Phase 2: High Priority Bazel Fixes (1 parallel Claude session)  
 ./run-parallel-claude.sh bazel
-# ├── TODO-005: Bazel Starlark Dictionary Access Fix
+# ├── TODO-005: [CANCELLED] Bazel Starlark Dictionary Access Fix
 # └── TODO-006: Bazel String Method Fix
 
 # Phase 3: Resource Management (2 parallel Claude sessions)

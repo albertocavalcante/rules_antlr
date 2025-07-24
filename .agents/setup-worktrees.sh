@@ -65,7 +65,13 @@ create_worktree() {
     fi
     
     # Copy TODO.md to each worktree for reference
-    cp ./TODO.md "$full_path/"
+    if [ -f ".agents/TODO.md" ]; then
+        cp ".agents/TODO.md" "$full_path/"
+    elif [ -f "TODO.md" ]; then
+        cp "TODO.md" "$full_path/"
+    else
+        echo -e "${YELLOW}  ⚠️  TODO.md not found in current or .agents directory${NC}"
+    fi
     
     echo -e "${GREEN}  ✅ Created: $full_path${NC}"
     echo
@@ -129,18 +135,18 @@ echo "1. Run parallel Claude sessions with: ./run-parallel-claude.sh"
 echo "2. Or manually start Claude in each worktree:"
 echo
 echo -e "${YELLOW}   Critical NPE Fixes (run these first in parallel):${NC}"
-echo "   cd $WORKTREE_DIR/npe-env && claude          # TODO-001"
-echo "   cd $WORKTREE_DIR/npe-builder && claude      # TODO-002" 
-echo "   cd $WORKTREE_DIR/npe-language && claude     # TODO-003"
-echo "   cd $WORKTREE_DIR/npe-utility && claude      # TODO-004"
+echo "   cd \"$WORKTREE_DIR/npe-env\" && claude          # TODO-001"
+echo "   cd \"$WORKTREE_DIR/npe-builder\" && claude      # TODO-002" 
+echo "   cd \"$WORKTREE_DIR/npe-language\" && claude     # TODO-003"
+echo "   cd \"$WORKTREE_DIR/npe-utility\" && claude      # TODO-004"
 echo
 echo -e "${YELLOW}   High Priority Bazel Fixes:${NC}"
-echo "   cd $WORKTREE_DIR/bazel-dict && claude       # TODO-005"
-echo "   cd $WORKTREE_DIR/bazel-string && claude     # TODO-006"
+echo "   cd \"$WORKTREE_DIR/bazel-dict\" && claude       # TODO-005 [CANCELLED]"
+echo "   cd \"$WORKTREE_DIR/bazel-string\" && claude     # TODO-006"
 echo
 echo -e "${YELLOW}   Resource Management Fixes:${NC}"
-echo "   cd $WORKTREE_DIR/resource-process && claude # TODO-007"
-echo "   cd $WORKTREE_DIR/resource-file && claude    # TODO-008"
+echo "   cd \"$WORKTREE_DIR/resource-process\" && claude # TODO-007"
+echo "   cd \"$WORKTREE_DIR/resource-file\" && claude    # TODO-008"
 echo
 echo -e "${BLUE}💡 Tips:${NC}"
 echo "• Use tmux/screen to manage multiple Claude sessions"

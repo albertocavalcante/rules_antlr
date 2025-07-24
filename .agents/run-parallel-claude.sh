@@ -25,10 +25,10 @@ if ! command -v tmux &> /dev/null; then
     echo
     echo -e "${BLUE}Alternative: Manual execution${NC}"
     echo "Open multiple terminals and run:"
-    echo "  cd $WORKTREE_DIR/npe-env && claude"
-    echo "  cd $WORKTREE_DIR/npe-builder && claude"
-    echo "  cd $WORKTREE_DIR/npe-language && claude"
-    echo "  cd $WORKTREE_DIR/npe-utility && claude"
+    echo "  cd \"$WORKTREE_DIR/npe-env\" && claude"
+    echo "  cd \"$WORKTREE_DIR/npe-builder\" && claude"
+    echo "  cd \"$WORKTREE_DIR/npe-language\" && claude"
+    echo "  cd \"$WORKTREE_DIR/npe-utility\" && claude"
     exit 1
 fi
 
