@@ -13,7 +13,9 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-WORKTREE_DIR="../../rules_antlr-worktrees"
+# Use absolute path for robustness across different execution contexts
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$(pwd)/..")"
+WORKTREE_DIR="${REPO_ROOT}/../rules_antlr-worktrees"
 
 # Check if tmux is available
 if ! command -v tmux &> /dev/null; then
@@ -56,10 +58,17 @@ create_claude_session() {
     echo "   Task: $description"
     
     # Kill existing session if it exists
-    tmux kill-session -t "$session_name" 2>/dev/null || true
+    if tmux has-session -t "$session_name" 2>/dev/null; then
+        echo -e "   ${YELLOW}Killing existing session: $session_name${NC}"
+        tmux kill-session -t "$session_name" 2>/dev/null || true
+        sleep 1  # Give time for cleanup
+    fi
     
-    # Create new session
-    tmux new-session -d -s "$session_name" -c "$worktree_path"
+    # Create new session with error handling
+    if ! tmux new-session -d -s "$session_name" -c "$worktree_path"; then
+        echo -e "${RED}❌ Failed to create tmux session: $session_name${NC}"
+        return 1
+    fi
     
     # Send the agent prompt as a comment for reference
     tmux send-keys -t "$session_name" "# $todo_item: $description" Enter
@@ -81,16 +90,16 @@ show_usage() {
     echo
     echo "Phases:"
     echo "  critical  - Start only critical NPE fixes (TODO-001 to TODO-004) - RECOMMENDED"
-    echo "  bazel     - Start Bazel compatibility fixes (TODO-005, TODO-006)"  
+    echo "  bazel     - Start Bazel compatibility fixes (TODO-006 only; TODO-005 cancelled)"  
     echo "  resource  - Start resource management fixes (TODO-007, TODO-008)"
     echo "  quality   - Start quality improvement fixes (TODO-009, TODO-010)"
-    echo "  all       - Start ALL sessions (10 parallel Claude instances)"
+    echo "  all       - Start ALL sessions (9 parallel Claude instances)"
     echo "  status    - Show running sessions"
     echo "  kill      - Kill all Claude sessions"
     echo
     echo "Examples:"
     echo "  $0 critical    # Start 4 critical NPE fix sessions"
-    echo "  $0 all         # Start all 10 sessions (high resource usage)"
+    echo "  $0 all         # Start all 9 sessions (high resource usage)"
     echo "  $0 status      # Check which sessions are running"
 }
 
@@ -117,12 +126,27 @@ kill_sessions() {
     echo -e "${YELLOW}🛑 Killing all Claude Code sessions...${NC}"
     
     session_patterns=("rules-antlr-npe-" "rules-antlr-bazel-" "rules-antlr-resource-" "rules-antlr-quality-")
+    sessions_killed=0
     
     for pattern in "${session_patterns[@]}"; do
-        tmux list-sessions -F "#{session_name}" 2>/dev/null | grep "$pattern" | xargs -I {} tmux kill-session -t {} 2>/dev/null || true
+        # Find matching sessions and kill them one by one with better error handling
+        while IFS= read -r session_name; do
+            if [ -n "$session_name" ]; then
+                echo -e "   Killing session: ${session_name}"
+                if tmux kill-session -t "$session_name" 2>/dev/null; then
+                    ((sessions_killed++))
+                else
+                    echo -e "   ${YELLOW}⚠️  Failed to kill session: $session_name${NC}"
+                fi
+            fi
+        done < <(tmux list-sessions -F "#{session_name}" 2>/dev/null | grep "$pattern" || true)
     done
     
-    echo -e "${GREEN}✅ All sessions killed${NC}"
+    if [ $sessions_killed -gt 0 ]; then
+        echo -e "${GREEN}✅ Killed $sessions_killed Claude sessions${NC}"
+    else
+        echo -e "${YELLOW}No active Claude sessions found${NC}"
+    fi
 }
 
 # Parse command line arguments
@@ -159,14 +183,11 @@ case "$PHASE" in
         
     "bazel")
         echo -e "${BLUE}🟠 STARTING BAZEL COMPATIBILITY FIXES (Phase 2)${NC}"
-        echo "Starting 2 parallel Claude sessions for Bazel issues..."
+        echo "Starting 1 parallel Claude session for Bazel issues..."
         echo "================================================="
         
-        create_claude_session "rules-antlr-bazel-dict" "$WORKTREE_DIR/bazel-dict" \
-            "TODO-005" "Bazel Starlark Dictionary Access Fix" \
-            "Fix Bazel Starlark compatibility issue where lib.keys()[0] breaks in Bazel 6.0+"
-            
-        sleep 2
+        echo -e "${YELLOW}⚠️  TODO-005 was cancelled (incorrect Starlark fix claim)${NC}"
+        echo
         
         create_claude_session "rules-antlr-bazel-string" "$WORKTREE_DIR/bazel-string" \
             "TODO-006" "Bazel String Method Fix" \
@@ -207,7 +228,7 @@ case "$PHASE" in
         
     "all")
         echo -e "${BLUE}🚀 STARTING ALL PARALLEL SESSIONS${NC}"
-        echo -e "${RED}⚠️  Warning: This will start 10 Claude sessions simultaneously!${NC}"
+        echo -e "${RED}⚠️  Warning: This will start 9 Claude sessions simultaneously!${NC}"
         echo -e "${YELLOW}High resource usage - ensure you have sufficient RAM/CPU${NC}"
         echo "================================================="
         

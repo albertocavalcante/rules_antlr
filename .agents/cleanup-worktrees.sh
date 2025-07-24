@@ -13,7 +13,9 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
-WORKTREE_DIR="../../rules_antlr-worktrees"
+# Use absolute path for robustness across different execution contexts
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$(pwd)/..")"
+WORKTREE_DIR="${REPO_ROOT}/../rules_antlr-worktrees"
 
 # Function to show usage
 show_usage() {

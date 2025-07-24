@@ -13,7 +13,7 @@
 - Bzlmod support in active development (PR #35)
 
 ## Project Structure
-```
+```text
 antlr/                    # Core Bazel rules (.bzl files)
 ├── antlr2.bzl           # ANTLR 2 rule definition
 ├── antlr3.bzl           # ANTLR 3 rule definition

@@ -14,7 +14,9 @@ CYAN='\033[0;36m'
 PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
 
-WORKTREE_DIR="../../rules_antlr-worktrees"
+# Use absolute path for robustness across different execution contexts
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$(pwd)/..")"
+WORKTREE_DIR="${REPO_ROOT}/../rules_antlr-worktrees"
 TEST_LOG="workflow-test.log"
 
 # Test counters

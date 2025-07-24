@@ -32,8 +32,9 @@ echo -e "${YELLOW}📍 Ensuring main branch is up to date...${NC}"
 git checkout main
 git pull origin main
 
-# Create parent directory for worktrees
-WORKTREE_DIR="../../rules_antlr-worktrees"
+# Create parent directory for worktrees (use absolute path for robustness)
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+WORKTREE_DIR="${REPO_ROOT}/../rules_antlr-worktrees"
 mkdir -p "$WORKTREE_DIR"
 
 echo -e "${BLUE}📁 Creating worktrees in: $WORKTREE_DIR${NC}"
@@ -92,11 +93,10 @@ create_worktree "fix/npe-language-path-conversion" "npe-language" \
 create_worktree "fix/npe-utility-methods" "npe-utility" \
     "Utility Method NPE Fixes" "CRITICAL"
 
-echo -e "${BLUE}🟠 PHASE 2: High Priority Bazel Fixes (Parallel Execution)${NC}"
+echo -e "${BLUE}🟠 PHASE 2: High Priority Bazel Fixes (Single Execution)${NC}"
 echo "These can run after Phase 1 or in parallel:"
 
-create_worktree "fix/bazel-dict-access" "bazel-dict" \
-    "Bazel Starlark Dictionary Access Fix" "HIGH"
+echo -e "${YELLOW}⚠️  Skipping TODO-005 (bazel-dict): Cancelled due to incorrect fix strategy${NC}"
 
 create_worktree "fix/bazel-string-methods" "bazel-string" \
     "Bazel String Method Fix" "HIGH"
@@ -141,7 +141,7 @@ echo "   cd \"$WORKTREE_DIR/npe-language\" && claude     # TODO-003"
 echo "   cd \"$WORKTREE_DIR/npe-utility\" && claude      # TODO-004"
 echo
 echo -e "${YELLOW}   High Priority Bazel Fixes:${NC}"
-echo "   cd \"$WORKTREE_DIR/bazel-dict\" && claude       # TODO-005 [CANCELLED]"
+echo "   # TODO-005 [CANCELLED] - Incorrect Starlark fix strategy"
 echo "   cd \"$WORKTREE_DIR/bazel-string\" && claude     # TODO-006"
 echo
 echo -e "${YELLOW}   Resource Management Fixes:${NC}"
