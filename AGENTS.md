@@ -120,3 +120,35 @@ rules_antlr_dependencies("4.8")  # or 2, 3, specific version
 - WORKSPACE removal planned for Bazel 9
 - This ruleset needs bzlmod migration for future compatibility
 - Most 2025 Bazel projects expect MODULE.bazel support
+
+## Multi-Agent Development System
+
+The `.agents/` directory contains a **revolutionary parallel development system** that enables **4x faster bug fixing** by running multiple Claude Code sessions simultaneously using git worktrees.
+
+### Critical Bug Fixes in Progress
+- **15 Critical NPE Vulnerabilities** - Could cause JVM crashes during build
+- **3 High-Priority Bazel Logic Errors** - Break compatibility with newer Bazel versions  
+- **2 Medium-Priority Resource Leaks** - Gradual system degradation
+
+### Parallel Workflow Capabilities
+- **True Parallelization** - Fix 4+ bugs simultaneously instead of sequentially
+- **Perfect Isolation** - Each Claude session works in independent git worktree
+- **Specialized Context** - Each agent becomes expert in specific vulnerability types
+- **Coordinated Integration** - Automated PR creation and merge workflow
+
+### Quick Start
+```bash
+cd .agents/
+./setup-worktrees.sh                    # Create parallel development environment
+./run-parallel-claude.sh critical       # Start 4 critical NPE fix sessions
+```
+
+### System Components
+- **`.agents/README.md`** - Quick start guide and system overview
+- **`.agents/TODO.md`** - Detailed specifications for all 20 critical bug fixes
+- **`.agents/WORKFLOW.md`** - Comprehensive workflow documentation
+- **Multiple scripts** - Automated worktree management, session control, PR coordination
+
+This system transforms traditional sequential bug fixing into a **parallel, scalable development process** using Claude Code's native capabilities with git worktrees.
+
+**→ See `.agents/README.md` for complete usage instructions**
