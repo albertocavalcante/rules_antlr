@@ -238,8 +238,10 @@ show_usage() {
     # Dynamically generate phase commands from YAML
     while IFS= read -r phase_name; do
         if [ "$phase_name" != "null" ] && [ -n "$phase_name" ]; then
-            local phase_display_name=$(yq eval ".phases.${phase_name}.name" "$TODOS_YAML")
-            local phase_emoji=$(yq eval ".phases.${phase_name}.emoji" "$TODOS_YAML")
+            local phase_display_name
+            phase_display_name=$(yq eval ".phases.${phase_name}.name" "$TODOS_YAML")
+            local phase_emoji
+            phase_emoji=$(yq eval ".phases.${phase_name}.emoji" "$TODOS_YAML")
             echo "  $phase_name  - $phase_emoji Create PRs for $phase_display_name"
         fi
     done < <(yq eval '.phases | to_entries | sort_by(.value.priority) | .[].key' "$TODOS_YAML")
@@ -266,10 +268,13 @@ check_all_status() {
     local cancelled_count=0
     
     # Check status of all TODOs
-    local total_todos=$(yq eval '.todos | length' "$TODOS_YAML")
-    for (( i=0; i<$total_todos; i++ )); do
-        local todo_id=$(yq eval ".todos[${i}].id" "$TODOS_YAML")
-        local priority=$(yq eval ".todos[${i}].priority" "$TODOS_YAML")
+    local total_todos
+    total_todos=$(yq eval '.todos | length' "$TODOS_YAML")
+    for (( i=0; i<total_todos; i++ )); do
+        local todo_id
+        todo_id=$(yq eval ".todos[${i}].id" "$TODOS_YAML")
+        local priority
+        priority=$(yq eval ".todos[${i}].priority" "$TODOS_YAML")
         
         echo -e "${CYAN}Checking $todo_id ($priority priority)...${NC}"
         
@@ -302,8 +307,10 @@ create_phase_prs() {
     local phase_name="$1"
     
     # Get phase information from YAML
-    local phase_display_name=$(yq eval ".phases.${phase_name}.name" "$TODOS_YAML")
-    local phase_emoji=$(yq eval ".phases.${phase_name}.emoji" "$TODOS_YAML")
+    local phase_display_name
+    phase_display_name=$(yq eval ".phases.${phase_name}.name" "$TODOS_YAML")
+    local phase_emoji
+    phase_emoji=$(yq eval ".phases.${phase_name}.emoji" "$TODOS_YAML")
     
     if [ "$phase_display_name" = "null" ]; then
         echo -e "${RED}❌ Error: Unknown phase '$phase_name'${NC}"
@@ -319,7 +326,8 @@ create_phase_prs() {
     # Get all TODOs for this phase and create PRs
     while IFS= read -r todo_index; do
         if [ "$todo_index" != "null" ] && [ -n "$todo_index" ]; then
-            local todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
+            local todo_id
+            todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
             
             echo -e "${CYAN}Processing $todo_id...${NC}"
             
@@ -371,11 +379,11 @@ case "${1:-status}" in
         echo "Running tests for all TODOs with worktrees..."
         echo "================================================="
         
-        local total_todos=$(yq eval '.todos | length' "$TODOS_YAML")
-        for (( i=0; i<$total_todos; i++ )); do
-            local todo_id=$(yq eval ".todos[${i}].id" "$TODOS_YAML")
-            local todo_status=$(yq eval ".todos[${i}].status // \"active\"" "$TODOS_YAML")
-            local worktree_dir=$(yq eval ".todos[${i}].git.worktree_dir" "$TODOS_YAML")
+        total_todos=$(yq eval '.todos | length' "$TODOS_YAML")
+        for (( i=0; i<total_todos; i++ )); do
+            todo_id=$(yq eval ".todos[${i}].id" "$TODOS_YAML")
+            todo_status=$(yq eval ".todos[${i}].status // \"active\"" "$TODOS_YAML")
+            worktree_dir=$(yq eval ".todos[${i}].git.worktree_dir" "$TODOS_YAML")
             
             if [ "$todo_status" != "cancelled" ] && [ -d "$WORKTREE_DIR/$worktree_dir" ]; then
                 echo -e "${CYAN}Testing $todo_id...${NC}"

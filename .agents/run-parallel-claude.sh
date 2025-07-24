@@ -73,13 +73,20 @@ create_claude_session() {
     local todo_index="$1"
     
     # Extract data from YAML
-    local todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
-    local todo_title=$(yq eval ".todos[${todo_index}].title" "$TODOS_YAML")
-    local todo_status=$(yq eval ".todos[${todo_index}].status // \"active\"" "$TODOS_YAML")
-    local session_name=$(yq eval ".todos[${todo_index}].git.tmux_session" "$TODOS_YAML")
-    local worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
-    local agent_prompt=$(yq eval ".todos[${todo_index}].agent_prompt" "$TODOS_YAML")
-    local priority=$(yq eval ".todos[${todo_index}].priority" "$TODOS_YAML")
+    local todo_id
+    todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
+    local todo_title
+    todo_title=$(yq eval ".todos[${todo_index}].title" "$TODOS_YAML")
+    local todo_status
+    todo_status=$(yq eval ".todos[${todo_index}].status // \"active\"" "$TODOS_YAML")
+    local session_name
+    session_name=$(yq eval ".todos[${todo_index}].git.tmux_session" "$TODOS_YAML")
+    local worktree_dir
+    worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
+    local agent_prompt
+    agent_prompt=$(yq eval ".todos[${todo_index}].agent_prompt" "$TODOS_YAML")
+    local priority
+    priority=$(yq eval ".todos[${todo_index}].priority" "$TODOS_YAML")
     
     local worktree_path="$WORKTREE_DIR/$worktree_dir"
     
@@ -122,7 +129,8 @@ create_claude_session() {
     tmux send-keys -t "$session_name" "# " Enter
     
     # Send a shortened version of the agent prompt as a comment (first few lines)
-    local prompt_preview=$(echo "$agent_prompt" | head -3 | sed 's/^/# /')
+    local prompt_preview
+    prompt_preview=$(echo "$agent_prompt" | head -3 | sed 's/^/# /')
     echo "$prompt_preview" | while IFS= read -r line; do
         tmux send-keys -t "$session_name" "$line" Enter
     done
@@ -146,10 +154,14 @@ show_usage() {
     # Dynamically generate phase list from YAML
     while IFS= read -r phase_name; do
         if [ "$phase_name" != "null" ] && [ -n "$phase_name" ]; then
-            local phase_display_name=$(yq eval ".phases.${phase_name}.name" "$TODOS_YAML")
-            local phase_emoji=$(yq eval ".phases.${phase_name}.emoji" "$TODOS_YAML")
-            local phase_description=$(yq eval ".phases.${phase_name}.description" "$TODOS_YAML")
-            local active_todos=$(yq eval ".todos | map(select(.phase == \"$phase_name\" and (.status // \"active\") != \"cancelled\")) | length" "$TODOS_YAML")
+            local phase_display_name
+            phase_display_name=$(yq eval ".phases.${phase_name}.name" "$TODOS_YAML")
+            local phase_emoji
+            phase_emoji=$(yq eval ".phases.${phase_name}.emoji" "$TODOS_YAML")
+            local phase_description
+            phase_description=$(yq eval ".phases.${phase_name}.description" "$TODOS_YAML")
+            local active_todos
+            active_todos=$(yq eval ".todos | map(select(.phase == \"$phase_name\" and (.status // \"active\") != \"cancelled\")) | length" "$TODOS_YAML")
             
             echo "  $phase_name  - $phase_emoji $phase_display_name ($active_todos TODOs)"
             echo "           $phase_description"
@@ -163,7 +175,8 @@ show_usage() {
     echo "  kill      - Kill all Claude sessions"
     echo
     echo "Examples:"
-    local first_phase=$(yq eval '.phases | to_entries | sort_by(.value.priority) | .[0].key' "$TODOS_YAML")
+    local first_phase
+    first_phase=$(yq eval '.phases | to_entries | sort_by(.value.priority) | .[0].key' "$TODOS_YAML")
     echo "  $0 $first_phase    # Start highest priority phase"
     echo "  $0 all         # Start all active sessions"
     echo "  $0 status      # Check which sessions are running"
@@ -220,10 +233,14 @@ start_phase_sessions() {
     local phase_name="$1"
     
     # Get phase information from YAML
-    local phase_display_name=$(yq eval ".phases.${phase_name}.name" "$TODOS_YAML")
-    local phase_description=$(yq eval ".phases.${phase_name}.description" "$TODOS_YAML")
-    local phase_emoji=$(yq eval ".phases.${phase_name}.emoji" "$TODOS_YAML")
-    local phase_parallel=$(yq eval ".phases.${phase_name}.parallel" "$TODOS_YAML")
+    local phase_display_name
+    phase_display_name=$(yq eval ".phases.${phase_name}.name" "$TODOS_YAML")
+    local phase_description
+    phase_description=$(yq eval ".phases.${phase_name}.description" "$TODOS_YAML")
+    local phase_emoji
+    phase_emoji=$(yq eval ".phases.${phase_name}.emoji" "$TODOS_YAML")
+    local phase_parallel
+    phase_parallel=$(yq eval ".phases.${phase_name}.parallel" "$TODOS_YAML")
     
     if [ "$phase_display_name" = "null" ]; then
         echo -e "${RED}❌ Error: Unknown phase '$phase_name'${NC}"
@@ -269,7 +286,7 @@ PHASE="${1:-$DEFAULT_PHASE}"
 case "$PHASE" in
     "all")
         echo -e "${BLUE}🚀 STARTING ALL PARALLEL SESSIONS${NC}"
-        local total_todos=$(yq eval '.todos | map(select((.status // "active") != "cancelled")) | length' "$TODOS_YAML")
+        total_todos=$(yq eval '.todos | map(select((.status // "active") != "cancelled")) | length' "$TODOS_YAML")
         echo -e "${RED}⚠️  Warning: This will start $total_todos Claude sessions simultaneously!${NC}"
         echo -e "${YELLOW}High resource usage - ensure you have sufficient RAM/CPU${NC}"
         echo "================================================="
@@ -320,7 +337,7 @@ echo "================================================="
 
 # Show how to connect to sessions
 echo -e "${BLUE}📱 Connect to sessions:${NC}"
-local session_prefix="$TMUX_SESSION_PREFIX"
+session_prefix="$TMUX_SESSION_PREFIX"
 tmux list-sessions 2>/dev/null | grep -E "^${session_prefix}" | while read -r session; do
     session_name=$(echo "$session" | cut -d: -f1)
     echo "  tmux attach -t $session_name"
@@ -337,7 +354,7 @@ echo "  ./run-parallel-claude.sh status # Check session status"
 
 echo
 echo -e "${YELLOW}⚡ Workflow Tips:${NC}"
-local highest_priority_phase=$(yq eval '.phases | to_entries | sort_by(.value.priority) | .[0].key' "$TODOS_YAML")
+highest_priority_phase=$(yq eval '.phases | to_entries | sort_by(.value.priority) | .[0].key' "$TODOS_YAML")
 echo "• Start with '$highest_priority_phase' phase for maximum impact"
 echo "• Each Claude session has todos.yaml copied for reference"  
 echo "• Use Ctrl+B, D to detach and switch between sessions"

@@ -305,7 +305,7 @@ show_status() {
         local claude_sessions
         claude_sessions=$(tmux list-sessions 2>/dev/null | grep -E "rules-antlr" || true)
         if [ -n "$claude_sessions" ]; then
-            echo "$claude_sessions" | sed 's/^/  /'
+            while IFS= read -r line; do echo "  $line"; done <<< "$claude_sessions"
         else
             echo "  No Claude sessions running"
         fi
@@ -320,7 +320,7 @@ show_status() {
     local worktree_list
     worktree_list=$(git -C "$REPO_ROOT" worktree list | grep "$WORKTREE_DIR" || true)
     if [ -n "$worktree_list" ]; then
-        echo "$worktree_list" | sed 's/^/  /'
+        while IFS= read -r line; do echo "  $line"; done <<< "$worktree_list"
     else
         echo "  No worktrees found"
     fi
@@ -332,7 +332,7 @@ show_status() {
     local fix_branches
     fix_branches=$(git -C "$REPO_ROOT" branch | grep "fix/" || true)
     if [ -n "$fix_branches" ]; then
-        echo "$fix_branches" | sed 's/^/  /'
+        while IFS= read -r line; do echo "  $line"; done <<< "$fix_branches"
     else
         echo "  No fix branches found"
     fi

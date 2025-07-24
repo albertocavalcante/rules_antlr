@@ -10,7 +10,6 @@ if [ -z "$RED" ]; then
     GREEN='\033[0;32m'
     YELLOW='\033[1;33m'
     BLUE='\033[0;34m'
-    CYAN='\033[0;36m'
     NC='\033[0m' # No Color
 fi
 
@@ -101,7 +100,7 @@ get_all_todo_indices() {
     local total_todos
     total_todos=$(yq eval '.todos | length' "$TODOS_YAML_PATH")
     
-    for (( i=0; i<$total_todos; i++ )); do
+    for (( i=0; i<total_todos; i++ )); do
         echo "$i"
     done
 }
@@ -246,7 +245,7 @@ validate_yaml_schema() {
     local total_todos
     total_todos=$(yq eval '.todos | length' "$TODOS_YAML_PATH")
     
-    for (( i=0; i<$total_todos; i++ )); do
+    for (( i=0; i<total_todos; i++ )); do
         local todo_id
         todo_id=$(yq eval ".todos[${i}].id" "$TODOS_YAML_PATH")
         

@@ -151,10 +151,14 @@ get_phase_info() {
 create_phase_worktrees() {
     local phase_name="$1"
     
-    local phase_display_name=$(get_phase_info "$phase_name" "name")
-    local phase_description=$(get_phase_info "$phase_name" "description")
-    local phase_emoji=$(get_phase_info "$phase_name" "emoji")
-    local phase_parallel=$(yq eval ".phases.${phase_name}.parallel" "$TODOS_YAML")
+    local phase_display_name
+    phase_display_name=$(get_phase_info "$phase_name" "name")
+    local phase_description
+    phase_description=$(get_phase_info "$phase_name" "description")
+    local phase_emoji
+    phase_emoji=$(get_phase_info "$phase_name" "emoji")
+    local phase_parallel
+    phase_parallel=$(yq eval ".phases.${phase_name}.parallel" "$TODOS_YAML")
     
     echo -e "${BLUE}${phase_emoji} PHASE: ${phase_display_name}${NC}"
     echo "Description: $phase_description"
@@ -173,12 +177,18 @@ create_phase_worktrees() {
             continue
         fi
         
-        local todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
-        local todo_title=$(yq eval ".todos[${todo_index}].title" "$TODOS_YAML")
-        local todo_status=$(yq eval ".todos[${todo_index}].status // \"active\"" "$TODOS_YAML")
-        local branch_name=$(yq eval ".todos[${todo_index}].git.branch" "$TODOS_YAML")
-        local worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
-        local priority=$(yq eval ".todos[${todo_index}].priority" "$TODOS_YAML")
+        local todo_id
+        todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
+        local todo_title
+        todo_title=$(yq eval ".todos[${todo_index}].title" "$TODOS_YAML")
+        local todo_status
+        todo_status=$(yq eval ".todos[${todo_index}].status // \"active\"" "$TODOS_YAML")
+        local branch_name
+        branch_name=$(yq eval ".todos[${todo_index}].git.branch" "$TODOS_YAML")
+        local worktree_dir
+        worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
+        local priority
+        priority=$(yq eval ".todos[${todo_index}].priority" "$TODOS_YAML")
         
         # Skip cancelled TODOs
         if [ "$todo_status" = "cancelled" ]; then
@@ -230,8 +240,10 @@ echo
 generate_next_steps() {
     local phase_name="$1"
     
-    local phase_display_name=$(get_phase_info "$phase_name" "name")
-    local phase_emoji=$(get_phase_info "$phase_name" "emoji")
+    local phase_display_name
+    phase_display_name=$(get_phase_info "$phase_name" "name")
+    local phase_emoji
+    phase_emoji=$(get_phase_info "$phase_name" "emoji")
     
     echo -e "${YELLOW}   ${phase_emoji} ${phase_display_name}:${NC}"
     
@@ -241,9 +253,12 @@ generate_next_steps() {
             continue
         fi
         
-        local todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
-        local todo_status=$(yq eval ".todos[${todo_index}].status // \"active\"" "$TODOS_YAML")
-        local worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
+        local todo_id
+        todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
+        local todo_status
+        todo_status=$(yq eval ".todos[${todo_index}].status // \"active\"" "$TODOS_YAML")
+        local worktree_dir
+        worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
         
         if [ "$todo_status" = "cancelled" ]; then
             echo "   # $todo_id [CANCELLED] - $(yq eval ".todos[${todo_index}].cancellation_reason // \"See YAML for details\"" "$TODOS_YAML")"
