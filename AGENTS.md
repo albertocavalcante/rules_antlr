@@ -67,7 +67,7 @@ antlr(
 # WORKSPACE.bazel (legacy)
 http_archive(
     name = "rules_antlr",
-    urls = ["https://github.com/albertocavalcante/rules_antlr/..."],
+    urls = ["https://github.com/albertocavalcante/rules_antlr/releases/download/vX.Y.Z/rules_antlr-vX.Y.Z.tar.gz",
 )
 
 load("@rules_antlr//antlr:repositories.bzl", "rules_antlr_dependencies")
