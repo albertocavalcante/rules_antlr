@@ -43,7 +43,7 @@ antlr(
     name = "parser",
     srcs = ["Hello.g4"],
     package = "com.example",
-    language = "Java",  # Optional: Java, Cpp, Go, Python2, Python3
+    language = "Java",  # Optional: Java, Cpp, CSharp, Go, JavaScript, Python2, Python3, Swift
 )
 ```
 
