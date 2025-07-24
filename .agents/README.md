@@ -97,7 +97,7 @@ sudo apt-get install yq tmux gh
 
 # Arch Linux
 sudo pacman -S yq tmux github-cli
-```bash
+```
 
 ## Usage
 
