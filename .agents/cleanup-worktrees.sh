@@ -2,6 +2,7 @@
 
 # rules_antlr Worktree Cleanup Script
 # Safely removes worktrees and cleans up the multi-agent development environment
+# Now fully driven by todos.yaml configuration
 
 set -e
 
@@ -13,9 +14,39 @@ BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
+# Configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TODOS_YAML="$SCRIPT_DIR/todos.yaml"
+
 # Use absolute path for robustness across different execution contexts
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$(pwd)/..")"
-WORKTREE_DIR="${REPO_ROOT}/../rules_antlr-worktrees"
+
+# Check if yq is available for YAML parsing
+if ! command -v yq &> /dev/null; then
+    echo -e "${YELLOW}⚠️  Warning: yq not found. Using hardcoded cleanup patterns.${NC}"
+    echo -e "${BLUE}Install yq for YAML-driven cleanup:${NC}"
+    echo "  macOS: brew install yq"
+    echo "  Ubuntu: sudo apt-get install yq"
+    echo "  Arch: sudo pacman -S yq"
+    echo
+    USE_YAML=false
+else
+    USE_YAML=true
+fi
+
+# Read configuration from YAML or use defaults
+if [ "$USE_YAML" = "true" ] && [ -f "$TODOS_YAML" ] && yq eval '.' "$TODOS_YAML" > /dev/null 2>&1; then
+    WORKTREE_BASE_DIR=$(yq eval '.config.worktree_base_dir' "$TODOS_YAML")
+    WORKTREE_DIR="${REPO_ROOT}/${WORKTREE_BASE_DIR}"
+    TMUX_SESSION_PREFIX=$(yq eval '.config.tmux_session_prefix' "$TODOS_YAML")
+else
+    # Fallback to hardcoded values
+    WORKTREE_DIR="${REPO_ROOT}/../rules_antlr-worktrees"
+    TMUX_SESSION_PREFIX="rules-antlr"
+    if [ "$USE_YAML" = "true" ]; then
+        echo -e "${YELLOW}⚠️  Warning: todos.yaml not found or invalid. Using hardcoded patterns.${NC}"
+    fi
+fi
 
 # Function to show usage
 show_usage() {
@@ -40,25 +71,32 @@ show_usage() {
     echo "  $0 status       # Show current state"
 }
 
-# Function to kill Claude tmux sessions
+# Function to kill Claude tmux sessions using YAML or fallback patterns
 kill_claude_sessions() {
     local dry_run="$1"
     
     echo -e "${YELLOW}🛑 Killing Claude Code tmux sessions...${NC}"
     
-    local session_patterns=(
-        "rules-antlr-npe-"
-        "rules-antlr-bazel-" 
-        "rules-antlr-resource-"
-        "rules-antlr-quality-"
-    )
-    
     local killed_count=0
     
-    for pattern in "${session_patterns[@]}"; do
-        if command -v tmux &> /dev/null; then
+    if command -v tmux &> /dev/null; then
+        if [ "$USE_YAML" = "true" ] && [ -f "$TODOS_YAML" ]; then
+            # YAML-driven session cleanup - get all session names from TODOs
+            while IFS= read -r session_name; do
+                if [ "$session_name" != "null" ] && [ -n "$session_name" ]; then
+                    if tmux has-session -t "$session_name" 2>/dev/null; then
+                        echo -e "  Killing session: ${CYAN}$session_name${NC}"
+                        if [ "$dry_run" != "true" ]; then
+                            tmux kill-session -t "$session_name" 2>/dev/null || true
+                        fi
+                        ((killed_count++))
+                    fi
+                fi
+            done < <(yq eval '.todos[].git.tmux_session' "$TODOS_YAML")
+        else
+            # Fallback: Kill all sessions matching the prefix
             local sessions
-            sessions=$(tmux list-sessions -F "#{session_name}" 2>/dev/null | grep "$pattern" || true)
+            sessions=$(tmux list-sessions -F "#{session_name}" 2>/dev/null | grep "^${TMUX_SESSION_PREFIX}" || true)
             
             for session in $sessions; do
                 echo -e "  Killing session: ${CYAN}$session${NC}"
@@ -68,7 +106,9 @@ kill_claude_sessions() {
                 ((killed_count++))
             done
         fi
-    done
+    else
+        echo -e "  ${YELLOW}tmux not available${NC}"
+    fi
     
     if [ $killed_count -eq 0 ]; then
         echo -e "  ${GREEN}No Claude sessions found${NC}"
@@ -77,24 +117,11 @@ kill_claude_sessions() {
     fi
 }
 
-# Function to remove worktrees
+# Function to remove worktrees using YAML or fallback patterns
 remove_worktrees() {
     local dry_run="$1"
     
     echo -e "${YELLOW}🗂️  Removing git worktrees...${NC}"
-    
-    local worktree_dirs=(
-        "npe-env"
-        "npe-builder"
-        "npe-language"
-        "npe-utility"
-        "bazel-dict"
-        "bazel-string"
-        "resource-process"
-        "resource-file"
-        "safety-bounds"
-        "quality-messages"
-    )
     
     local removed_count=0
     
@@ -104,23 +131,46 @@ remove_worktrees() {
         return
     fi
     
-    for dir in "${worktree_dirs[@]}"; do
-        local full_path="$WORKTREE_DIR/$dir"
-        
-        if [ -d "$full_path" ]; then
-            echo -e "  Removing worktree: ${CYAN}$full_path${NC}"
-            
-            if [ "$dry_run" != "true" ]; then
-                # Remove the worktree using git
-                git worktree remove "$full_path" --force 2>/dev/null || {
-                    # If git worktree remove fails, try manual cleanup
-                    echo -e "    ${YELLOW}Git cleanup failed, removing directory manually...${NC}"
-                    rm -rf "$full_path"
-                }
+    if [ "$USE_YAML" = "true" ] && [ -f "$TODOS_YAML" ]; then
+        # YAML-driven worktree cleanup - get all worktree dirs from TODOs
+        while IFS= read -r worktree_dir; do
+            if [ "$worktree_dir" != "null" ] && [ -n "$worktree_dir" ]; then
+                local full_path="$WORKTREE_DIR/$worktree_dir"
+                
+                if [ -d "$full_path" ]; then
+                    echo -e "  Removing worktree: ${CYAN}$full_path${NC}"
+                    
+                    if [ "$dry_run" != "true" ]; then
+                        # Remove the worktree using git
+                        git worktree remove "$full_path" --force 2>/dev/null || {
+                            # If git worktree remove fails, try manual cleanup
+                            echo -e "    ${YELLOW}Git cleanup failed, removing directory manually...${NC}"
+                            rm -rf "$full_path"
+                        }
+                    fi
+                    ((removed_count++))
+                fi
             fi
-            ((removed_count++))
-        fi
-    done
+        done < <(yq eval '.todos[].git.worktree_dir' "$TODOS_YAML")
+    else
+        # Fallback: Remove all directories in the worktree directory
+        echo -e "  ${YELLOW}Using fallback: removing all directories in $WORKTREE_DIR${NC}"
+        for dir_path in "$WORKTREE_DIR"/*; do
+            if [ -d "$dir_path" ]; then
+                echo -e "  Removing worktree: ${CYAN}$dir_path${NC}"
+                
+                if [ "$dry_run" != "true" ]; then
+                    # Remove the worktree using git
+                    git worktree remove "$dir_path" --force 2>/dev/null || {
+                        # If git worktree remove fails, try manual cleanup
+                        echo -e "    ${YELLOW}Git cleanup failed, removing directory manually...${NC}"
+                        rm -rf "$dir_path"
+                    }
+                fi
+                ((removed_count++))
+            fi
+        done
+    fi
     
     # Remove the parent directory if empty
     if [ "$dry_run" != "true" ] && [ -d "$WORKTREE_DIR" ]; then
@@ -137,27 +187,32 @@ remove_worktrees() {
     fi
 }
 
-# Function to clean up branches
+# Function to clean up branches using YAML or fallback patterns
 cleanup_branches() {
     local dry_run="$1"
     local force="$2"
     
     echo -e "${YELLOW}🌿 Cleaning up git branches...${NC}"
     
-    local branches=(
-        "fix/npe-environment-variables"
-        "fix/npe-builder-parameters"
-        "fix/npe-language-path-conversion"
-        "fix/npe-utility-methods"
-        "fix/bazel-dict-access"
-        "fix/bazel-string-methods"
-        "fix/process-stream-leaks"
-        "fix/file-stream-leaks"
-        "fix/array-bounds-safety"
-        "fix/error-message-quality"
-    )
-    
     local deleted_count=0
+    local branches=()
+    
+    if [ "$USE_YAML" = "true" ] && [ -f "$TODOS_YAML" ]; then
+        # YAML-driven branch cleanup - get all branch names from TODOs
+        while IFS= read -r branch_name; do
+            if [ "$branch_name" != "null" ] && [ -n "$branch_name" ]; then
+                branches+=("$branch_name")
+            fi
+        done < <(yq eval '.todos[].git.branch' "$TODOS_YAML")
+    else
+        # Fallback: Use hardcoded branch patterns
+        echo -e "  ${YELLOW}Using fallback: looking for branches with 'fix/' prefix${NC}"
+        while IFS= read -r branch_name; do
+            if [ -n "$branch_name" ]; then
+                branches+=("$branch_name")
+            fi
+        done < <(git branch --format="%(refname:short)" | grep "^fix/" || true)
+    fi
     
     for branch in "${branches[@]}"; do
         # Check if branch exists locally

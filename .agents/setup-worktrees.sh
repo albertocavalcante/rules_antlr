@@ -2,6 +2,7 @@
 
 # rules_antlr Multi-Agent Worktree Setup Script
 # Creates git worktrees for parallel Claude Code development
+# Now fully driven by todos.yaml configuration
 
 set -e  # Exit on any error
 
@@ -10,10 +11,27 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
+CYAN='\033[0;36m'  
 NC='\033[0m' # No Color
 
-echo -e "${BLUE}🚀 Setting up multi-agent worktrees for rules_antlr bug fixes${NC}"
+# Configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Load YAML utilities
+source "$SCRIPT_DIR/yaml-utils.sh"
+
+echo -e "${BLUE}🚀 Setting up YAML-driven multi-agent worktrees${NC}"
 echo "================================================="
+
+# Initialize YAML utilities
+init_yaml_utils "$SCRIPT_DIR/todos.yaml"
+
+# Exit if YAML is not available
+if ! require_yaml; then
+    echo -e "${BLUE}Alternative: Manual worktree creation${NC}"
+    echo "Check todos.yaml for git.branch and git.worktree_dir values"
+    exit 1
+fi
 
 # Check if we're in a git repository
 if ! git rev-parse --git-dir > /dev/null 2>&1; then
@@ -27,31 +45,40 @@ if [ -f .git ] && grep -q "gitdir:" .git; then
     exit 1
 fi
 
+# Read configuration from YAML
+echo -e "${CYAN}📖 Reading configuration from todos.yaml...${NC}"
+WORKTREE_BASE_DIR=$(get_config "worktree_base_dir")
+DEFAULT_BRANCH=$(get_config "default_branch_base")
+
 # Ensure we're on main branch and up to date
-echo -e "${YELLOW}📍 Ensuring main branch is up to date...${NC}"
-git checkout main
-git pull origin main
+echo -e "${YELLOW}📍 Ensuring $DEFAULT_BRANCH branch is up to date...${NC}"
+git checkout "$DEFAULT_BRANCH"
+git pull origin "$DEFAULT_BRANCH"
 
 # Create parent directory for worktrees (use absolute path for robustness)
 REPO_ROOT="$(git rev-parse --show-toplevel)"
-WORKTREE_DIR="${REPO_ROOT}/../rules_antlr-worktrees"
+WORKTREE_DIR="${REPO_ROOT}/${WORKTREE_BASE_DIR}"
 mkdir -p "$WORKTREE_DIR"
 
 echo -e "${BLUE}📁 Creating worktrees in: $WORKTREE_DIR${NC}"
 
 # Function to create worktree with error handling
 create_worktree() {
-    local branch_name="$1"
-    local dir_name="$2"
-    local description="$3"
-    local priority="$4"
+    local todo_id="$1"
+    local title="$2"
+    local branch_name="$3"
+    local dir_name="$4"
+    local priority="$5"
+    local phase="$6"
     
     local full_path="$WORKTREE_DIR/$dir_name"
     
     echo -e "${YELLOW}Creating worktree: $dir_name${NC}"
+    echo "  TODO: $todo_id"
+    echo "  Title: $title"
     echo "  Branch: $branch_name"
-    echo "  Description: $description"
     echo "  Priority: $priority"
+    echo "  Phase: $phase"
     
     if [ -d "$full_path" ]; then
         echo -e "${YELLOW}  ⚠️  Directory already exists, skipping...${NC}"
@@ -65,59 +92,92 @@ create_worktree() {
         git worktree add "$full_path" -b "$branch_name"
     fi
     
-    # Copy TODO.md to each worktree for reference
+    # Copy todos.yaml to each worktree for reference
+    if [ -f "$TODOS_YAML" ]; then
+        cp "$TODOS_YAML" "$full_path/"
+    fi
+    
+    # Also copy legacy TODO.md if it exists for backwards compatibility
     if [ -f ".agents/TODO.md" ]; then
         cp ".agents/TODO.md" "$full_path/"
     elif [ -f "TODO.md" ]; then
         cp "TODO.md" "$full_path/"
-    else
-        echo -e "${YELLOW}  ⚠️  TODO.md not found in current or .agents directory${NC}"
     fi
     
     echo -e "${GREEN}  ✅ Created: $full_path${NC}"
     echo
 }
 
-echo -e "${BLUE}🔴 PHASE 1: Critical NPE Vulnerabilities (Parallel Execution)${NC}"
-echo "These can run simultaneously without conflicts:"
+# Function to get phase color/emoji from YAML
+get_phase_info() {
+    local phase_name="$1"
+    local info_type="$2"  # "color", "emoji", "name", "description"
+    
+    yq eval ".phases.${phase_name}.${info_type}" "$TODOS_YAML"
+}
 
-create_worktree "fix/npe-environment-variables" "npe-env" \
-    "Environment Variable NPE Fixes (AntlrRules.java main method)" "CRITICAL"
+# Function to create worktrees for a specific phase
+create_phase_worktrees() {
+    local phase_name="$1"
+    
+    local phase_display_name=$(get_phase_info "$phase_name" "name")
+    local phase_description=$(get_phase_info "$phase_name" "description")
+    local phase_emoji=$(get_phase_info "$phase_name" "emoji")
+    local phase_parallel=$(yq eval ".phases.${phase_name}.parallel" "$TODOS_YAML")
+    
+    echo -e "${BLUE}${phase_emoji} PHASE: ${phase_display_name}${NC}"
+    echo "Description: $phase_description"
+    if [ "$phase_parallel" = "true" ]; then
+        echo "Execution: Parallel (can run simultaneously)"
+    else
+        echo "Execution: Sequential"
+    fi
+    echo
+    
+    # Get all TODOs for this phase
+    local todo_count=0
+    while IFS= read -r todo_index; do
+        # Skip if no todos found
+        if [ "$todo_index" = "null" ] || [ -z "$todo_index" ]; then
+            continue
+        fi
+        
+        local todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
+        local todo_title=$(yq eval ".todos[${todo_index}].title" "$TODOS_YAML")
+        local todo_status=$(yq eval ".todos[${todo_index}].status // \"active\"" "$TODOS_YAML")
+        local branch_name=$(yq eval ".todos[${todo_index}].git.branch" "$TODOS_YAML")
+        local worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
+        local priority=$(yq eval ".todos[${todo_index}].priority" "$TODOS_YAML")
+        
+        # Skip cancelled TODOs
+        if [ "$todo_status" = "cancelled" ]; then
+            echo -e "${YELLOW}⚠️  Skipping $todo_id: CANCELLED${NC}"
+            echo "   Reason: $(yq eval ".todos[${todo_index}].cancellation_reason // \"See YAML for details\"" "$TODOS_YAML")"
+            echo
+            continue
+        fi
+        
+        create_worktree "$todo_id" "$todo_title" "$branch_name" "$worktree_dir" "$priority" "$phase_name"
+        ((todo_count++))
+        
+    done < <(yq eval ".todos | to_entries | map(select(.value.phase == \"$phase_name\")) | .[].key" "$TODOS_YAML")
+    
+    if [ $todo_count -eq 0 ]; then
+        echo -e "${YELLOW}  No active TODOs found for phase: $phase_name${NC}"
+        echo
+    fi
+}
 
-create_worktree "fix/npe-builder-parameters" "npe-builder" \
-    "Builder Method Parameter NPE Fixes" "CRITICAL"
+# Create worktrees for all phases dynamically from YAML
+echo -e "${CYAN}📋 Creating worktrees for all phases...${NC}"
+echo
 
-create_worktree "fix/npe-language-path-conversion" "npe-language" \
-    "Language Path Conversion NPE Fixes" "CRITICAL"
-
-create_worktree "fix/npe-utility-methods" "npe-utility" \
-    "Utility Method NPE Fixes" "CRITICAL"
-
-echo -e "${BLUE}🟠 PHASE 2: High Priority Bazel Fixes (Single Execution)${NC}"
-echo "These can run after Phase 1 or in parallel:"
-
-echo -e "${YELLOW}⚠️  Skipping TODO-005 (bazel-dict): Cancelled due to incorrect fix strategy${NC}"
-
-create_worktree "fix/bazel-string-methods" "bazel-string" \
-    "Bazel String Method Fix" "HIGH"
-
-echo -e "${BLUE}🟡 PHASE 3: Medium Priority Resource Fixes (Parallel Execution)${NC}"
-echo "These can run in parallel with other phases:"
-
-create_worktree "fix/process-stream-leaks" "resource-process" \
-    "Process Stream Resource Leak Fixes" "MEDIUM"
-
-create_worktree "fix/file-stream-leaks" "resource-file" \
-    "File Stream Resource Leak Fixes" "MEDIUM"
-
-echo -e "${BLUE}🟢 PHASE 4: Quality Improvements (Lower Priority)${NC}"
-echo "These can run after critical fixes:"
-
-create_worktree "fix/array-bounds-safety" "safety-bounds" \
-    "Array Bounds Safety Improvements" "MEDIUM"
-
-create_worktree "fix/error-message-quality" "quality-messages" \
-    "Error Message Quality Improvements" "LOW"
+# Get all phase names from YAML and create worktrees in priority order
+while IFS= read -r phase_name; do
+    if [ "$phase_name" != "null" ] && [ -n "$phase_name" ]; then
+        create_phase_worktrees "$phase_name"
+    fi
+done < <(yq eval '.phases | to_entries | sort_by(.value.priority) | .[].key' "$TODOS_YAML")
 
 echo
 echo -e "${GREEN}🎉 Worktree setup complete!${NC}"
@@ -134,26 +194,50 @@ echo -e "${BLUE}🚀 Next Steps:${NC}"
 echo "1. Run parallel Claude sessions with: ./run-parallel-claude.sh"
 echo "2. Or manually start Claude in each worktree:"
 echo
-echo -e "${YELLOW}   Critical NPE Fixes (run these first in parallel):${NC}"
-echo "   cd \"$WORKTREE_DIR/npe-env\" && claude          # TODO-001"
-echo "   cd \"$WORKTREE_DIR/npe-builder\" && claude      # TODO-002" 
-echo "   cd \"$WORKTREE_DIR/npe-language\" && claude     # TODO-003"
-echo "   cd \"$WORKTREE_DIR/npe-utility\" && claude      # TODO-004"
-echo
-echo -e "${YELLOW}   High Priority Bazel Fixes:${NC}"
-echo "   # TODO-005 [CANCELLED] - Incorrect Starlark fix strategy"
-echo "   cd \"$WORKTREE_DIR/bazel-string\" && claude     # TODO-006"
-echo
-echo -e "${YELLOW}   Resource Management Fixes:${NC}"
-echo "   cd \"$WORKTREE_DIR/resource-process\" && claude # TODO-007"
-echo "   cd \"$WORKTREE_DIR/resource-file\" && claude    # TODO-008"
-echo
+
+# Generate next steps dynamically from YAML
+generate_next_steps() {
+    local phase_name="$1"
+    
+    local phase_display_name=$(get_phase_info "$phase_name" "name")
+    local phase_emoji=$(get_phase_info "$phase_name" "emoji")
+    
+    echo -e "${YELLOW}   ${phase_emoji} ${phase_display_name}:${NC}"
+    
+    # Get all active TODOs for this phase
+    while IFS= read -r todo_index; do
+        if [ "$todo_index" = "null" ] || [ -z "$todo_index" ]; then
+            continue
+        fi
+        
+        local todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
+        local todo_status=$(yq eval ".todos[${todo_index}].status // \"active\"" "$TODOS_YAML")
+        local worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
+        
+        if [ "$todo_status" = "cancelled" ]; then
+            echo "   # $todo_id [CANCELLED] - $(yq eval ".todos[${todo_index}].cancellation_reason // \"See YAML for details\"" "$TODOS_YAML")"
+        else
+            echo "   cd \"$WORKTREE_DIR/$worktree_dir\" && claude     # $todo_id"
+        fi
+        
+    done < <(yq eval ".todos | to_entries | map(select(.value.phase == \"$phase_name\")) | .[].key" "$TODOS_YAML")
+    echo
+}
+
+# Generate next steps for all phases in priority order
+while IFS= read -r phase_name; do
+    if [ "$phase_name" != "null" ] && [ -n "$phase_name" ]; then
+        generate_next_steps "$phase_name"
+    fi
+done < <(yq eval '.phases | to_entries | sort_by(.value.priority) | .[].key' "$TODOS_YAML")
+
 echo -e "${BLUE}💡 Tips:${NC}"
 echo "• Use tmux/screen to manage multiple Claude sessions"
-echo "• Each worktree has its own copy of TODO.md for reference"
-echo "• Start with Phase 1 (Critical NPE fixes) for maximum impact"
+echo "• Each worktree has its own copy of todos.yaml for reference"
+echo "• Start with highest priority phase for maximum impact"
 echo "• Run ./merge-workflow.sh when ready to create PRs"
 echo "• Run ./cleanup-worktrees.sh when finished"
+echo "• Check todos.yaml for detailed agent prompts and fix strategies"
 
 echo
-echo -e "${GREEN}✨ Ready for parallel multi-agent development!${NC}"
+echo -e "${GREEN}✨ Ready for YAML-driven parallel multi-agent development!${NC}"

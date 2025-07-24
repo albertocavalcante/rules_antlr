@@ -2,6 +2,7 @@
 
 # rules_antlr Merge Workflow Coordination Script  
 # Manages PR creation and merge coordination for parallel bug fixes
+# Now fully driven by todos.yaml configuration
 
 set -e
 
@@ -14,9 +15,38 @@ CYAN='\033[0;36m'
 PURPLE='\033[0;35m'
 NC='\033[0m' # No Color
 
+# Configuration
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TODOS_YAML="$SCRIPT_DIR/todos.yaml"
+
 # Use absolute path for robustness across different execution contexts
 REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || echo "$(pwd)/..")"
-WORKTREE_DIR="${REPO_ROOT}/../rules_antlr-worktrees"
+
+# Check if yq is available for YAML parsing
+if ! command -v yq &> /dev/null; then
+    echo -e "${RED}❌ Error: yq is required for YAML parsing${NC}"
+    echo -e "${YELLOW}Install yq:${NC}"
+    echo "  macOS: brew install yq"
+    echo "  Ubuntu: sudo apt-get install yq"
+    echo "  Arch: sudo pacman -S yq"
+    echo "  Or download from: https://github.com/mikefarah/yq/releases"
+    exit 1
+fi
+
+# Check if todos.yaml exists and is valid
+if [ ! -f "$TODOS_YAML" ]; then
+    echo -e "${RED}❌ Error: todos.yaml not found at $TODOS_YAML${NC}"
+    exit 1
+fi
+
+if ! yq eval '.' "$TODOS_YAML" > /dev/null 2>&1; then
+    echo -e "${RED}❌ Error: Invalid YAML syntax in todos.yaml${NC}"
+    exit 1
+fi
+
+# Read configuration from YAML
+WORKTREE_BASE_DIR=$(yq eval '.config.worktree_base_dir' "$TODOS_YAML")
+WORKTREE_DIR="${REPO_ROOT}/${WORKTREE_BASE_DIR}"
 
 # Check if gh CLI is available
 if ! command -v gh &> /dev/null; then
@@ -31,11 +61,24 @@ if ! command -v gh &> /dev/null; then
     exit 1
 fi
 
-# Function to check worktree status
+# Function to check worktree status from YAML data
 check_worktree_status() {
-    local worktree_path="$1"
-    local branch_name="$2"
-    local todo_id="$3"
+    local todo_index="$1"
+    
+    # Extract data from YAML
+    local todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
+    local todo_status=$(yq eval ".todos[${todo_index}].status // \"active\"" "$TODOS_YAML")
+    local branch_name=$(yq eval ".todos[${todo_index}].git.branch" "$TODOS_YAML")
+    local worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
+    
+    local worktree_path="$WORKTREE_DIR/$worktree_dir"
+    
+    # Skip cancelled TODOs
+    if [ "$todo_status" = "cancelled" ]; then
+        echo -e "${YELLOW}⚠️  $todo_id: CANCELLED${NC}"
+        echo "   Reason: $(yq eval ".todos[${todo_index}].cancellation_reason // \"See YAML for details\"" "$TODOS_YAML")"
+        return 4
+    fi
     
     if [ ! -d "$worktree_path" ]; then
         echo -e "${RED}❌ Worktree not found: $worktree_path${NC}"
@@ -51,7 +94,8 @@ check_worktree_status() {
     fi
     
     # Check if branch is ahead of main
-    local ahead=$(git rev-list --count main..$branch_name 2>/dev/null || echo "0")
+    local default_branch=$(yq eval '.config.default_branch_base' "$TODOS_YAML")
+    local ahead=$(git rev-list --count ${default_branch}..$branch_name 2>/dev/null || echo "0")
     if [ "$ahead" -eq 0 ]; then
         echo -e "${YELLOW}⚠️  $todo_id has no commits (nothing to merge)${NC}"
         return 3
@@ -61,10 +105,14 @@ check_worktree_status() {
     return 0
 }
 
-# Function to run tests in worktree
+# Function to run tests in worktree using YAML data
 run_tests() {
-    local worktree_path="$1"
-    local todo_id="$2"
+    local todo_index="$1"
+    
+    # Extract data from YAML
+    local todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
+    local worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
+    local worktree_path="$WORKTREE_DIR/$worktree_dir"
     
     echo -e "${BLUE}🧪 Running tests for $todo_id...${NC}"
     cd "$worktree_path"
@@ -90,14 +138,20 @@ run_tests() {
     return 0
 }
 
-# Function to create PR
+# Function to create PR using YAML data
 create_pr() {
-    local worktree_path="$1"
-    local branch_name="$2"
-    local todo_id="$3"
-    local title="$4"
-    local description="$5"
-    local priority="$6"
+    local todo_index="$1"
+    
+    # Extract data from YAML
+    local todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
+    local todo_title=$(yq eval ".todos[${todo_index}].title" "$TODOS_YAML")
+    local todo_description=$(yq eval ".todos[${todo_index}].description" "$TODOS_YAML")
+    local branch_name=$(yq eval ".todos[${todo_index}].git.branch" "$TODOS_YAML")
+    local worktree_dir=$(yq eval ".todos[${todo_index}].git.worktree_dir" "$TODOS_YAML")
+    local priority=$(yq eval ".todos[${todo_index}].priority" "$TODOS_YAML")
+    local phase=$(yq eval ".todos[${todo_index}].phase" "$TODOS_YAML")
+    
+    local worktree_path="$WORKTREE_DIR/$worktree_dir"
     
     echo -e "${PURPLE}📝 Creating PR for $todo_id...${NC}"
     cd "$worktree_path"
@@ -106,17 +160,19 @@ create_pr() {
     git push -u origin "$branch_name"
     
     # Create PR body with structured information
-    local pr_body="## $todo_id: $title
+    local default_branch=$(yq eval '.config.default_branch_base' "$TODOS_YAML")
+    local pr_body="## $todo_id: $todo_title
 
 **Priority**: $priority
+**Phase**: $phase
 **Branch**: \`$branch_name\`
 
 ### Problem Description
-$description
+$todo_description
 
 ### Changes Made
 <!-- Auto-generated commit list -->
-$(git log --oneline main..$branch_name | sed 's/^/- /')
+$(git log --oneline ${default_branch}..$branch_name | sed 's/^/- /')
 
 ### Testing
 - [ ] Unit tests added/updated
@@ -131,16 +187,16 @@ $(git log --oneline main..$branch_name | sed 's/^/- /')
 - [ ] Security implications reviewed
 
 ---
-*This PR was generated as part of the multi-agent bug fixing workflow.*
-*See TODO.md for detailed context and related issues.*
+*This PR was generated as part of the YAML-driven multi-agent bug fixing workflow.*
+*See todos.yaml for detailed context, agent prompts, and fix strategies.*
 
 **Related TODO Items**: $todo_id
-**Part of**: Multi-Agent Critical Bug Fixes Initiative"
+**Part of**: Multi-Agent Critical Bug Fixes Initiative (Phase: $phase)"
 
     # Create the PR
     local pr_url
     pr_url=$(gh pr create \
-        --title "$todo_id: $title" \
+        --title "$todo_id: $todo_title" \
         --body "$pr_body" \
         --label "bug,automated-fix,$priority" \
         --assignee "@me")
@@ -158,120 +214,129 @@ show_usage() {
     echo "Commands:"
     echo "  status     - Check status of all worktrees"
     echo "  test       - Run tests in all worktrees with changes"
-    echo "  critical   - Create PRs for critical NPE fixes (TODO-001 to TODO-004)"
-    echo "  bazel      - Create PRs for Bazel compatibility fixes (TODO-005, TODO-006)"
-    echo "  resource   - Create PRs for resource management fixes (TODO-007, TODO-008)"
-    echo "  quality    - Create PRs for quality improvements (TODO-009, TODO-010)"
+    
+    # Dynamically generate phase commands from YAML
+    while IFS= read -r phase_name; do
+        if [ "$phase_name" != "null" ] && [ -n "$phase_name" ]; then
+            local phase_display_name=$(yq eval ".phases.${phase_name}.name" "$TODOS_YAML")
+            local phase_emoji=$(yq eval ".phases.${phase_name}.emoji" "$TODOS_YAML")
+            echo "  $phase_name  - $phase_emoji Create PRs for $phase_display_name"
+        fi
+    done < <(yq eval '.phases | to_entries | sort_by(.value.priority) | .[].key' "$TODOS_YAML")
+    
     echo "  all        - Create PRs for all completed fixes"
     echo "  list-prs   - List all created PRs"
     echo "  merge      - Interactive merge workflow (with dependency management)"
     echo
     echo "Examples:"
     echo "  $0 status       # Check what's ready to merge"
-    echo "  $0 critical     # Create PRs for critical fixes"
+    local first_phase=$(yq eval '.phases | to_entries | sort_by(.value.priority) | .[0].key' "$TODOS_YAML")
+    echo "  $0 $first_phase     # Create PRs for highest priority phase"
     echo "  $0 all          # Create PRs for everything ready"
 }
 
-# Function to check all worktree status
+# Function to check all worktree status using YAML data
 check_all_status() {
-    echo -e "${BLUE}📊 Checking status of all worktrees...${NC}"
+    echo -e "${BLUE}📊 Checking status of all worktrees from YAML...${NC}"
     echo "================================================="
-    
-    local worktrees=(
-        "npe-env:fix/npe-environment-variables:TODO-001:Critical"
-        "npe-builder:fix/npe-builder-parameters:TODO-002:Critical"
-        "npe-language:fix/npe-language-path-conversion:TODO-003:Critical"
-        "npe-utility:fix/npe-utility-methods:TODO-004:Critical"
-        "bazel-dict:fix/bazel-dict-access:TODO-005:High"
-        "bazel-string:fix/bazel-string-methods:TODO-006:High"
-        "resource-process:fix/process-stream-leaks:TODO-007:Medium"
-        "resource-file:fix/file-stream-leaks:TODO-008:Medium"
-        "safety-bounds:fix/array-bounds-safety:TODO-009:Medium"
-        "quality-messages:fix/error-message-quality:TODO-010:Low"
-    )
     
     local ready_count=0
     local not_ready_count=0
+    local cancelled_count=0
     
-    for worktree_info in "${worktrees[@]}"; do
-        IFS=':' read -r dir branch todo priority <<< "$worktree_info"
-        local full_path="$WORKTREE_DIR/$dir"
+    # Check status of all TODOs
+    local total_todos=$(yq eval '.todos | length' "$TODOS_YAML")
+    for (( i=0; i<$total_todos; i++ )); do
+        local todo_id=$(yq eval ".todos[${i}].id" "$TODOS_YAML")
+        local priority=$(yq eval ".todos[${i}].priority" "$TODOS_YAML")
         
-        echo -e "${CYAN}Checking $todo ($priority priority)...${NC}"
+        echo -e "${CYAN}Checking $todo_id ($priority priority)...${NC}"
         
-        if check_worktree_status "$full_path" "$branch" "$todo"; then
-            ((ready_count++))
-        else
-            ((not_ready_count++))
-        fi
+        local status_result
+        check_worktree_status "$i"
+        status_result=$?
+        
+        case $status_result in
+            0)
+                ((ready_count++))
+                ;;
+            4)
+                ((cancelled_count++))
+                ;;
+            *)
+                ((not_ready_count++))
+                ;;
+        esac
         echo
     done
     
     echo -e "${BLUE}📈 Summary:${NC}"
     echo -e "  Ready for PR: ${GREEN}$ready_count${NC}"
     echo -e "  Not ready: ${YELLOW}$not_ready_count${NC}"
+    echo -e "  Cancelled: ${PURPLE}$cancelled_count${NC}"
 }
 
-# Function to create PRs for a specific phase
+# Function to create PRs for a specific phase using YAML data
 create_phase_prs() {
-    local phase="$1"
-    local phase_name="$2"
+    local phase_name="$1"
     
-    echo -e "${PURPLE}🚀 Creating PRs for $phase_name...${NC}"
+    # Get phase information from YAML
+    local phase_display_name=$(yq eval ".phases.${phase_name}.name" "$TODOS_YAML")
+    local phase_emoji=$(yq eval ".phases.${phase_name}.emoji" "$TODOS_YAML")
+    
+    if [ "$phase_display_name" = "null" ]; then
+        echo -e "${RED}❌ Error: Unknown phase '$phase_name'${NC}"
+        return 1
+    fi
+    
+    echo -e "${PURPLE}🚀 Creating PRs for ${phase_emoji} ${phase_display_name}...${NC}"
     echo "================================================="
     
-    case "$phase" in
-        "critical")
-            local worktrees=(
-                "npe-env:fix/npe-environment-variables:TODO-001:Environment Variable NPE Fixes:Critical NPE vulnerabilities in AntlrRules main method:critical"
-                "npe-builder:fix/npe-builder-parameters:TODO-002:Builder Method Parameter NPE Fixes:NPE vulnerabilities in builder methods:critical"
-                "npe-language:fix/npe-language-path-conversion:TODO-003:Language Path Conversion NPE Fixes:NPE vulnerabilities in Language enum methods:critical"
-                "npe-utility:fix/npe-utility-methods:TODO-004:Utility Method NPE Fixes:NPE vulnerabilities in utility methods:critical"
-            )
-            ;;
-        "bazel")
-            local worktrees=(
-                "bazel-dict:fix/bazel-dict-access:TODO-005:Bazel Starlark Dictionary Access Fix:Bazel 6.0+ compatibility issue with dict.keys() indexing:high"
-                "bazel-string:fix/bazel-string-methods:TODO-006:Bazel String Method Fix:Non-existent .elems() method calls in Starlark:high"
-            )
-            ;;
-        "resource")
-            local worktrees=(
-                "resource-process:fix/process-stream-leaks:TODO-007:Process Stream Resource Leak Fixes:Resource leaks in Command.java process handling:medium"
-                "resource-file:fix/file-stream-leaks:TODO-008:File Stream Resource Leak Fixes:Resource leaks in TestWorkspace file handling:medium"
-            )
-            ;;
-        "quality")
-            local worktrees=(
-                "safety-bounds:fix/array-bounds-safety:TODO-009:Array Bounds Safety Improvements:Array bounds checking in AntlrRules:medium"
-                "quality-messages:fix/error-message-quality:TODO-010:Error Message Quality Improvements:Improve error message formatting:low"
-            )
-            ;;
-    esac
-    
     local created_count=0
+    local skipped_count=0
     
-    for worktree_info in "${worktrees[@]}"; do
-        IFS=':' read -r dir branch todo title description priority <<< "$worktree_info"
-        local full_path="$WORKTREE_DIR/$dir"
-        
-        echo -e "${CYAN}Processing $todo...${NC}"
-        
-        if check_worktree_status "$full_path" "$branch" "$todo"; then
-            if run_tests "$full_path" "$todo"; then
-                if create_pr "$full_path" "$branch" "$todo" "$title" "$description" "$priority"; then
-                    ((created_count++))
-                fi
-            else
-                echo -e "${RED}⚠️  Skipping PR creation due to test failures${NC}"
-            fi
-        else
-            echo -e "${YELLOW}⚠️  Skipping $todo (not ready)${NC}"
+    # Get all TODOs for this phase and create PRs
+    while IFS= read -r todo_index; do
+        if [ "$todo_index" != "null" ] && [ -n "$todo_index" ]; then
+            local todo_id=$(yq eval ".todos[${todo_index}].id" "$TODOS_YAML")
+            
+            echo -e "${CYAN}Processing $todo_id...${NC}"
+            
+            # Check worktree status
+            local status_result
+            check_worktree_status "$todo_index"
+            status_result=$?
+            
+            case $status_result in
+                0)
+                    # Ready - run tests and create PR
+                    if run_tests "$todo_index"; then
+                        if create_pr "$todo_index"; then
+                            ((created_count++))
+                        fi
+                    else
+                        echo -e "${RED}⚠️  Skipping PR creation due to test failures${NC}"
+                        ((skipped_count++))
+                    fi
+                    ;;
+                4)
+                    # Cancelled - already handled in check_worktree_status
+                    ((skipped_count++))
+                    ;;
+                *)
+                    # Not ready
+                    echo -e "${YELLOW}⚠️  Skipping $todo_id (not ready)${NC}"
+                    ((skipped_count++))
+                    ;;
+            esac
+            echo
         fi
-        echo
-    done
+    done < <(yq eval ".todos | to_entries | map(select(.value.phase == \"$phase_name\")) | .[].key" "$TODOS_YAML")
     
-    echo -e "${GREEN}✅ Created $created_count PRs for $phase_name${NC}"
+    echo -e "${GREEN}✅ Created $created_count PRs for $phase_display_name${NC}"
+    if [ $skipped_count -gt 0 ]; then
+        echo -e "${YELLOW}⚠️  Skipped $skipped_count TODOs${NC}"
+    fi
 }
 
 # Main command processing
@@ -282,36 +347,34 @@ case "${1:-status}" in
     
     "test")
         echo -e "${BLUE}🧪 Running tests in all worktrees...${NC}"
-        # Implementation for running tests in all worktrees
-        echo "Test functionality coming soon..."
-        ;;
-    
-    "critical")
-        create_phase_prs "critical" "Critical NPE Fixes"
-        ;;
-    
-    "bazel")
-        create_phase_prs "bazel" "Bazel Compatibility Fixes"
-        ;;
-    
-    "resource")
-        create_phase_prs "resource" "Resource Management Fixes"
-        ;;
-    
-    "quality")
-        create_phase_prs "quality" "Quality Improvements"
+        echo "Running tests for all TODOs with worktrees..."
+        echo "================================================="
+        
+        local total_todos=$(yq eval '.todos | length' "$TODOS_YAML")
+        for (( i=0; i<$total_todos; i++ )); do
+            local todo_id=$(yq eval ".todos[${i}].id" "$TODOS_YAML")
+            local todo_status=$(yq eval ".todos[${i}].status // \"active\"" "$TODOS_YAML")
+            local worktree_dir=$(yq eval ".todos[${i}].git.worktree_dir" "$TODOS_YAML")
+            
+            if [ "$todo_status" != "cancelled" ] && [ -d "$WORKTREE_DIR/$worktree_dir" ]; then
+                echo -e "${CYAN}Testing $todo_id...${NC}"
+                run_tests "$i"
+                echo
+            fi
+        done
         ;;
     
     "all")
         echo -e "${PURPLE}🚀 Creating PRs for ALL completed fixes...${NC}"
         echo "================================================="
-        create_phase_prs "critical" "Critical NPE Fixes"
-        echo
-        create_phase_prs "bazel" "Bazel Compatibility Fixes"
-        echo
-        create_phase_prs "resource" "Resource Management Fixes"
-        echo
-        create_phase_prs "quality" "Quality Improvements"
+        
+        # Create PRs for all phases in priority order
+        while IFS= read -r phase_name; do
+            if [ "$phase_name" != "null" ] && [ -n "$phase_name" ]; then
+                create_phase_prs "$phase_name"
+                echo
+            fi
+        done < <(yq eval '.phases | to_entries | sort_by(.value.priority) | .[].key' "$TODOS_YAML")
         ;;
     
     "list-prs")
@@ -329,8 +392,15 @@ case "${1:-status}" in
         ;;
     
     *)
-        show_usage
-        exit 1
+        # Check if it's a valid phase name
+        if yq eval ".phases | has(\"$1\")" "$TODOS_YAML" | grep -q "true"; then
+            create_phase_prs "$1"
+        else
+            echo -e "${RED}❌ Error: Unknown command or phase '$1'${NC}"
+            echo
+            show_usage
+            exit 1
+        fi
         ;;
 esac
 

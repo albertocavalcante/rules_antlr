@@ -1,160 +1,301 @@
-# Multi-Agent Parallel Development System
+# Multi-Agent Development System
 
-## Overview
+## Problem Context
 
-This directory contains a **revolutionary parallel development system** that enables **4x faster bug fixing** by running multiple Claude Code sessions simultaneously using git worktrees. Instead of fixing bugs sequentially, you can now tackle **20 critical vulnerabilities** in parallel.
-
-## Key Benefits
-
-- **🚀 4x Speed Improvement** - Fix 4 critical bugs simultaneously instead of one at a time
-- **🔒 Perfect Isolation** - Each Claude session works in independent file state via git worktrees
-- **🎯 Specialized Context** - Each agent becomes expert in specific vulnerability types
-- **⚡ True Parallelization** - Leverage multiple CPU cores and Claude sessions concurrently
-
-## Quick Start
-
-### 1. Setup (One-time)
-```bash
-# Create all worktrees for parallel development
-./setup-worktrees.sh
-```
-
-### 2. Launch Critical Fixes (Recommended First Step)
-```bash
-# Start 4 parallel Claude sessions for critical NPE vulnerabilities
-./run-parallel-claude.sh critical
-```
-
-### 3. Connect to Claude Sessions
-```bash
-# Attach to specific sessions via tmux
-tmux attach -t rules-antlr-npe-env      # TODO-001: Environment Variable NPE Fixes
-tmux attach -t rules-antlr-npe-builder  # TODO-002: Builder Method Parameter NPE Fixes
-tmux attach -t rules-antlr-npe-language # TODO-003: Language Path Conversion NPE Fixes
-tmux attach -t rules-antlr-npe-utility  # TODO-004: Utility Method NPE Fixes
-```
-
-### 4. Create Pull Requests
-```bash
-# Create PRs for completed fixes
-./merge-workflow.sh critical
-
-# Check status of all worktrees
-./merge-workflow.sh status
-```
-
-### 5. Cleanup
-```bash
-# Remove all worktrees and cleanup environment
-./cleanup-worktrees.sh all
-```
-
-## System Components
-
-| File | Purpose |
-|------|---------|
-| **`README.md`** | This overview and quick start guide |
-| **`TODO.md`** | Detailed specifications for all 20 critical bug fixes with agent prompts |
-| **`WORKFLOW.md`** | Comprehensive workflow documentation with examples and troubleshooting |
-| **`setup-worktrees.sh`** | Creates git worktrees for parallel development |
-| **`run-parallel-claude.sh`** | Launches multiple Claude sessions in tmux |
-| **`merge-workflow.sh`** | Coordinates PR creation and merge workflow |
-| **`cleanup-worktrees.sh`** | Removes worktrees and cleans up environment |
-| **`test-workflow.sh`** | Tests the entire workflow system |
-
-## Critical Bugs Being Fixed
-
-### 🔴 Phase 1: Critical NPE Vulnerabilities (Parallel Execution)
-- **TODO-001**: Environment Variable NPE Fixes (AntlrRules.java main method)
-- **TODO-002**: Builder Method Parameter NPE Fixes  
-- **TODO-003**: Language Path Conversion NPE Fixes
-- **TODO-004**: Utility Method NPE Fixes
-
-### 🟠 Phase 2: High Priority Bazel Fixes (Parallel Execution)
-- **TODO-005**: Bazel Starlark Dictionary Access Fix (Bazel 6.0+ compatibility)
-- **TODO-006**: Bazel String Method Fix (Non-existent .elems() calls)
-
-### 🟡 Phase 3: Resource Management (Parallel Execution)
-- **TODO-007**: Process Stream Resource Leak Fixes
-- **TODO-008**: File Stream Resource Leak Fixes
-
-### 🟢 Phase 4: Quality Improvements
-- **TODO-009**: Array Bounds Safety Improvements
-- **TODO-010**: Error Message Quality Improvements
-
-## System Requirements
-
-### Required
-- **Git** - For worktree management
-- **Bash 4+** - For script functionality  
-- **Claude Code CLI** - For parallel development
-
-### Optional (Recommended)
-- **tmux** - For parallel session management (enables true parallel workflow)
-- **GitHub CLI** - For automated PR creation
-
-## Usage Examples
-
-### Start All Critical Fixes at Once
-```bash
-./setup-worktrees.sh                    # Create development environment
-./run-parallel-claude.sh critical       # Start 4 parallel sessions
-```
-
-### Work on Specific Priority Levels
-```bash
-./run-parallel-claude.sh bazel          # Bazel compatibility fixes
-./run-parallel-claude.sh resource       # Resource management fixes
-./run-parallel-claude.sh quality        # Quality improvements
-```
-
-### Manage Sessions
-```bash
-./run-parallel-claude.sh status         # Check active sessions
-./run-parallel-claude.sh kill           # Kill all sessions
-tmux list-sessions                       # List all tmux sessions
-```
-
-### Create Pull Requests
-```bash
-./merge-workflow.sh status              # Check what's ready for PR
-./merge-workflow.sh critical            # Create PRs for critical fixes
-./merge-workflow.sh all                 # Create PRs for all completed fixes
-```
-
-## Detailed Documentation
-
-- **`./TODO.md`** - Complete specifications for all 20 bug fixes with detailed agent prompts
-- **`./WORKFLOW.md`** - Comprehensive usage guide with troubleshooting and best practices
-
-## Testing the System
-
-```bash
-# Test entire workflow
-./test-workflow.sh
-
-# Test specific components
-./test-workflow.sh scripts              # Test script functionality
-./test-workflow.sh e2e                  # End-to-end workflow test
-```
+When a codebase has multiple issues that need to be fixed simultaneously, traditional sequential development becomes inefficient. Working on all issues in the same branch creates conflicts and makes it difficult to track individual fixes. This system addresses these challenges by providing isolated development environments for parallel work.
 
 ## How It Works
 
-1. **Git Worktrees** create isolated copies of the repository for each bug fix
-2. **Claude Code sessions** run in parallel via tmux, each in its own worktree
-3. **Specialized prompts** from TODO.md give each Claude specific context
-4. **Independent development** prevents conflicts between parallel fixes
-5. **Coordinated merging** ensures proper integration order
+This system uses git worktrees to create separate working copies of the repository, each isolated from the others. Each worktree is assigned to a specific bug fix, allowing multiple Claude Code sessions to work on different issues simultaneously without conflicts.
 
-## Integration with rules_antlr
+The entire system configuration is stored in `todos.yaml`, which defines:
+- Individual TODO items with detailed agent prompts
+- Phases that group related work
+- Git configuration (branches, worktree directories, tmux session names)
+- Workflow orchestration rules
 
-This multi-agent system is designed specifically for the **rules_antlr** project to address:
-- **15 Critical NPE vulnerabilities** that could cause JVM crashes
-- **3 High-priority Bazel logic errors** breaking compatibility with newer versions
-- **2 Resource management issues** causing gradual system degradation
+Scripts read this YAML configuration to dynamically create worktrees, launch tmux sessions, and manage the development workflow.
 
-The system maintains full compatibility with existing rules_antlr development workflows while providing a **parallel alternative** for large-scale bug remediation.
+## System Architecture
 
----
+- **Git Worktrees**: Isolated copies of the repository for each TODO item
+- **YAML Configuration**: Central definition of all tasks, phases, and settings
+- **Tmux Sessions**: Parallel Claude Code instances, one per worktree
+- **Bash Scripts**: Automation for setup, session management, and cleanup
+- **Utility Layer**: Shared functions for YAML parsing and validation
 
-**Ready to start? Run `./setup-worktrees.sh` and begin parallel development! 🚀**
+## Configuration Schema
+
+The `todos.yaml` file contains four main sections:
+
+### Global Configuration
+```yaml
+config:
+  worktree_base_dir: "../rules_antlr-worktrees"
+  tmux_session_prefix: "rules-antlr"
+  default_branch_base: "main"
+```
+
+### Phases
+Groups of related TODO items with execution metadata:
+```yaml
+phases:
+  high_priority:
+    name: "High Priority Fixes"
+    priority: 1
+    parallel: true
+    description: "Critical issues that need immediate attention"
+```
+
+### TODO Items
+Individual tasks with detailed configuration:
+```yaml
+todos:
+  - id: "TODO-001"
+    title: "Fix Type A"
+    phase: "high_priority"
+    priority: "CRITICAL"
+    git:
+      branch: "fix/issue-type-a"
+      worktree_dir: "fix-a"
+      tmux_session: "project-fix-a"
+    files:
+      - "src/main/java/com/example/Component.java:88-99"
+    agent_prompt: |-
+      [Detailed multiline prompt with implementation steps,
+       context, and verification requirements]
+```
+
+### Agent Types
+Specialization definitions for different types of fixes:
+```yaml
+agent_types:
+  Bug-Specialist:
+    description: "Focuses on specific vulnerability types"
+    expertise: ["error handling", "defensive programming"]
+```
+
+## Dependencies
+
+### Required
+- **Git** (with worktree support)
+- **Bash** 4.0 or later
+- **Claude Code CLI**
+
+### Optional
+- **yq** - For YAML parsing (enables full functionality)
+- **tmux** - For session management (enables parallel workflow)
+- **GitHub CLI** (gh) - For automated PR creation
+
+### Installation
+```bash
+# macOS
+brew install yq tmux gh
+
+# Ubuntu/Debian
+sudo apt-get install yq tmux gh
+
+# Arch Linux
+sudo pacman -S yq tmux github-cli
+```
+
+## Usage
+
+### 1. Environment Setup
+```bash
+./setup-worktrees.sh
+```
+Creates git worktrees for all active TODO items defined in `todos.yaml`. Each worktree is created in a separate directory with its own branch.
+
+### 2. Start Development Sessions
+```bash
+# Start specific phase
+./run-parallel-claude.sh high_priority
+
+# Start all phases
+./run-parallel-claude.sh all
+
+# View available phases
+./run-parallel-claude.sh
+```
+
+### 3. Session Management
+```bash
+# Check active sessions
+./run-parallel-claude.sh status
+
+# Connect to specific session
+tmux attach -t project-fix-a
+
+# Kill all sessions
+./run-parallel-claude.sh kill
+```
+
+### 4. Pull Request Creation
+```bash
+# Check status of all worktrees
+./merge-workflow.sh status
+
+# Create PRs for completed work
+./merge-workflow.sh high_priority
+./merge-workflow.sh all
+```
+
+### 5. Environment Cleanup
+```bash
+# Remove everything
+./cleanup-worktrees.sh all
+
+# Selective cleanup
+./cleanup-worktrees.sh sessions    # Kill tmux sessions only
+./cleanup-worktrees.sh worktrees   # Remove worktrees only
+./cleanup-worktrees.sh branches    # Delete git branches only
+```
+
+## File Structure
+
+```
+.agents/
+├── todos.yaml              # Central configuration file
+├── yaml-utils.sh          # Shared YAML parsing utilities
+├── setup-worktrees.sh     # Creates git worktrees from YAML
+├── run-parallel-claude.sh # Launches Claude sessions in tmux
+├── merge-workflow.sh      # Manages PR creation and merging
+├── cleanup-worktrees.sh   # Environment cleanup
+└── README.md             # This documentation
+```
+
+### Script Functions
+
+**setup-worktrees.sh**
+- Reads TODO items from YAML
+- Creates git worktrees in configured directories
+- Sets up branches for each TODO item
+- Copies configuration files to each worktree
+
+**run-parallel-claude.sh**
+- Launches tmux sessions for TODO items in a phase
+- Starts Claude Code in each worktree directory
+- Provides session status and management commands
+- Handles session cleanup
+
+**merge-workflow.sh**
+- Checks worktree status and commit readiness
+- Runs tests in each worktree (if configured)
+- Creates GitHub pull requests with detailed descriptions
+- Manages merge workflow coordination
+
+**cleanup-worktrees.sh**
+- Removes git worktrees and their directories
+- Kills tmux sessions
+- Deletes git branches (local and remote)
+- Cleans up temporary files
+
+## YAML Utility Functions
+
+The `yaml-utils.sh` file provides functions for working with configuration data:
+
+```bash
+source "./yaml-utils.sh"
+init_yaml_utils "todos.yaml"
+
+# Configuration queries
+get_config "worktree_base_dir"          # Get config values
+get_fallback_config "tmux_session_prefix"  # Get defaults
+
+# TODO queries  
+get_all_todo_indices                    # List all TODO indices
+get_todo_field 0 "title"               # Get specific TODO field
+is_todo_active 0                       # Check if TODO is not cancelled
+
+# Phase queries
+get_all_phases                          # Get phases by priority
+get_phase_todo_indices "high_priority"  # Get TODOs in a phase
+validate_phase "high_priority"          # Check if phase exists
+
+# Validation
+validate_yaml_schema                    # Validate YAML structure
+show_yaml_status                        # Show configuration info
+```
+
+## Configuration
+
+### Adding TODO Items
+
+Edit `todos.yaml` to add new tasks:
+
+```yaml
+todos:
+  - id: "TODO-011"
+    title: "New Task"
+    description: "Task description"
+    phase: "quality"
+    priority: "MEDIUM"
+    git:
+      branch: "fix/new-task"
+      worktree_dir: "new-task"
+      tmux_session: "rules-antlr-new-task"
+    agent_prompt: |-
+      Detailed instructions for the task...
+```
+
+Run `./setup-worktrees.sh` to create the new worktree.
+
+### Adding Phases
+
+Define new phases in `todos.yaml`:
+
+```yaml
+phases:
+  performance:
+    name: "Performance Optimizations"
+    description: "Speed and memory improvements"
+    priority: 5
+    parallel: true
+```
+
+All scripts automatically recognize new phases defined in the YAML file.
+
+### Project Adaptation
+
+To use this system for other projects:
+
+1. Replace `todos.yaml` with your project's tasks and phases
+2. Update the `config` section with your preferred paths and naming
+3. Modify agent prompts and fix strategies for your specific issues
+4. Scripts will automatically adapt to the new configuration
+
+## Current Configuration
+
+The current tasks and phases are defined in `todos.yaml`. Check that file for:
+
+- **Active TODO Items** - Specific tasks with detailed prompts and fix strategies
+- **Phase Definitions** - Groups of related work with priority and execution rules
+- **Agent Specializations** - Types of expertise assigned to different categories of work
+
+The YAML file serves as the single source of truth for all current work items and their configuration.
+
+## Limitations
+
+- Requires yq for full functionality (falls back to limited features without it)
+- Tmux sessions are local to the machine running the scripts
+- Git worktrees share the same .git directory (objects and refs)
+- Each worktree requires separate disk space for the working directory
+- GitHub CLI integration requires authentication setup
+
+## Troubleshooting
+
+**Worktree creation fails**
+- Ensure you're in the main repository (not already in a worktree)
+- Check that branch names in YAML don't conflict with existing branches
+- Verify you have write access to the parent directory
+
+**Session startup issues**
+- Confirm tmux is installed and working
+- Check that Claude Code CLI is in your PATH
+- Verify worktree directories exist and are accessible
+
+**YAML parsing errors**
+- Install yq or accept reduced functionality
+- Validate YAML syntax using `yq eval '.' todos.yaml`
+- Check for proper indentation and structure

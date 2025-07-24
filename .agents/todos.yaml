@@ -1,0 +1,516 @@
+# rules_antlr Multi-Agent TODO Configuration
+# Flexible YAML-driven configuration for parallel bug fixing workflow
+
+version: "1.0"
+project: "rules_antlr"
+description: "Critical vulnerabilities and improvements in rules_antlr codebase"
+
+# Global configuration
+config:
+  worktree_base_dir: "../rules_antlr-worktrees"
+  tmux_session_prefix: "rules-antlr"
+  default_branch_base: "main"
+
+# Phase definitions for organizing work
+phases:
+  critical:
+    name: "Critical NPE Fixes"
+    description: "15 critical NPE vulnerabilities that could cause JVM crashes"
+    priority: 1
+    parallel: true
+    color: "RED"
+    emoji: "🔴"
+    
+  bazel:
+    name: "Bazel Compatibility Fixes"
+    description: "High-priority Bazel logic errors breaking newer versions"
+    priority: 2
+    parallel: false
+    color: "YELLOW"
+    emoji: "🟠"
+    
+  resource:
+    name: "Resource Management Fixes"
+    description: "Medium-priority resource leaks causing gradual degradation"
+    priority: 3
+    parallel: true
+    color: "BLUE"
+    emoji: "🟡"
+    
+  quality:
+    name: "Quality Improvements"
+    description: "Lower priority code quality and safety improvements"
+    priority: 4
+    parallel: true
+    color: "GREEN"
+    emoji: "🟢"
+
+# Individual TODO items
+todos:
+  # CRITICAL PHASE - NPE Vulnerabilities
+  - id: "TODO-001"
+    title: "Environment Variable NPE Fixes"
+    description: "Fix critical NPE vulnerabilities in AntlrRules.java main method"
+    phase: "critical"
+    priority: "CRITICAL"
+    agent_type: "NPE-Specialist"
+    dependencies: []
+    
+    # Git configuration
+    git:
+      branch: "fix/npe-environment-variables"
+      worktree_dir: "npe-env"
+      tmux_session: "rules-antlr-npe-env"
+    
+    # Files to modify
+    files:
+      - "src/main/java/org/antlr/bazel/AntlrRules.java:88-99"
+    
+    # Complex multiline agent prompt
+    agent_prompt: |-
+      Fix critical NPE vulnerabilities in AntlrRules.java main method. The following lines access environment variables and immediately call methods without null checks:
+
+      Line 90: env.get("TOOL_CLASSPATH").split(",") 
+      Line 93: env.get("GRAMMARS").split(",")
+
+      These will throw NPE if environment variables are not set. Add defensive null checks and provide meaningful error messages.
+
+      Implementation steps:
+      1. Add null checks for each env.get() call
+      2. Throw IllegalStateException with descriptive message if required env vars missing  
+      3. Consider providing default values where appropriate
+      4. Maintain existing builder pattern flow
+
+      Verification: Create test that calls main() with missing environment variables and verify proper error handling instead of NPE.
+    
+    # Fix strategy with code examples
+    fix_strategy: |-
+      Replace:
+      .classpath(env.get("TOOL_CLASSPATH").split(","))
+
+      With:
+      .classpath(getRequiredEnvVar(env, "TOOL_CLASSPATH").split(","))
+
+      private static String getRequiredEnvVar(Map<String, String> env, String name) {
+          String value = env.get(name);
+          if (value == null) {
+              throw new IllegalStateException("Required environment variable not set: " + name);
+          }
+          return value;
+      }
+
+  - id: "TODO-002"
+    title: "Builder Method Parameter NPE Fixes"
+    description: "Fix NPE vulnerabilities in AntlrRules builder methods"
+    phase: "critical"
+    priority: "CRITICAL"
+    agent_type: "NPE-Specialist"
+    dependencies: []
+    
+    git:
+      branch: "fix/npe-builder-parameters"
+      worktree_dir: "npe-builder"
+      tmux_session: "rules-antlr-npe-builder"
+    
+    files:
+      - "src/main/java/org/antlr/bazel/AntlrRules.java:129"
+      - "src/main/java/org/antlr/bazel/AntlrRules.java:393"
+      - "src/main/java/org/antlr/bazel/AntlrRules.java:401"
+      - "src/main/java/org/antlr/bazel/AntlrRules.java:409"
+      - "src/main/java/org/antlr/bazel/AntlrRules.java:426"
+    
+    agent_prompt: |-
+      Fix NPE vulnerabilities in AntlrRules builder methods. These methods call .isEmpty() or .trim() on parameters without null checks:
+
+      - encoding(String encoding) - Line 129: encoding.isEmpty()
+      - language(String language) - Line 393: language.isEmpty() 
+      - layout(String layout) - Line 401: layout.isEmpty()
+      - namespace(String namespace) - Line 409: namespace.isEmpty()
+      - srcjar(String srcjar) - Line 426: srcjar.trim().isEmpty()
+
+      Add null guards at the beginning of each method. For null inputs, either return early with 'this' (no-op) or use appropriate default values.
+
+      Verification: Write unit tests passing null to each builder method and verify no NPE thrown.
+    
+    fix_strategy: |-
+      AntlrRules encoding(String encoding) {
+          if (encoding == null) return this; // or use default charset
+          this.encoding = encoding.isEmpty() ? Charset.defaultCharset() : Charset.forName(encoding);
+          return this;
+      }
+
+  - id: "TODO-003"
+    title: "Language Path Conversion NPE Fixes"
+    description: "Fix NPE vulnerabilities in Language enum toId() methods"
+    phase: "critical"
+    priority: "CRITICAL"
+    agent_type: "NPE-Specialist"
+    dependencies: []
+    
+    git:
+      branch: "fix/npe-language-path-conversion"
+      worktree_dir: "npe-language"
+      tmux_session: "rules-antlr-npe-language"
+    
+    files:
+      - "src/main/java/org/antlr/bazel/Language.java:28"
+      - "src/main/java/org/antlr/bazel/Language.java:59"
+      - "src/main/java/org/antlr/bazel/Language.java:92"
+      - "src/main/java/org/antlr/bazel/Language.java:127"
+      - "src/main/java/org/antlr/bazel/Language.java:173"
+      - "src/main/java/org/antlr/bazel/Language.java:213"
+      - "src/main/java/org/antlr/bazel/Language.java:246"
+      - "src/main/java/org/antlr/bazel/Language.java:277"
+      - "src/main/java/org/antlr/bazel/Language.java:311"
+      - "src/main/java/org/antlr/bazel/Language.java:356"
+    
+    agent_prompt: |-
+      Fix NPE vulnerabilities in Language enum toId() methods. Multiple language implementations call path.toString() without null checks:
+
+      Affected methods in Language.java:
+      - C.toId() - Line 28
+      - CPP.toId() - Line 59  
+      - CSHARP.toId() - Line 92
+      - GO.toId() - Line 127
+      - JAVA.toId() - Line 173
+      - JAVASCRIPT.toId() - Line 213
+      - OBJC.toId() - Line 246
+      - PYTHON.toId() - Line 277
+      - RUBY.toId() - Line 311
+      - SWIFT.toId() - Line 356
+
+      Add null check at beginning of each toId() method and throw IllegalArgumentException with descriptive message.
+
+      Verification: Test each language's toId() method with null Path parameter and verify proper exception thrown.
+    
+    fix_strategy: |-
+      @Override
+      public String toId(Path path) {
+          if (path == null) {
+              throw new IllegalArgumentException("path cannot be null");
+          }
+          return path.toString().replaceAll("[/\\\\]", ".");
+      }
+
+  - id: "TODO-004"
+    title: "Utility Method NPE Fixes"
+    description: "Fix NPE vulnerabilities in utility methods using switch statements"
+    phase: "critical"
+    priority: "CRITICAL"
+    agent_type: "NPE-Specialist"
+    dependencies: []
+    
+    git:
+      branch: "fix/npe-utility-methods"
+      worktree_dir: "npe-utility"
+      tmux_session: "rules-antlr-npe-utility"
+    
+    files:
+      - "src/main/java/org/antlr/bazel/Language.java:469"
+      - "src/main/java/org/antlr/bazel/Version.java:22"
+      - "src/main/java/org/antlr/bazel/Strings.java:26"
+    
+    agent_prompt: |-
+      Fix NPE vulnerabilities in utility methods that use switch statements without null checks:
+
+      1. Language.of(String name) - Line 469: Switch on name without null check
+      2. Version.of(String version) - Line 22: Switch on version without null check  
+      3. Strings.stripFileExtension(String path) - Line 26: path.lastIndexOf() without null check
+
+      Add null checks before switch statements and string method calls. Throw IllegalArgumentException with descriptive messages.
+
+      Verification: Test each method with null parameter and verify proper exception handling.
+    
+    fix_strategy: |-
+      public static Language of(String name) {
+          if (name == null) {
+              throw new IllegalArgumentException("language name cannot be null");
+          }
+          switch (name) {
+              // existing cases...
+          }
+      }
+
+  # BAZEL PHASE - Compatibility Fixes
+  - id: "TODO-005"
+    title: "Bazel Starlark Dictionary Access Fix"
+    description: "CANCELLED - This TODO was based on incorrect information"
+    phase: "bazel"
+    priority: "CANCELLED"
+    agent_type: "Bazel-Specialist"
+    dependencies: []
+    status: "cancelled"
+    
+    git:
+      branch: "fix/bazel-dict-access"
+      worktree_dir: "bazel-dict"
+      tmux_session: "rules-antlr-bazel-dict"
+    
+    files:
+      - "antlr/impl.bzl:134"
+    
+    agent_prompt: |-
+      ❌ CANCELLED: This TODO was based on incorrect information
+
+      Analysis: Research shows that `dict.keys()[0]` is NOT deprecated in any Bazel version:
+      - ✅ Current Bazel 7.5.0 documentation confirms `dict.keys()` returns a list that supports indexing
+      - ❌ No evidence found of deprecation in Bazel 6.0+ in official docs or release notes  
+      - ⚠️ Starlark issue #203 discusses potential future changes but they are not implemented
+
+      Current Status: The existing code `lib.keys()[0]` is correct and valid Bazel/Starlark syntax.
+
+      Resolution: 
+      - No code changes required
+      - The proposed fix `list(lib.keys())[0]` would add unnecessary overhead
+      - Current implementation follows documented Bazel/Starlark patterns
+    
+    cancellation_reason: "Incorrect analysis - dict.keys()[0] is valid Starlark syntax"
+
+  - id: "TODO-006"
+    title: "Bazel String Method Fix"
+    description: "Fix non-existent .elems() method calls on strings"
+    phase: "bazel"
+    priority: "HIGH"
+    agent_type: "Bazel-Specialist"
+    dependencies: []
+    
+    git:
+      branch: "fix/bazel-string-methods"
+      worktree_dir: "bazel-string"
+      tmux_session: "rules-antlr-bazel-string"
+    
+    files:
+      - "antlr/repositories.bzl:198"
+      - "antlr/repositories.bzl:274"
+    
+    agent_prompt: |-
+      Fix Bazel Starlark errors in repositories.bzl. Two locations call non-existent .elems() method on strings:
+
+      Line 198: ".".join(str(version_or_language).elems())
+      Line 274: ".".join(str(version).elems())
+
+      The .elems() method doesn't exist on strings in Starlark. These should just use the string directly.
+
+      Fix by removing .elems() calls:
+      ".".join(str(version_or_language))
+      ".".join(str(version))
+
+      Verification:
+      1. Test dependency loading with invalid versions to trigger error paths
+      2. Verify error messages are properly formatted
+      3. Ensure no Starlark runtime errors occur
+    
+    fix_strategy: |-
+      Remove .elems() method calls from string objects:
+      
+      Before:
+      ".".join(str(version_or_language).elems())
+      
+      After:
+      str(version_or_language)
+
+  # RESOURCE PHASE - Memory Management
+  - id: "TODO-007"
+    title: "Process Stream Resource Leak Fixes"
+    description: "Fix resource leaks in Command.java process handling"
+    phase: "resource"
+    priority: "MEDIUM"
+    agent_type: "Resource-Specialist"
+    dependencies: []
+    
+    git:
+      branch: "fix/process-stream-leaks"
+      worktree_dir: "resource-process"
+      tmux_session: "rules-antlr-resource-process"
+    
+    files:
+      - "src/it/java/org/antlr/bazel/Command.java:104"
+    
+    agent_prompt: |-
+      Fix resource leak in Command.java build() method. Line 104 reads process InputStream without proper resource management:
+
+      output = new String(p.getInputStream().readAllBytes());
+
+      This can cause file handle leaks during integration testing. Use try-with-resources to ensure proper cleanup.
+
+      Fix by wrapping in try-with-resources:
+      try (InputStream is = p.getInputStream()) {
+          output = new String(is.readAllBytes());
+      }
+
+      Verification:
+      1. Run integration tests and monitor file handle usage
+      2. Verify no resource leaks using tools like lsof
+      3. Test with multiple concurrent Command executions
+    
+    fix_strategy: |-
+      try (InputStream is = p.getInputStream()) {
+          output = new String(is.readAllBytes());
+      }
+
+  - id: "TODO-008"
+    title: "File Stream Resource Leak Fixes"
+    description: "Fix resource leaks in TestWorkspace file handling"
+    phase: "resource"
+    priority: "MEDIUM"
+    agent_type: "Resource-Specialist"
+    dependencies: []
+    
+    git:
+      branch: "fix/file-stream-leaks"
+      worktree_dir: "resource-file"
+      tmux_session: "rules-antlr-resource-file"
+    
+    files:
+      - "src/it/java/org/antlr/bazel/TestWorkspace.java:67"
+    
+    agent_prompt: |-
+      Fix resource leak in TestWorkspace constructor. Line 67 uses Files.walk() without proper resource management:
+
+      Files.walk(examples)
+          .filter(path -> !Files.isDirectory(path))
+          .forEach(source -> { ... });
+
+      Files.walk() returns a Stream that must be closed to prevent file handle leaks. Use try-with-resources.
+
+      Fix by wrapping in try-with-resources:
+      try (Stream<Path> walk = Files.walk(examples)) {
+          walk.filter(path -> !Files.isDirectory(path))
+              .forEach(source -> { ... });
+      }
+
+      Verification:
+      1. Create multiple TestWorkspace instances and monitor file handles
+      2. Verify proper cleanup using resource monitoring tools
+      3. Test with large directory structures to amplify any leaks
+    
+    fix_strategy: |-
+      try (Stream<Path> walk = Files.walk(examples)) {
+          walk.filter(path -> !Files.isDirectory(path))
+              .forEach(source -> { ... });
+      }
+
+  # QUALITY PHASE - Code Improvements
+  - id: "TODO-009"
+    title: "Array Bounds Safety Improvements"
+    description: "Fix potential array bounds violations"
+    phase: "quality"
+    priority: "MEDIUM"
+    agent_type: "Safety-Specialist"
+    dependencies: []
+    
+    git:
+      branch: "fix/array-bounds-safety"
+      worktree_dir: "safety-bounds"
+      tmux_session: "rules-antlr-quality-bounds"
+    
+    files:
+      - "src/main/java/org/antlr/bazel/AntlrRules.java:553"
+    
+    agent_prompt: |-
+      Fix potential array bounds violation in expandSrcJarImports() method. Line 553 accesses args[i + 1] without checking if i+1 is within array bounds:
+
+      if (args[i].equals("-lib") && args[i + 1].endsWith(".srcjar"))
+
+      If "-lib" is the last argument, this throws ArrayIndexOutOfBoundsException.
+
+      Add bounds check:
+      if (args[i].equals("-lib") && i + 1 < args.length && args[i + 1].endsWith(".srcjar"))
+
+      Verification:
+      1. Test with args array ending in "-lib" to verify no exception
+      2. Test normal cases to ensure functionality preserved  
+      3. Add unit test covering this edge case
+    
+    fix_strategy: |-
+      if (args[i].equals("-lib") && i + 1 < args.length && args[i + 1].endsWith(".srcjar"))
+
+  - id: "TODO-010"
+    title: "Error Message Quality Improvements"
+    description: "Improve error message formatting consistency"
+    phase: "quality"
+    priority: "LOW"
+    agent_type: "Quality-Specialist"
+    dependencies: []
+    
+    git:
+      branch: "fix/error-message-quality"
+      worktree_dir: "quality-messages"
+      tmux_session: "rules-antlr-quality-messages"
+    
+    files:
+      - "src/main/java/org/antlr/bazel/Version.java:43"
+    
+    agent_prompt: |-
+      Improve error message formatting by adding missing spaces. Line 43 in Version.java:
+
+      throw new IllegalArgumentException("Unknown version" + version);
+
+      Should be:
+      throw new IllegalArgumentException("Unknown version: " + version);
+
+      Search for similar patterns throughout codebase and fix consistently.
+
+      Verification:
+      1. Trigger error conditions and verify messages are properly formatted
+      2. Ensure consistent formatting across all error messages
+      3. Test error message readability in build logs
+    
+    fix_strategy: |-
+      throw new IllegalArgumentException("Unknown version: " + version);
+
+# Workflow orchestration
+workflows:
+  # Recommended execution order
+  recommended_order:
+    - phase: "critical"
+      description: "Start with critical NPE fixes - highest impact"
+      parallel_sessions: 4
+      
+    - phase: "bazel"
+      description: "Bazel compatibility fixes"
+      parallel_sessions: 1
+      note: "TODO-005 is cancelled, only TODO-006 needs fixing"
+      
+    - phase: "resource"
+      description: "Resource management fixes"
+      parallel_sessions: 2
+      
+    - phase: "quality"
+      description: "Quality improvements"
+      parallel_sessions: 2
+
+  # Integration testing after each phase
+  integration_tests:
+    after_critical: |-
+      Run full integration test suite
+      Test with multiple Bazel versions (5.x, 6.x, 7.x)
+      Performance testing to ensure no degradation
+      Security review of all changes
+    
+    after_each_merge: |-
+      Run existing test suite to ensure no regressions
+      Manual testing of affected functionality
+      Code review for security implications
+
+# Agent specializations
+agent_types:
+  NPE-Specialist:
+    description: "Focuses on null pointer vulnerabilities, defensive programming"
+    expertise: ["null safety", "defensive programming", "exception handling"]
+    
+  Bazel-Specialist:
+    description: "Expert in Starlark syntax, Bazel version compatibility"
+    expertise: ["Starlark", "Bazel rules", "build system compatibility"]
+    
+  Resource-Specialist:
+    description: "Resource management, try-with-resources patterns"
+    expertise: ["resource management", "stream handling", "memory leaks"]
+    
+  Safety-Specialist:
+    description: "Bounds checking, edge case handling"
+    expertise: ["array bounds", "edge cases", "defensive programming"]
+    
+  Quality-Specialist:
+    description: "Code style, error messages, documentation"
+    expertise: ["code quality", "error messages", "consistency"]
