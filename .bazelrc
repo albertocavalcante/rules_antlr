@@ -1,3 +1,5 @@
+# build --javacopt="--release 8"
+# common --noenable_workspace
 import %workspace%/tools/rc/correctness.bazelrc
 import %workspace%/.java.bazelrc
 import %workspace%/.remote-cache.bazelrc

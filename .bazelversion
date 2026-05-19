@@ -1,1 +1,6 @@
+<<<<<<< HEAD
+# TODO: Revert to older version of bazel to ensure backward compatibility
+8.0.0
+=======
 7.5.0
+>>>>>>> origin/master
