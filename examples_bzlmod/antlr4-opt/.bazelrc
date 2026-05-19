@@ -3,4 +3,7 @@ import ../../.java.bazelrc
 import ../../.remote-cache.bazelrc
 import ../../.ci.bazelrc
 
-common --noenable_bzlmod
+# Override JAVA_HOME during repository rule evaluation so that local_java_repository
+# does not try to use a potentially broken network-mounted JDK path.  When JAVA_HOME
+# is empty the rule falls back to the embedded Bazel JDK, which is always valid.
+common --repo_env=JAVA_HOME=

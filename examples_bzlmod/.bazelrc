@@ -3,4 +3,10 @@ import ../.java.bazelrc
 import ../.remote-cache.bazelrc
 import ../.ci.bazelrc
 
-common --noenable_bzlmod
+common --noenable_workspace
+common --noincompatible_disallow_empty_glob
+
+# Point tools such as coursier (used in rules_jvm_external) to Bazel's downloaded JDK
+# suggested in https://github.com/bazelbuild/rules_jvm_external/issues/445
+common --repo_env=JAVA_HOME=../bazel_tools/jdk
+common --action_env=JAVA_HOME=../bazel_tools/jdk
