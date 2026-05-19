@@ -1,0 +1,3 @@
+# antlr4-opt uses the TunnelVision Labs ANTLR4 fork and requires its own workspace.
+# It is not buildable from the bzlmod examples workspace without separate fork configuration.
+antlr4-opt
