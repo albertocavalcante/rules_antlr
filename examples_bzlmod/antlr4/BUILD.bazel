@@ -1,0 +1,21 @@
+filegroup(
+    name = "srcs",
+    srcs = [
+        "Cpp",
+        "CustomLayout",
+        "DetectLanguage",
+        "Go",
+        "InheritLibFolder",
+        "InheritSameFolder",
+        "Java",
+        "LanguageByAttribute",
+        "LanguageByOption",
+        "NamespaceByAttribute",
+        "NamespaceByConvention",
+        "NamespaceByGrammar",
+        "NamespaceGrammarOverConvention",
+        "Python2",
+        "Python3",
+    ],
+    visibility = ["//visibility:public"],
+)
