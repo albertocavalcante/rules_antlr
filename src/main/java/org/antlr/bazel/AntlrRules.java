@@ -187,9 +187,8 @@ public class AntlrRules
         }
 
         // On Windows, ANTLR 2's old-style I/O may leave file handles open until GC.
-        // Force finalization so handles are released before we start moving files.
+        // Force a GC so handles are released before we start moving files.
         System.gc();
-        System.runFinalization();
 
         Map<String, Grammar> names = grammarNames(namespaces);
 
