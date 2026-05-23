@@ -630,15 +630,16 @@ def _download(name, path, sha256):
     )
 
 def rules_antlr_tool_repositories(existing_repos = []):
-    """Ensures the minimal tool repos that rules_antlr's .bzl files reference are always present.
+    """Ensures the tool repos that rules_antlr's .bzl files reference are always present.
 
-    In bzlmod, rules_antlr's MODULE.bazel declares use_repo for antlr2 and antlr3_tool so that
-    Label("@antlr2//jar") and Label("@antlr3_tool//jar") resolve in antlr2.bzl and antlr3.bzl
-    respectively.  This function guarantees those repos exist even when a consumer only configures
-    the optimized ANTLR 4 toolchain (which does not otherwise create antlr2 or antlr3_tool).
+    In bzlmod, rules_antlr's MODULE.bazel declares use_repo for antlr2, antlr3_tool,
+    antlr3_runtime, antlr4_tool, and antlr4_runtime so that Labels such as
+    Label("@antlr4_tool//jar") in antlr4.bzl resolve regardless of which ANTLR version
+    the consumer requested.  This function guarantees all five repos exist, using
+    sensible default versions for any repo not already created by a toolchain tag.
 
     Args:
-      existing_repos: list of repo names that have already been created by the extension call;
+      existing_repos: list of repo names that have already been created by the extension;
                       any repo in this list is skipped to avoid duplicate-creation errors.
     """
     needed = {}
@@ -646,6 +647,12 @@ def rules_antlr_tool_repositories(existing_repos = []):
         needed["antlr2"] = "2.7.7"
     if "antlr3_tool" not in existing_repos:
         needed["antlr3_tool"] = "3.5.2"
+    if "antlr3_runtime" not in existing_repos:
+        needed["antlr3_runtime"] = "3.5.2"
+    if "antlr4_tool" not in existing_repos:
+        needed["antlr4_tool"] = "4.9.2"
+    if "antlr4_runtime" not in existing_repos:
+        needed["antlr4_runtime"] = "4.9.2"
     _dependencies(needed)
 
 def _validate_versions(versions):

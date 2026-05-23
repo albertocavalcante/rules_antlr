@@ -33,11 +33,19 @@ def _antlr_repositories_impl(module_ctx):
                 elif sv in ["3", "3.5.2"]:
                     if "antlr3_tool" not in already_created:
                         already_created.append("antlr3_tool")
+                    if "antlr3_runtime" not in already_created:
+                        already_created.append("antlr3_runtime")
                     _append_if_absent(direct_deps, "antlr3_runtime")
                     _append_if_absent(direct_deps, "antlr3_tool")
                     if non_java:
                         _append_if_absent(direct_deps, "antlr3_runtimes")
                 elif sv.startswith("4"):
+                    if "antlr4_tool" not in already_created:
+                        already_created.append("antlr4_tool")
+                    if "antlr4_runtime" not in already_created:
+                        already_created.append("antlr4_runtime")
+                    if "antlr3_runtime" not in already_created:
+                        already_created.append("antlr3_runtime")
                     _append_if_absent(direct_deps, "antlr4_runtime")
                     _append_if_absent(direct_deps, "antlr4_tool")
                     _append_if_absent(direct_deps, "antlr3_runtime")
@@ -51,6 +59,12 @@ def _antlr_repositories_impl(module_ctx):
 
         for toolchain in mod.tags.optimized_toolchain:
             rules_antlr_optimized_dependencies(toolchain.version)
+            if "antlr4_tool" not in already_created:
+                already_created.append("antlr4_tool")
+            if "antlr4_runtime" not in already_created:
+                already_created.append("antlr4_runtime")
+            if "antlr3_runtime" not in already_created:
+                already_created.append("antlr3_runtime")
             _append_if_absent(direct_deps, "antlr4_runtime")
             _append_if_absent(direct_deps, "antlr4_tool")
             _append_if_absent(direct_deps, "antlr3_runtime")
