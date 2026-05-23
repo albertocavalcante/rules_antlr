@@ -43,21 +43,34 @@ bazel_dep(name = "rules_antlr", version = "0.6.0")
 antlr_extension = use_extension("@rules_antlr//antlr:extensions.bzl", "antlr_extension")
 antlr_extension.toolchain(
     versions = ["4.8"],
-    # Optional: specify additional languages beyond Java (e.g. "Cpp", "Go", "Python3")
-    languages = [],
 )
-use_repo(antlr_extension, "antlr4_runtime", "antlr4_tool")
+use_repo(antlr_extension, "antlr3_runtime", "antlr4_runtime", "antlr4_tool")
 ```
 
-To support multiple ANTLR versions or additional languages, expand the `versions` and `languages` lists:
+For ANTLR 3 (Java only):
+
+```starlark
+antlr_extension.toolchain(
+    versions = ["3.5.2"],
+)
+use_repo(antlr_extension, "antlr3_runtime", "antlr3_tool")
+```
+
+To support multiple ANTLR versions with additional language runtimes (C++, Go, Python, etc.):
 
 ```starlark
 antlr_extension.toolchain(
     versions = ["2.7.7", "3.5.2", "4.8"],
     languages = ["Cpp", "Go", "Python3"],
 )
-use_repo(antlr_extension, "antlr2", "antlr3_runtime", "antlr3_tool", "antlr4_runtime", "antlr4_tool")
+use_repo(antlr_extension,
+    "antlr2", "antlr2_runtimes",
+    "antlr3_runtime", "antlr3_tool", "antlr3_runtimes",
+    "antlr4_runtime", "antlr4_tool", "antlr4_runtimes",
+)
 ```
+
+> **Tip:** Run `bazel mod tidy` after changing `versions` or `languages` to update `use_repo` automatically.
 
 <a name="workspace-setup"></a>
 ## Workspace Setup
