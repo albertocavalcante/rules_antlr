@@ -285,7 +285,13 @@ def rules_antlr_optimized_dependencies(version):
             "version",
         )
     else:
-        fail('Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(version, v4_opt), attr = "version")
+        _fail_with_attr(
+            'Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(
+                version, 
+                v4_opt
+            ), 
+            "version"
+        )
     _dependencies(deps)
 
 def _antlr4_dependencies(version, languages, deps):

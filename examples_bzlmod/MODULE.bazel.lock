@@ -201,7 +201,7 @@
     },
     "@@rules_antlr~//antlr:extensions.bzl%antlr_extension": {
       "general": {
-        "bzlTransitiveDigest": "YAVnhEuZ1YVzaf75QYqgA/+8Ob5v/h3rhGb0XCFcbR4=",
+        "bzlTransitiveDigest": "fo3CFDCMgbm/yGBRjJPLpZlC0Rfx7u/07GLC+j7ZM+8=",
         "usagesDigest": "1YmGnTX83zYEIvum+ogWKbtEANb3v8Fbv9XaWPjbpt4=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
