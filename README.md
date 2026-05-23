@@ -10,7 +10,8 @@ These build rules are used for processing [ANTLR](https://www.antlr.org)
 grammars with [Bazel](https://bazel.build).
 
   * [Support Matrix](#matrix)
-  * [Workspace Setup](#setup)
+  * [Module Setup (bzlmod)](#module-setup-bzlmod)
+  * [Workspace Setup](#workspace-setup)
     + [Details](docs/setup.md#setup)
   * [Build Rules](#build-rules)
     - [Java Example](#java-example)
@@ -32,8 +33,47 @@ Gen: Code Generation\
 Runtime: Runtime Library bundled
 
 
-<a name="setup"></a>
-## Setup
+### Module Setup (bzlmod)
+
+Add the following to your [`MODULE.bazel`](https://bazel.build/external/module) file:
+
+```starlark
+bazel_dep(name = "rules_antlr", version = "0.6.0")
+
+antlr_extension = use_extension("@rules_antlr//antlr:extensions.bzl", "antlr_extension")
+antlr_extension.toolchain(
+    versions = ["4.8"],
+)
+use_repo(antlr_extension, "antlr3_runtime", "antlr4_runtime", "antlr4_tool")
+```
+
+For ANTLR 3 (Java only):
+
+```starlark
+antlr_extension.toolchain(
+    versions = ["3.5.2"],
+)
+use_repo(antlr_extension, "antlr3_runtime", "antlr3_tool")
+```
+
+To support multiple ANTLR versions with additional language runtimes (C++, Go, Python, etc.):
+
+```starlark
+antlr_extension.toolchain(
+    versions = ["2.7.7", "3.5.2", "4.8"],
+    languages = ["Cpp", "Go", "Python3"],
+)
+use_repo(antlr_extension,
+    "antlr2", "antlr2_runtimes",
+    "antlr3_runtime", "antlr3_tool", "antlr3_runtimes",
+    "antlr4_runtime", "antlr4_tool", "antlr4_runtimes",
+)
+```
+
+> **Tip:** Run `bazel mod tidy` after changing `versions` or `languages` to update `use_repo` automatically.
+
+<a name="workspace-setup"></a>
+## Workspace Setup
 
 Add the following to your [`WORKSPACE.bazel`](https://bazel.build/concepts/build-ref#workspace)
 file to include the external repository and load the necessary Java dependencies for the

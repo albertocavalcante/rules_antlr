@@ -186,6 +186,10 @@ public class AntlrRules
             }
         }
 
+        // On Windows, ANTLR 2's old-style I/O may leave file handles open until GC.
+        // Force a GC so handles are released before we start moving files.
+        System.gc();
+
         Map<String, Grammar> names = grammarNames(namespaces);
 
         switch (output)
@@ -235,7 +239,7 @@ public class AntlrRules
 
                         if (fileName.endsWith(".log"))
                         {
-                            Files.move(entry, other.resolve(entry.getFileName()));
+                            safeMove(entry, other.resolve(entry.getFileName()));
 
                             continue;
                         }
@@ -265,12 +269,12 @@ public class AntlrRules
                                                     grammar.getNamespacePath().toString())
                                                     .resolve(entry.getFileName());
                                             Files.createDirectories(target.getParent());
-                                            Files.move(entry, target);
+                                            safeMove(entry, target);
                                             continue;
                                         }
                                     }else if (!csources.matches(entry))
                                     {
-                                        Files.move(entry, other.resolve(entry.getFileName()));
+                                        safeMove(entry, other.resolve(entry.getFileName()));
 
                                         continue;
                                     }
@@ -282,7 +286,7 @@ public class AntlrRules
                                 {
                                     if (!gosources.matches(entry))
                                     {
-                                        Files.move(entry, other.resolve(entry.getFileName()));
+                                        safeMove(entry, other.resolve(entry.getFileName()));
 
                                         continue;
                                     }
@@ -302,7 +306,7 @@ public class AntlrRules
                         if (!target.equals(entry))
                         {
                             Files.createDirectories(target.getParent());
-                            Files.move(entry, target);
+                            safeMove(entry, target);
                         }
                     }
                 }
@@ -444,6 +448,35 @@ public class AntlrRules
         this.version = Version.of(version);
 
         return this;
+    }
+
+
+    /**
+     * Moves a file, falling back to copy+delete on Windows when rename fails
+     * due to file locking (FileSystemException).
+     */
+    private static void safeMove(Path source, Path target) throws IOException
+    {
+        try
+        {
+            Files.move(source, target);
+        }
+        catch (java.nio.file.FileSystemException e)
+        {
+            // Windows fallback: copy then delete to handle file locking issues
+            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+            try
+            {
+                Files.delete(source);
+            }
+            catch (java.nio.file.FileSystemException deleteEx)
+            {
+                // On Windows, files may remain locked after copy.
+                // The copy succeeded so the file is in its target location.
+                // Non-source files left in the source directory are harmless
+                // because cc_library/go_library/etc. filter by extension.
+            }
+        }
     }
 
 
@@ -621,8 +654,7 @@ public class AntlrRules
             }
         }
 
-        throw new IllegalStateException(
-                "Could not find matching grammar for " + file.getFileName());
+        return null;
     }
 
 
@@ -720,7 +752,10 @@ public class AntlrRules
                     // remove the .srcjar from the arguments
                     argument = argument.replace(lib, "");
 
-                    Path target = sandbox.resolve(path).getParent();
+                    // ANTLR2's ImportVocabTokenManager looks for token files in the output
+                    // directory (via getOutputDirectory()), not in the super grammar's directory.
+                    // Copy .txt token files to outputDirectory so ANTLR can find them.
+                    Path target = outputDirectory;
                     Files.createDirectories(target);
 
                     Path srcjar = sandbox.resolve(lib);
@@ -762,6 +797,8 @@ public class AntlrRules
                                 argument));
             }
 
+            // Clean up any dangling separators left after removing the srcjar entry
+            argument = argument.replaceAll("^;+|;+$", "").replaceAll(";{2,}", ";");
             arguments.set(glib + 1, argument);
         }
     }

@@ -1,5 +1,6 @@
 """The common ANTLR rule implementation."""
 
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load(":lang.bzl", "C", "CPP", "GO", "OBJC", "PYTHON", "PYTHON2", "PYTHON3")
 
 AntlrInfo = provider(
@@ -37,7 +38,7 @@ def antlr(version, ctx, args):
     if output_type == "srcjar":
         # the Java rules are special in that the output is a .jar file
         srcjar = ctx.actions.declare_file(ctx.attr.name + "." + output_type)
-        output_dir = ctx.configuration.bin_dir.path + "/rules_antlr/" + ctx.attr.name
+        output_dir = ctx.configuration.bin_dir.path + "/" + ctx.label.package + "/" + ctx.attr.name
         outputs = [srcjar]
     else:
         # for all other languages we use directories

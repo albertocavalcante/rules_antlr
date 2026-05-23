@@ -229,21 +229,30 @@ def rules_antlr_dependencies(*versions_and_languages):
         if not languages:
             languages = [JAVA]
 
+        all_deps = {}
         for version in sorted(versions, key = _to_string):
             if version == 4 or version == "4.9.2":
-                _antlr492_dependencies(languages)
+                deps = _antlr492_dependencies(languages)
+                all_deps.update(deps)
             elif version == "4.9.1":
-                _antlr491_dependencies(languages)
+                deps = _antlr491_dependencies(languages)
+                all_deps.update(deps)
             elif version == "4.8":
-                _antlr48_dependencies(languages)
+                deps = _antlr48_dependencies(languages)
+                all_deps.update(deps)
             elif version == "4.7.2":
-                _antlr472_dependencies(languages)
+                deps = _antlr472_dependencies(languages)
+                all_deps.update(deps)
             elif version == "4.7.1":
-                _antlr471_dependencies(languages)
+                deps = _antlr471_dependencies(languages)
+                all_deps.update(deps)
             elif version == 3 or version == "3.5.2":
-                _antlr352_dependencies(languages)
+                deps = _antlr352_dependencies(languages)
+                all_deps.update(deps)
             elif version == 2 or version == "2.7.7":
-                _antlr277_dependencies(languages)
+                deps = _antlr277_dependencies(languages)
+                all_deps.update(deps)
+        _dependencies(all_deps)
     else:
         _fail_with_attr("Missing ANTLR version", "versions_and_languages")
 
@@ -260,13 +269,13 @@ def rules_antlr_optimized_dependencies(version):
       version: the ANTLR release version to make available.
     """
     if version == 4 or version == "4.7.4":
-        _antlr474_optimized_dependencies()
+        deps = _antlr474_optimized_dependencies()
     elif version == "4.7.3":
-        _antlr473_optimized_dependencies()
+        deps = _antlr473_optimized_dependencies()
     elif version == "4.7.2":
-        _antlr472_optimized_dependencies()
+        deps = _antlr472_optimized_dependencies()
     elif version == "4.7.1":
-        _antlr471_optimized_dependencies()
+        deps = _antlr471_optimized_dependencies()
     elif type(version) == "int" or str(version).isdigit():
         _fail_with_attr(
             'Integer version \'{}\' no longer valid. Use semantic version "{}" instead.'.format(
@@ -278,14 +287,19 @@ def rules_antlr_optimized_dependencies(version):
     else:
         _fail_with_attr(
             'Unsupported ANTLR version provided: "{0}". Currently supported are: {1}'.format(
-                version,
-                v4_opt,
-            ),
-            "version",
+                version, 
+                v4_opt
+            ), 
+            "version"
         )
+    _dependencies(deps)
+
+def _antlr4_dependencies(version, languages, deps):
+    _antlr4_runtime(version, languages)
+    return deps
 
 def _antlr492_dependencies(languages):
-    _antlr4_dependencies(
+    return _antlr4_dependencies(
         "4.9.2",
         languages,
         {
@@ -298,7 +312,7 @@ def _antlr492_dependencies(languages):
     )
 
 def _antlr491_dependencies(languages):
-    _antlr4_dependencies(
+    return _antlr4_dependencies(
         "4.9.1",
         languages,
         {
@@ -311,7 +325,7 @@ def _antlr491_dependencies(languages):
     )
 
 def _antlr48_dependencies(languages):
-    _antlr4_dependencies(
+    return _antlr4_dependencies(
         "4.8",
         languages,
         {
@@ -324,7 +338,7 @@ def _antlr48_dependencies(languages):
     )
 
 def _antlr472_dependencies(languages):
-    _antlr4_dependencies(
+    return _antlr4_dependencies(
         "4.7.2",
         languages,
         {
@@ -333,60 +347,58 @@ def _antlr472_dependencies(languages):
             "antlr3_runtime": "3.5.2",
             "stringtemplate4": "4.0.8",
             "javax_json": "1.0.4",
-        },
+        }
     )
 
 def _antlr471_dependencies(languages):
-    _antlr4_dependencies(
+    _antlr4_runtime(
         "4.7.1",
-        languages,
-        {
+        languages)
+    return {
             "antlr4_runtime": "4.7.1",
             "antlr4_tool": "4.7.1",
             "antlr3_runtime": "3.5.2",
             "stringtemplate4": "4.0.8",
             "javax_json": "1.0.4",
-        },
-    )
+        }
 
 def _antlr474_optimized_dependencies():
-    _dependencies({
+    return {
         "antlr4_runtime": "4.7.4-opt",
         "antlr4_tool": "4.7.4-opt",
         "antlr3_runtime": "3.5.2",
         "stringtemplate4": "4.0.8",
         "javax_json": "1.0.4",
-    })
+    }
 
 def _antlr473_optimized_dependencies():
-    _dependencies({
+    return {
         "antlr4_runtime": "4.7.3-opt",
         "antlr4_tool": "4.7.3-opt",
         "antlr3_runtime": "3.5.2",
         "stringtemplate4": "4.0.8",
         "javax_json": "1.0.4",
-    })
+    }
 
 def _antlr472_optimized_dependencies():
-    _dependencies({
+    return {
         "antlr4_runtime": "4.7.2-opt",
         "antlr4_tool": "4.7.2-opt",
         "antlr3_runtime": "3.5.2",
         "stringtemplate4": "4.0.8",
         "javax_json": "1.0.4",
-    })
+    }
 
 def _antlr471_optimized_dependencies():
-    _dependencies({
+    return {
         "antlr4_runtime": "4.7.1-opt",
         "antlr4_tool": "4.7.1-opt",
         "antlr3_runtime": "3.5.2",
         "stringtemplate4": "4.0.8",
         "javax_json": "1.0.4",
-    })
+    }
 
-def _antlr4_dependencies(version, languages, dependencies):
-    _dependencies(dependencies)
+def _antlr4_runtime(version, languages):
     archive = PACKAGES["antlr"][version]
     build_script, workspace = _antlr4_build_script(languages)
 
@@ -411,6 +423,7 @@ cc_library(
     srcs = glob(["runtime/Cpp/runtime/src/**/*.cpp"]),
     hdrs = glob(["runtime/Cpp/runtime/src/**/*.h"]),
     includes = ["runtime/Cpp/runtime/src"],
+    local_defines = ["ANTLR4CPP_STATIC"],
     visibility = ["//visibility:public"],
 )
 """
@@ -471,33 +484,22 @@ def _load_http(workspace):
     return "" if workspace.find("@bazel_tools//tools/build_defs/repo:http.bzl") > -1 else 'load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")'
 
 def _load_rules_python_repositories(workspace):
-    return "" if workspace.find('load("@rules_python//python:repositories.bzl", "py_repositories")') > -1 else """
-http_archive(
-    name = "rules_python",
-    sha256 = "2ef40fdcd797e07f0b6abda446d1d84e2d9570d234fddf8fcd2aa262da852d1c",
-    strip_prefix = "rules_python-1.2.0",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/1.2.0/rules_python-1.2.0.tar.gz",
-)
-load("@rules_python//python:repositories.bzl", "py_repositories")
-py_repositories()
-"""
+    return ""
 
 def _load_rules_python_defs(script):
     return "" if script.find('load("@rules_python//python:defs.bzl"') > -1 else 'load("@rules_python//python:defs.bzl", "py_library")'
 
 def _antlr352_dependencies(languages):
-    _antlr3_dependencies(
+    _antlr3_runtime(
         "3.5.2",
-        languages,
-        {
+        languages)
+    return {
             "antlr3_runtime": "3.5.2",
             "antlr3_tool": "3.5.2",
             "stringtemplate4": "4.0.8",
-        },
-    )
+        }
 
-def _antlr3_dependencies(version, languages, dependencies):
-    _dependencies(dependencies)
+def _antlr3_runtime(version, languages):
     archive = PACKAGES["antlr"][version]
     build_script = _antlr3_build_script(languages)
 
@@ -546,16 +548,14 @@ py_library(
     return script
 
 def _antlr277_dependencies(languages):
-    _antlr2_dependencies(
+    _antlr2_runtime(
         "2.7.7",
-        languages,
-        {
+        languages)
+    return {
             "antlr2": "2.7.7",
-        },
-    )
+        }
 
-def _antlr2_dependencies(version, languages, dependencies):
-    _dependencies(dependencies)
+def _antlr2_runtime(version, languages):
     archive = PACKAGES["antlr"][version]
     build_script = _antlr2_build_script(languages)
 
@@ -566,6 +566,12 @@ def _antlr2_dependencies(version, languages, dependencies):
             strip_prefix = "antlr-2.7.7",
             url = archive["url"],
             patches = archive["patches"] if "patches" in archive else [],
+            patch_cmds = [
+                "printf '#pragma once\\n#include <functional>\\n#define strcasecmp _stricmp\\n#define strncasecmp _strnicmp\\n' > lib/cpp/strings.h",
+            ],
+            patch_cmds_win = [
+                "Set-Content lib/cpp/strings.h -Value '#pragma once','#include <functional>','#define strcasecmp _stricmp','#define strncasecmp _strnicmp' -Encoding ASCII",
+            ],
             build_file_content = build_script,
         )
 
@@ -580,8 +586,15 @@ cc_library(
         "@bazel_tools//src/conditions:windows": glob(["lib/cpp/src/*.cpp"]),
         "//conditions:default": glob(["lib/cpp/src/*.cpp"], exclude=["lib/cpp/src/dll.cpp"]),
     }),
-    hdrs = glob(["lib/cpp/antlr/*.hpp"]),
+    hdrs = glob(["lib/cpp/antlr/*.hpp"]) + select({
+        "@bazel_tools//src/conditions:windows": glob(["lib/cpp/strings.h"], allow_empty = True),
+        "//conditions:default": [],
+    }),
     includes = ["lib/cpp"],
+    copts = select({
+        "@bazel_tools//src/conditions:windows": ["/std:c++14"],
+        "//conditions:default": [],
+    }),
     visibility = ["//visibility:public"],
 )
 """
@@ -601,11 +614,12 @@ py_library(
 def _dependencies(dependencies):
     for key in dependencies:
         version = dependencies[key]
-        _download(
-            name = key,
-            path = PACKAGES[key][version]["path"],
-            sha256 = PACKAGES[key][version]["sha256"],
-        )
+        if key in PACKAGES and version in PACKAGES[key]:
+            _download(
+                name = key,
+                path = PACKAGES[key][version]["path"],
+                sha256 = PACKAGES[key][version]["sha256"],
+            )
 
 def _download(name, path, sha256):
     maybe(
@@ -614,6 +628,32 @@ def _download(name, path, sha256):
         url = path if path.startswith("https") else _MAVEN_CENTRAL + "/" + path,
         sha256 = sha256,
     )
+
+def rules_antlr_tool_repositories(existing_repos = []):
+    """Ensures the tool repos that rules_antlr's .bzl files reference are always present.
+
+    In bzlmod, rules_antlr's MODULE.bazel declares use_repo for antlr2, antlr3_tool,
+    antlr3_runtime, antlr4_tool, and antlr4_runtime so that Labels such as
+    Label("@antlr4_tool//jar") in antlr4.bzl resolve regardless of which ANTLR version
+    the consumer requested.  This function guarantees all five repos exist, using
+    sensible default versions for any repo not already created by a toolchain tag.
+
+    Args:
+      existing_repos: list of repo names that have already been created by the extension;
+                      any repo in this list is skipped to avoid duplicate-creation errors.
+    """
+    needed = {}
+    if "antlr2" not in existing_repos:
+        needed["antlr2"] = "2.7.7"
+    if "antlr3_tool" not in existing_repos:
+        needed["antlr3_tool"] = "3.5.2"
+    if "antlr3_runtime" not in existing_repos:
+        needed["antlr3_runtime"] = "3.5.2"
+    if "antlr4_tool" not in existing_repos:
+        needed["antlr4_tool"] = "4.9.2"
+    if "antlr4_runtime" not in existing_repos:
+        needed["antlr4_runtime"] = "4.9.2"
+    _dependencies(needed)
 
 def _validate_versions(versions):
     bundled = v4 + v3 + v2
